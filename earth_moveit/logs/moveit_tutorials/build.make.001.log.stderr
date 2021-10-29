@@ -1,4 +1,0 @@
-make[2]: *** No rule to make target 'doc/move_group_interface/CMakeFiles/node_test.dir/build'.  Stop.
-make[1]: *** [doc/move_group_interface/CMakeFiles/node_test.dir/all] Error 2
-make[1]: *** Waiting for unfinished jobs....
-make: *** [all] Error 2
