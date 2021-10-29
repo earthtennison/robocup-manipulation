@@ -1,0 +1,2 @@
+panda_moveit_config:pick_place:seven_dof_arm_test
+-DCATKIN_DEVEL_PREFIX=/home/famee/Desktop/moveit_ws/devel -DCMAKE_INSTALL_PREFIX=/home/famee/Desktop/moveit_ws/install -G Unix Makefiles
