@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/earth10/ws_moveit/devel/.private/catkin_tools_prebuild/setup.sh

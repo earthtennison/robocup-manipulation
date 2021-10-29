@@ -1,0 +1,17 @@
+[ 13%] Built target robot_model_and_robot_state_tutorial
+[ 13%] Built target planning_scene_tutorial
+[ 30%] Built target planning_scene_ros_api_tutorial
+[ 33%] Built target interactivity_utils
+[ 40%] Built target ros_api_tutorial
+[ 46%] Built target motion_planning_api_tutorial
+[ 53%] Built target move_group_interface_tutorial
+[ 60%] Built target motion_planning_pipeline_tutorial
+[35m[1mScanning dependencies of target node_test[0m
+[ 66%] Built target state_display_tutorial
+[ 73%] Built target pick_place_tutorial
+[ 80%] Built target bag_publisher_maintain_time
+[ 86%] Built target cylinder_segment
+[ 93%] Built target visualizing_collisions_tutorial
+[ 96%] [32mBuilding CXX object doc/node_test/CMakeFiles/node_test.dir/src/node_test.cpp.o[0m
+[100%] [32m[1mLinking CXX executable /home/earth10/ws_moveit/devel/.private/moveit_tutorials/lib/moveit_tutorials/node_test[0m
+[100%] Built target node_test

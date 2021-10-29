@@ -1,0 +1,6 @@
+devel_space: /home/earth10/ws_moveit/devel
+install: false
+install_space: /home/earth10/ws_moveit/install
+profile: default
+source_space: /home/earth10/ws_moveit/src
+workspace: /home/earth10/ws_moveit
