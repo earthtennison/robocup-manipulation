@@ -1,0 +1,8 @@
+prefix=/home/famee/Desktop/moveit_ws/install
+
+Name: pick_place
+Description: Description of pick_place
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
