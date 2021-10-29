@@ -1,0 +1,12 @@
+[31m[1mCMake Error[0m at /home/earth10/ws_moveit/src/moveit_tutorials/doc/move_group_interface/CMakeLists.txt:1 (add_executable):
+  Cannot find source file:
+
+    src/node_test.cpp
+
+  Tried extensions .c .C .c++ .cc .cpp .cxx .m .M .mm .h .hh .h++ .hm .hpp
+  .hxx .in .txx
+
+
+CMake Error: CMake can not determine linker language for target: node_test
+CMake Error: Cannot determine link language for target "node_test".
+make: *** [cmake_check_build_system] Error 1
