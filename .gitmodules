@@ -1,0 +1,4 @@
+[submodule "earth_moveit/src/moveit_tutorials"]
+	path = earth_moveit/src/moveit_tutorials
+	url = https://github.com/ros-planning/moveit_tutorials.git
+	branch = melodic-devel
