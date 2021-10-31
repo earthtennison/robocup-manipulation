@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/famee/Desktop/moveit_ws/src/seven_dof_arm_test/src/add_collision_object.cpp
+/home/famee/Desktop/robocup-manipulation/fame_ws/src/seven_dof_arm_test/src/add_collision_object.cpp
 moveit/planning_scene_interface/planning_scene_interface.h
 -
 moveit_msgs/CollisionObject.h

@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/famee/Desktop/moveit_ws/src
+CMAKE_SOURCE_DIR = /home/famee/Desktop/robocup-manipulation/fame_ws/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/famee/Desktop/moveit_ws/build
+CMAKE_BINARY_DIR = /home/famee/Desktop/robocup-manipulation/fame_ws/build
 
 # Utility rule file for tests.
 
@@ -67,6 +67,6 @@ CMakeFiles/tests.dir/clean:
 .PHONY : CMakeFiles/tests.dir/clean
 
 CMakeFiles/tests.dir/depend:
-	cd /home/famee/Desktop/moveit_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/famee/Desktop/moveit_ws/src /home/famee/Desktop/moveit_ws/src /home/famee/Desktop/moveit_ws/build /home/famee/Desktop/moveit_ws/build /home/famee/Desktop/moveit_ws/build/CMakeFiles/tests.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/famee/Desktop/robocup-manipulation/fame_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/famee/Desktop/robocup-manipulation/fame_ws/src /home/famee/Desktop/robocup-manipulation/fame_ws/src /home/famee/Desktop/robocup-manipulation/fame_ws/build /home/famee/Desktop/robocup-manipulation/fame_ws/build /home/famee/Desktop/robocup-manipulation/fame_ws/build/CMakeFiles/tests.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/tests.dir/depend
 

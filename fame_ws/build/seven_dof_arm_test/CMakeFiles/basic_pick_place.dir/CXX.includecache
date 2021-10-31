@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/famee/Desktop/moveit_ws/src/seven_dof_arm_test/src/pick_place.cpp
+/home/famee/Desktop/robocup-manipulation/fame_ws/src/seven_dof_arm_test/src/pick_place.cpp
 ros/ros.h
 -
 moveit/move_group_interface/move_group_interface.h

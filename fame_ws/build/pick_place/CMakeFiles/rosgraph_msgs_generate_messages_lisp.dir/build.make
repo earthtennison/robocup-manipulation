@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/famee/Desktop/moveit_ws/src
+CMAKE_SOURCE_DIR = /home/famee/Desktop/robocup-manipulation/fame_ws/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/famee/Desktop/moveit_ws/build
+CMAKE_BINARY_DIR = /home/famee/Desktop/robocup-manipulation/fame_ws/build
 
 # Utility rule file for rosgraph_msgs_generate_messages_lisp.
 
@@ -63,10 +63,10 @@ pick_place/CMakeFiles/rosgraph_msgs_generate_messages_lisp.dir/build: rosgraph_m
 .PHONY : pick_place/CMakeFiles/rosgraph_msgs_generate_messages_lisp.dir/build
 
 pick_place/CMakeFiles/rosgraph_msgs_generate_messages_lisp.dir/clean:
-	cd /home/famee/Desktop/moveit_ws/build/pick_place && $(CMAKE_COMMAND) -P CMakeFiles/rosgraph_msgs_generate_messages_lisp.dir/cmake_clean.cmake
+	cd /home/famee/Desktop/robocup-manipulation/fame_ws/build/pick_place && $(CMAKE_COMMAND) -P CMakeFiles/rosgraph_msgs_generate_messages_lisp.dir/cmake_clean.cmake
 .PHONY : pick_place/CMakeFiles/rosgraph_msgs_generate_messages_lisp.dir/clean
 
 pick_place/CMakeFiles/rosgraph_msgs_generate_messages_lisp.dir/depend:
-	cd /home/famee/Desktop/moveit_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/famee/Desktop/moveit_ws/src /home/famee/Desktop/moveit_ws/src/pick_place /home/famee/Desktop/moveit_ws/build /home/famee/Desktop/moveit_ws/build/pick_place /home/famee/Desktop/moveit_ws/build/pick_place/CMakeFiles/rosgraph_msgs_generate_messages_lisp.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/famee/Desktop/robocup-manipulation/fame_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/famee/Desktop/robocup-manipulation/fame_ws/src /home/famee/Desktop/robocup-manipulation/fame_ws/src/pick_place /home/famee/Desktop/robocup-manipulation/fame_ws/build /home/famee/Desktop/robocup-manipulation/fame_ws/build/pick_place /home/famee/Desktop/robocup-manipulation/fame_ws/build/pick_place/CMakeFiles/rosgraph_msgs_generate_messages_lisp.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : pick_place/CMakeFiles/rosgraph_msgs_generate_messages_lisp.dir/depend
 

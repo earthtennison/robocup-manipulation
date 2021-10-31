@@ -2,7 +2,7 @@
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/famee/Desktop/moveit_ws/install")
+  set(CMAKE_INSTALL_PREFIX "/home/famee/Desktop/robocup-manipulation/fame_ws/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/famee/Desktop/moveit_ws/build/gtest/googlemock/gtest/cmake_install.cmake")
+  include("/home/famee/Desktop/robocup-manipulation/fame_ws/build/gtest/googlemock/gtest/cmake_install.cmake")
 
 endif()
 

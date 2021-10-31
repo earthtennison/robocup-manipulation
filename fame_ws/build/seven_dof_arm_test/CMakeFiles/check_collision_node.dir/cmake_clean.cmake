@@ -1,7 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/check_collision_node.dir/src/check_collision.cpp.o"
-  "/home/famee/Desktop/moveit_ws/devel/lib/seven_dof_arm_test/check_collision_node.pdb"
-  "/home/famee/Desktop/moveit_ws/devel/lib/seven_dof_arm_test/check_collision_node"
+  "/home/famee/Desktop/robocup-manipulation/fame_ws/devel/lib/seven_dof_arm_test/check_collision_node.pdb"
+  "/home/famee/Desktop/robocup-manipulation/fame_ws/devel/lib/seven_dof_arm_test/check_collision_node"
 )
 
 # Per-language clean rules from dependency scanning.

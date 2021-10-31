@@ -7,10 +7,7 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/home/famee/Desktop/moveit_ws/devel:$CMAKE_PREFIX_PATH"
-export LD_LIBRARY_PATH="/home/famee/Desktop/moveit_ws/devel/lib:$LD_LIBRARY_PATH"
-export PKG_CONFIG_PATH="/home/famee/Desktop/moveit_ws/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
-export PWD='/home/famee/Desktop/moveit_ws/build'
-export PYTHONPATH="/home/famee/Desktop/moveit_ws/devel/lib/python2.7/dist-packages:$PYTHONPATH"
-export ROSLISP_PACKAGE_DIRECTORIES="/home/famee/Desktop/moveit_ws/devel/share/common-lisp:$ROSLISP_PACKAGE_DIRECTORIES"
-export ROS_PACKAGE_PATH="/home/famee/Desktop/moveit_ws/src:$ROS_PACKAGE_PATH"
+export CMAKE_PREFIX_PATH="/home/famee/Desktop/robocup-manipulation/fame_ws/devel:$CMAKE_PREFIX_PATH"
+export PWD='/home/famee/Desktop/robocup-manipulation/fame_ws/build'
+export ROSLISP_PACKAGE_DIRECTORIES="/home/famee/Desktop/robocup-manipulation/fame_ws/devel/share/common-lisp:$ROSLISP_PACKAGE_DIRECTORIES"
+export ROS_PACKAGE_PATH="/home/famee/Desktop/robocup-manipulation/fame_ws/src:$ROS_PACKAGE_PATH"

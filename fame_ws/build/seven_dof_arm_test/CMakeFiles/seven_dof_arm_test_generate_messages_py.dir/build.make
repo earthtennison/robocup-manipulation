@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/famee/Desktop/moveit_ws/src
+CMAKE_SOURCE_DIR = /home/famee/Desktop/robocup-manipulation/fame_ws/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/famee/Desktop/moveit_ws/build
+CMAKE_BINARY_DIR = /home/famee/Desktop/robocup-manipulation/fame_ws/build
 
 # Utility rule file for seven_dof_arm_test_generate_messages_py.
 
@@ -63,10 +63,10 @@ seven_dof_arm_test/CMakeFiles/seven_dof_arm_test_generate_messages_py.dir/build:
 .PHONY : seven_dof_arm_test/CMakeFiles/seven_dof_arm_test_generate_messages_py.dir/build
 
 seven_dof_arm_test/CMakeFiles/seven_dof_arm_test_generate_messages_py.dir/clean:
-	cd /home/famee/Desktop/moveit_ws/build/seven_dof_arm_test && $(CMAKE_COMMAND) -P CMakeFiles/seven_dof_arm_test_generate_messages_py.dir/cmake_clean.cmake
+	cd /home/famee/Desktop/robocup-manipulation/fame_ws/build/seven_dof_arm_test && $(CMAKE_COMMAND) -P CMakeFiles/seven_dof_arm_test_generate_messages_py.dir/cmake_clean.cmake
 .PHONY : seven_dof_arm_test/CMakeFiles/seven_dof_arm_test_generate_messages_py.dir/clean
 
 seven_dof_arm_test/CMakeFiles/seven_dof_arm_test_generate_messages_py.dir/depend:
-	cd /home/famee/Desktop/moveit_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/famee/Desktop/moveit_ws/src /home/famee/Desktop/moveit_ws/src/seven_dof_arm_test /home/famee/Desktop/moveit_ws/build /home/famee/Desktop/moveit_ws/build/seven_dof_arm_test /home/famee/Desktop/moveit_ws/build/seven_dof_arm_test/CMakeFiles/seven_dof_arm_test_generate_messages_py.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/famee/Desktop/robocup-manipulation/fame_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/famee/Desktop/robocup-manipulation/fame_ws/src /home/famee/Desktop/robocup-manipulation/fame_ws/src/seven_dof_arm_test /home/famee/Desktop/robocup-manipulation/fame_ws/build /home/famee/Desktop/robocup-manipulation/fame_ws/build/seven_dof_arm_test /home/famee/Desktop/robocup-manipulation/fame_ws/build/seven_dof_arm_test/CMakeFiles/seven_dof_arm_test_generate_messages_py.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : seven_dof_arm_test/CMakeFiles/seven_dof_arm_test_generate_messages_py.dir/depend
 

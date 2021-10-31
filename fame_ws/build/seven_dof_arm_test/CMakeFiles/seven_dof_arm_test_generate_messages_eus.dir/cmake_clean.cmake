@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/seven_dof_arm_test_generate_messages_eus"
-  "/home/famee/Desktop/moveit_ws/devel/share/roseus/ros/seven_dof_arm_test/manifest.l"
+  "/home/famee/Desktop/robocup-manipulation/fame_ws/devel/share/roseus/ros/seven_dof_arm_test/manifest.l"
 )
 
 # Per-language clean rules from dependency scanning.

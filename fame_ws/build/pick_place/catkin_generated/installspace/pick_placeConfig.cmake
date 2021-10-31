@@ -67,14 +67,14 @@ set(pick_place_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
-  set(pick_place_SOURCE_PREFIX /home/famee/Desktop/moveit_ws/src/pick_place)
-  set(pick_place_DEVEL_PREFIX /home/famee/Desktop/moveit_ws/devel)
+  set(pick_place_SOURCE_PREFIX /home/famee/Desktop/robocup-manipulation/fame_ws/src/pick_place)
+  set(pick_place_DEVEL_PREFIX /home/famee/Desktop/robocup-manipulation/fame_ws/devel)
   set(pick_place_INSTALL_PREFIX "")
   set(pick_place_PREFIX ${pick_place_DEVEL_PREFIX})
 else()
   set(pick_place_SOURCE_PREFIX "")
   set(pick_place_DEVEL_PREFIX "")
-  set(pick_place_INSTALL_PREFIX /home/famee/Desktop/moveit_ws/install)
+  set(pick_place_INSTALL_PREFIX /home/famee/Desktop/robocup-manipulation/fame_ws/install)
   set(pick_place_PREFIX ${pick_place_INSTALL_PREFIX})
 endif()
 
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/famee/Desktop/moveit_ws/install/lib;/home/famee/ws_moveit/devel/lib;/opt/ros/melodic/lib)
+    foreach(path /home/famee/Desktop/robocup-manipulation/fame_ws/install/lib;/home/famee/ws_moveit/devel/lib;/opt/ros/melodic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

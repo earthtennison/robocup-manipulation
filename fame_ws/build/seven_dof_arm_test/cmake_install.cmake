@@ -1,8 +1,8 @@
-# Install script for directory: /home/famee/Desktop/moveit_ws/src/seven_dof_arm_test
+# Install script for directory: /home/famee/Desktop/robocup-manipulation/fame_ws/src/seven_dof_arm_test
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/famee/Desktop/moveit_ws/install")
+  set(CMAKE_INSTALL_PREFIX "/home/famee/Desktop/robocup-manipulation/fame_ws/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,37 +38,37 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/seven_dof_arm_test/cmake" TYPE FILE FILES "/home/famee/Desktop/moveit_ws/build/seven_dof_arm_test/catkin_generated/installspace/seven_dof_arm_test-msg-paths.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/seven_dof_arm_test/cmake" TYPE FILE FILES "/home/famee/Desktop/robocup-manipulation/fame_ws/build/seven_dof_arm_test/catkin_generated/installspace/seven_dof_arm_test-msg-paths.cmake")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/roseus/ros" TYPE DIRECTORY FILES "/home/famee/Desktop/moveit_ws/devel/share/roseus/ros/seven_dof_arm_test")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/roseus/ros" TYPE DIRECTORY FILES "/home/famee/Desktop/robocup-manipulation/fame_ws/devel/share/roseus/ros/seven_dof_arm_test")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  execute_process(COMMAND "/usr/bin/python2" -m compileall "/home/famee/Desktop/moveit_ws/devel/lib/python2.7/dist-packages/seven_dof_arm_test")
+  execute_process(COMMAND "/usr/bin/python2" -m compileall "/home/famee/Desktop/robocup-manipulation/fame_ws/devel/lib/python2.7/dist-packages/seven_dof_arm_test")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/python2.7/dist-packages" TYPE DIRECTORY FILES "/home/famee/Desktop/moveit_ws/devel/lib/python2.7/dist-packages/seven_dof_arm_test")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/python2.7/dist-packages" TYPE DIRECTORY FILES "/home/famee/Desktop/robocup-manipulation/fame_ws/devel/lib/python2.7/dist-packages/seven_dof_arm_test")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/famee/Desktop/moveit_ws/build/seven_dof_arm_test/catkin_generated/installspace/seven_dof_arm_test.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/famee/Desktop/robocup-manipulation/fame_ws/build/seven_dof_arm_test/catkin_generated/installspace/seven_dof_arm_test.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/seven_dof_arm_test/cmake" TYPE FILE FILES "/home/famee/Desktop/moveit_ws/build/seven_dof_arm_test/catkin_generated/installspace/seven_dof_arm_test-msg-extras.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/seven_dof_arm_test/cmake" TYPE FILE FILES "/home/famee/Desktop/robocup-manipulation/fame_ws/build/seven_dof_arm_test/catkin_generated/installspace/seven_dof_arm_test-msg-extras.cmake")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/seven_dof_arm_test/cmake" TYPE FILE FILES
-    "/home/famee/Desktop/moveit_ws/build/seven_dof_arm_test/catkin_generated/installspace/seven_dof_arm_testConfig.cmake"
-    "/home/famee/Desktop/moveit_ws/build/seven_dof_arm_test/catkin_generated/installspace/seven_dof_arm_testConfig-version.cmake"
+    "/home/famee/Desktop/robocup-manipulation/fame_ws/build/seven_dof_arm_test/catkin_generated/installspace/seven_dof_arm_testConfig.cmake"
+    "/home/famee/Desktop/robocup-manipulation/fame_ws/build/seven_dof_arm_test/catkin_generated/installspace/seven_dof_arm_testConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/seven_dof_arm_test" TYPE FILE FILES "/home/famee/Desktop/moveit_ws/src/seven_dof_arm_test/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/seven_dof_arm_test" TYPE FILE FILES "/home/famee/Desktop/robocup-manipulation/fame_ws/src/seven_dof_arm_test/package.xml")
 endif()
 
