@@ -1,2 +1,0 @@
-pick_place:seven_dof_arm_test
--DCATKIN_DEVEL_PREFIX=/home/famee/Desktop/robocup-manipulation/fame_ws/devel -DCMAKE_INSTALL_PREFIX=/home/famee/Desktop/robocup-manipulation/fame_ws/install -G Unix Makefiles

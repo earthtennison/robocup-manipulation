@@ -1,2 +1,0 @@
-moveit_tutorials
--DCATKIN_DEVEL_PREFIX=/home/famee/Desktop/robocup-manipulation/moveit_tutorials_ws/devel -DCMAKE_INSTALL_PREFIX=/home/famee/Desktop/robocup-manipulation/moveit_tutorials_ws/install -G Unix Makefiles
