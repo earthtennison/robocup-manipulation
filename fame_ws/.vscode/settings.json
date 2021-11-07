@@ -1,0 +1,9 @@
+{
+  "files.associations": {
+    "deque": "cpp",
+    "string": "cpp",
+    "vector": "cpp",
+    "mixinvector": "cpp",
+    "fast_back_stack": "cpp"
+  }
+}
