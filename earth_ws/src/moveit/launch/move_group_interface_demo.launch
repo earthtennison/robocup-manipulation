@@ -1,0 +1,6 @@
+<launch>
+
+  <node name="move_group_interface_demo" pkg="moveit" type="move_group_interface_demo" respawn="false" output="screen">
+  </node>
+
+</launch>
