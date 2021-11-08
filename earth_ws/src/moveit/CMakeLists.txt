@@ -49,6 +49,8 @@ add_executable(move_group_interface src/move_group_interface.cpp)
 target_link_libraries(move_group_interface ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 add_executable(move_group_interface_demo src/move_group_interface_demo.cpp)
 target_link_libraries(move_group_interface_demo ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(pick_and_place src/pick_and_place.cpp)
+target_link_libraries(pick_and_place ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 catkin_install_python(PROGRAMS
   src/cv_node.py

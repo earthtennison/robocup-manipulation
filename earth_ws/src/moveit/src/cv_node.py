@@ -2,6 +2,10 @@
 import rospy
 from geometry_msgs.msg import Pose
 from tf.transformations import quaternion_from_euler
+import math
+
+def to_rad(deg):
+    return deg * 180.0 / math.pi
 
 def talker():
     pub = rospy.Publisher('object_coor', Pose, queue_size=10)
@@ -11,9 +15,9 @@ def talker():
         x = input("X ")
         y = input("y ")
         z = input("z ")
-        row = input("row ")
-        pitch = input("pitch ")
-        yaw = input("yaw ")
+        row = to_rad(input("row "))
+        pitch = to_rad(input("pitch "))
+        yaw = to_rad(input("yaw "))
         q = quaternion_from_euler(row, pitch, yaw)
 
         pose_goal = Pose()
