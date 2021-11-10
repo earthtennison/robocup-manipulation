@@ -6,3 +6,4 @@
 devel/
 logs/
 build/
+pick_and_place.cpp

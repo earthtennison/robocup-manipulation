@@ -112,6 +112,7 @@ void pick(moveit::planning_interface::MoveGroupInterface& move_group, const geom
   // move_group.setSupportSurfaceName("table1");
 
   // Call pick to pick up the object using the grasps given
+
   move_group.pick("cylinder", grasps);
   // END_SUB_TUTORIAL
 }
@@ -256,7 +257,7 @@ void callBackFunc(const geometry_msgs::Pose& goal_pose)
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
   moveit::planning_interface::MoveGroupInterface group("panda_arm");
   group.setPlanningTime(45.0);
-  move(group, goal_pose);
+  // move(group, goal_pose);
 }
 
 int main(int argc, char** argv)
