@@ -1,0 +1,38 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit/moveit_planners/chomp/chomp_motion_planner/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/franka_ros/franka_control/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/franka_ros/franka_example_controllers/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/franka_ros/franka_gazebo/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/franka_ros/franka_gripper/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/franka_ros/franka_hw/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/geometric_shapes/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit/moveit_planners/chomp/chomp_interface/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit_resources/prbt_ikfast_manipulator_plugin/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit/moveit_ros/benchmarks/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit/moveit_plugins/moveit_ros_control_interface/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit/moveit_ros/move_group/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit/moveit_ros/occupancy_map_monitor/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit/moveit_ros/robot_interaction/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit/moveit_ros/moveit_servo/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit/moveit_setup_assistant/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit/moveit_plugins/moveit_simple_controller_manager/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit_visual_tools/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit/moveit_planners/pilz_industrial_motion_planner/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/moveit/moveit_planners/pilz_industrial_motion_planner_testutils/include/**",
+        "/home/famee/Desktop/robocup-manipulation/ws_moveit/src/rviz_visual_tools/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}
