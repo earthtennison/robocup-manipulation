@@ -5,7 +5,7 @@ from tf.transformations import quaternion_from_euler
 import math
 
 def to_rad(deg):
-    return deg * 180.0 / math.pi
+    return deg * math.pi / 180.0
 
 def talker():
     pub = rospy.Publisher('object_coor', Pose, queue_size=10)

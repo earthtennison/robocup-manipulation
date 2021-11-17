@@ -72,7 +72,50 @@ void pick(moveit::planning_interface::MoveGroupInterface& move_group)
     move_group.setSupportSurfaceName("table1");
 
     // pick it
-    move_group.pick("object", grasps);
+    move_group.pick("object1", grasps);
+
+
+}
+
+void pick2(moveit::planning_interface::MoveGroupInterface& move_group, const char* object_name)
+{
+    std::vector<moveit_msgs::Grasp> grasps;
+    grasps.resize(1);
+
+    // the position for panda_link8 = 0.5 - (length of cube/2 - distance b/w panda_link8 and palm of eef (0.058) - some extra padding)
+    grasps[0].grasp_pose.header.frame_id = "panda_link0";
+    tf2::Quaternion orientation;
+    orientation.setRPY(-M_PI/2, -M_PI/4, 0); //(-90, -45, 0)
+    grasps[0].grasp_pose.pose.orientation = tf2::toMsg(orientation);
+    grasps[0].grasp_pose.pose.position.x = 0;
+    grasps[0].grasp_pose.pose.position.y = 0.415;
+    grasps[0].grasp_pose.pose.position.z = 0.5;
+
+    // Setting pre-grasp approach
+    grasps[0].pre_grasp_approach.direction.header.frame_id = "panda_link0";
+    // Direction is set as positive y axis
+    grasps[0].pre_grasp_approach.direction.vector.y = 1.0;
+    grasps[0].pre_grasp_approach.min_distance = 0.095;
+    grasps[0].pre_grasp_approach.desired_distance = 0.115;
+
+    // Setting post-grasp retreat
+    grasps[0].post_grasp_retreat.direction.header.frame_id = "panda_link0";
+    // Direction is set as positive z axis
+    grasps[0].post_grasp_retreat.direction.vector.z = 1.0;
+    grasps[0].post_grasp_retreat.min_distance = 0.1;
+    grasps[0].post_grasp_retreat.desired_distance = 0.25;
+
+    // open gripper pose
+    openGripper(grasps[0].pre_grasp_posture);
+
+    // close gripper pose
+    closedGripper(grasps[0].grasp_posture);
+
+    // Set support surface as table1.
+    move_group.setSupportSurfaceName("table2");
+
+    // pick it
+    move_group.pick(object_name, grasps);
 
 
 }
@@ -120,7 +163,53 @@ void place(moveit::planning_interface::MoveGroupInterface& group)
     // Set support surface as table2.
     group.setSupportSurfaceName("table2");
     // Call place to place the object using the place locations given.
-    group.place("object", place_location);
+    group.place("object1", place_location);
+}
+
+void place2(moveit::planning_interface::MoveGroupInterface& group)
+{
+    // BEGIN_SUB_TUTORIAL place
+    std::vector<moveit_msgs::PlaceLocation> place_location;
+    place_location.resize(1);
+
+    // Setting place location pose
+    place_location[0].place_pose.header.frame_id = "panda_link0";
+    tf2::Quaternion orientation;
+    orientation.setRPY(0, 0, 0); //(0, 0, 0) reference to? set start state
+    place_location[0].place_pose.pose.orientation = tf2::toMsg(orientation);
+
+    /* While placing it is the exact location of the center of the object. */
+    place_location[0].place_pose.pose.position.x = 0.5;
+    place_location[0].place_pose.pose.position.y = 0;
+    place_location[0].place_pose.pose.position.z = 0.5;
+
+    // Setting pre-place approach
+    // ++++++++++++++++++++++++++
+    /* Defined with respect to frame_id */
+    place_location[0].pre_place_approach.direction.header.frame_id = "panda_link0";
+    /* Direction is set as negative z axis */
+    place_location[0].pre_place_approach.direction.vector.z = -1.0;
+    place_location[0].pre_place_approach.min_distance = 0.095;
+    place_location[0].pre_place_approach.desired_distance = 0.115;
+
+    // Setting post-grasp retreat
+    // ++++++++++++++++++++++++++
+    /* Defined with respect to frame_id */
+    place_location[0].post_place_retreat.direction.header.frame_id = "panda_link0";
+    /* Direction is set as negative x axis */
+    place_location[0].post_place_retreat.direction.vector.x = -1.0;
+    place_location[0].post_place_retreat.min_distance = 0.1;
+    place_location[0].post_place_retreat.desired_distance = 0.25;
+
+    // Setting posture of eef after placing object
+    // +++++++++++++++++++++++++++++++++++++++++++
+    /* Similar to the pick case */
+    openGripper(place_location[0].post_place_posture);
+
+    // Set support surface as table2.
+    group.setSupportSurfaceName("table1");
+    // Call place to place the object using the place locations given.
+    group.place("object1", place_location);
 }
 
 void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface)
@@ -170,7 +259,7 @@ void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface& pla
 
     // object
     collision_objects[2].header.frame_id = "panda_link0";
-    collision_objects[2].id = "object";
+    collision_objects[2].id = "object1";
 
     collision_objects[2].primitives.resize(1);
     collision_objects[2].primitives[0].type = collision_objects[1].primitives[0].BOX;
@@ -185,6 +274,26 @@ void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface& pla
     collision_objects[2].primitive_poses[0].position.z = 0.5;
 
     collision_objects[2].operation = collision_objects[2].ADD;
+
+    planning_scene_interface.applyCollisionObjects(collision_objects);
+
+    // object2
+    // collision_objects[2].header.frame_id = "panda_link0";
+    // collision_objects[2].id = "object2";
+
+    // collision_objects[2].primitives.resize(1);
+    // collision_objects[2].primitives[0].type = collision_objects[1].primitives[0].BOX;
+    // collision_objects[2].primitives[0].dimensions.resize(3);
+    // collision_objects[2].primitives[0].dimensions[0] = 0.02;
+    // collision_objects[2].primitives[0].dimensions[1] = 0.02;
+    // collision_objects[2].primitives[0].dimensions[2] = 0.2;
+
+    // collision_objects[2].primitive_poses.resize(1);
+    // collision_objects[2].primitive_poses[0].position.x = 0;
+    // collision_objects[2].primitive_poses[0].position.y = 0.5;
+    // collision_objects[2].primitive_poses[0].position.z = 0.5;
+
+    // collision_objects[2].operation = collision_objects[2].ADD;
 
     planning_scene_interface.applyCollisionObjects(collision_objects);
 }
@@ -209,17 +318,40 @@ int main(int argc, char** argv)
     ROS_INFO("Collision object added to the scene");
 
     // some delay
-    ros::WallDuration(5.0).sleep();
+    ros::WallDuration(1.0).sleep();
 
-    pick(group);
+    int count = 0;
 
-    ROS_INFO("Object picked");
+    while (true)
+    {
+        pick(group);
 
-    ros::WallDuration(5.0).sleep();
+        ROS_INFO("Object picked at table 1 round %d", count);
 
-    place(group);
-    
-    ROS_INFO("Object placed");
+        ros::WallDuration(1.0).sleep();
+
+        place(group);
+        
+        ROS_INFO("Object placed at table 2 round %d", count);
+
+        ros::WallDuration(1.0).sleep();
+
+
+        pick2(group, "object1");
+
+        ROS_INFO("Object picked at table 2 round %d", count);
+
+        ros::WallDuration(1.0).sleep();
+
+        place2(group);
+        
+        ROS_INFO("Object placed at table 1 round %d", count);
+
+        ros::WallDuration(1.0).sleep();
+
+        count++;
+    }
+
 
     ros::waitForShutdown();
     return 0;

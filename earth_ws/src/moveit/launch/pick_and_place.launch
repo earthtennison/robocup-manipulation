@@ -1,4 +1,5 @@
 <launch>
+  <include file="$(find panda_moveit_config)/launch/demo.launch" />
 
   <node name="pick_and_place" pkg="moveit" type="pick_and_place" respawn="false" output="screen">
   </node>
