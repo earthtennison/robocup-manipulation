@@ -1,0 +1,22 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/famee/Desktop/robocup-manipulation/fame_ws/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/famee/Desktop/robocup-manipulation/fame_ws/src/collision_avoidance_pick_and_place/include/**",
+        "/home/famee/Desktop/robocup-manipulation/fame_ws/src/gpd_ros/include/**",
+        "/home/famee/Desktop/robocup-manipulation/fame_ws/src/moveit_task_constructor/core/include/**",
+        "/home/famee/Desktop/robocup-manipulation/fame_ws/src/moveit_task_constructor/demo/include/**",
+        "/home/famee/Desktop/robocup-manipulation/fame_ws/src/moveit_task_constructor/rviz_marker_tools/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}
