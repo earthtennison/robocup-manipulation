@@ -240,7 +240,7 @@ public:
     // Create the segmentation object for cylinder segmentation and set all the parameters
     pcl::SACSegmentationFromNormals<pcl::PointXYZRGB, pcl::Normal> segmentor;
     pcl::PointIndices::Ptr inliers_sphere(new pcl::PointIndices);
-    segmentor.setOptimizeCoefficients(true);
+    segmentor.setOptimizeCoefficients(false);
     segmentor.setModelType(pcl::SACMODEL_SPHERE);
     segmentor.setMethodType(pcl::SAC_RANSAC);
     // Set the normal angular distance weight
