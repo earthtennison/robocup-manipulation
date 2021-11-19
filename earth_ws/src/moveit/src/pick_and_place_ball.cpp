@@ -81,7 +81,7 @@ void pick(moveit::planning_interface::MoveGroupInterface& move_group)
     std::vector<moveit_msgs::Grasp> grasps;
     grasps.resize(1);
 
-    // the position for panda_link8 = 0.4 + (radius of sphere + distance b/w panda_link8 and palm of eef (0.1))
+    // the position for panda_link8 = 0.4 + (radius of sphere(0.02) + distance b/w panda_link8 and palm of eef (0.1))
     grasps[0].grasp_pose.header.frame_id = "panda_link0";
     tf2::Quaternion orientation;
     orientation.setRPY(M_PI, 0, -M_PI/4); //(180, 0, -45)
@@ -91,7 +91,7 @@ void pick(moveit::planning_interface::MoveGroupInterface& move_group)
     grasps[0].grasp_pose.pose.position.z = goal_pose->position.z;
     // grasps[0].grasp_pose.pose.position.x = 0.5;
     // grasps[0].grasp_pose.pose.position.y = 0;
-    // grasps[0].grasp_pose.pose.position.z = 0.51;
+    // grasps[0].grasp_pose.pose.position.z = 0.52;
 
     // Setting pre-grasp approach
     grasps[0].pre_grasp_approach.direction.header.frame_id = "panda_link0";
