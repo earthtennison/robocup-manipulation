@@ -1,0 +1,5 @@
+<xml version="1.0"?>
+<robot xmlns:xacro="https://ros.org/wiki/xacro">
+  <!-- <xacro:include filename="$(find model_editor_models)/kinect/model.sdf"/> -->
+  <!-- <xacro:macro name="camera" params="name parent *origin*optical_origin"> -->
+</robot>
