@@ -36,43 +36,43 @@ dodo_arm:
     gains:
       shoulder_pan_joint:
         p: 100
-        d: 1
-        i: 1
+        d: 10
+        i: 0.01
         i_clamp: 1
       shoulder_pitch_joint:
-        p: 100
-        d: 1
-        i: 1
+        p: 500
+        d: 100
+        i: 0.05
         i_clamp: 1
       elbow_pitch_joint:
-        p: 100
-        d: 1
-        i: 1
+        p: 800
+        d: 100
+        i: 0.1
         i_clamp: 1
       wrist_roll_joint:
-        p: 100
-        d: 1
-        i: 1
+        p: 500
+        d: 10
+        i: 0.01
         i_clamp: 1
       wrist_pitch_joint:
-        p: 100
-        d: 1
-        i: 1
+        p: 500
+        d: 10
+        i: 0.01
         i_clamp: 1
       gripper_roll_joint:
-        p: 100
-        d: 1
-        i: 1
+        p: 500
+        d: 10
+        i: 0.01
         i_clamp: 1
     constraints:
-        goal_time: 2.0
-        stopped_velocity_tolerance: 0.1
-        shoulder_pan_joint: {trajectory: 0.1, goal: 1}
-        shoulder_pitch_joint: {trajectory: 0.1, goal: 1}
-        elbow_pitch_joint: {trajectory: 0.1, goal: 1}
-        wrist_roll_joint: {trajectory: 0.1, goal: 1}
-        wrist_pitch_joint: {trajectory: 0.1, goal: 1}
-        gripper_roll_joint: {trajectory: 0.1, goal: 1}
+        goal_time: 0.6
+        stopped_velocity_tolerance: 0
+        shoulder_pan_joint: {trajectory: 0.1, goal: 0.1}
+        shoulder_pitch_joint: {trajectory: 0.1, goal: 0.1}
+        elbow_pitch_joint: {trajectory: 0.1, goal: 0.1}
+        wrist_roll_joint: {trajectory: 0.1, goal: 0.1}
+        wrist_pitch_joint: {trajectory: 0.1, goal: 0.1}
+        gripper_roll_joint: {trajectory: 0.1, goal: 0.1}
     state_publish_rate: 25
 
   gripper_controller:
@@ -95,13 +95,13 @@ dodo_arm:
 
   gazebo_ros_control/pid_gains:
     shoulder_pan_joint: {p: 100.0, i: 0.01, d: 10.0}
-    shoulder_pitch_joint: {p: 100.0, i: 0.01, d: 10.0}
-    elbow_pitch_joint: {p: 100.0, i: 0.01, d: 10.0}
-    wrist_roll_joint: {p: 100.0, i: 0.01, d: 10.0}
-    wrist_pitch_joint: {p: 100.0, i: 0.1, d: 10.0}
-    gripper_roll_joint: {p: 100.0, i: 0.1, d: 10.0}
-    finger_joint1: {p: 100.0, i: 0.1, d: 10.0}
-    finger_joint2: {p: 100.0, i: 0.1, d: 10.0}
+    shoulder_pitch_joint: {p: 500.0, i: 0.05, d: 100.0}
+    elbow_pitch_joint: {p: 800.0, i: 0.1, d: 100.0}
+    wrist_roll_joint: {p: 500.0, i: 0.01, d: 10.0}
+    wrist_pitch_joint: {p: 500.0, i: 0.01, d: 10.0}
+    gripper_roll_joint: {p: 500.0, i: 0.01, d: 10.0}
+    finger_joint1: {p: 500.0, i: 0.01, d: 10.0}
+    finger_joint2: {p: 500.0, i: 0.01, d: 10.0}
 
 controller_list:
     - name: dodo_arm/arm_controller
