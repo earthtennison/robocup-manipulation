@@ -1,8 +1,8 @@
 <launch>
+
+  <arg name="gazebo" default="true"/>
   <!-- Launch Gazebo  -->
-  <include file="$(find dodo_arm_gazebo)/launch/dodo_arm_world.launch">
-    <arg name="urdf_path" value="$(find dodo_arm_pkg)/urdf/dodo_arm_moveit.xacro"/>
-  </include>
+  <include file="$(find dodo_arm_gazebo)/launch/dodo_arm_world.launch" if="$(arg gazebo)"/>
  
 
   <!-- Load joint controller configurations from YAML file to parameter server -->

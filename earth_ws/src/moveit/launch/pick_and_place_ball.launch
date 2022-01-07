@@ -1,5 +1,5 @@
 <launch>
-  <include file="$(find panda_moveit_config)/launch/demo.launch" />
+  <!-- <include file="$(find panda_moveit_config)/launch/demo.launch" /> -->
 
   <node name="pick_and_place_ball" pkg="moveit" type="pick_and_place_ball" respawn="false" output="screen">
   </node>
