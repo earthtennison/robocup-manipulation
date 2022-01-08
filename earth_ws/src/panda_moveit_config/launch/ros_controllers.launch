@@ -6,6 +6,6 @@
 
   <!-- Load the controllers -->
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-    output="screen" args="panda_arm_controller panda_hand_controller "/>
+    output="screen" args="joint_state_controller panda_hand_controller panda_arm_controller"/>
 
 </launch>

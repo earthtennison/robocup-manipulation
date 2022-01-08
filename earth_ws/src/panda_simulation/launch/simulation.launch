@@ -40,7 +40,7 @@
     </include>
     <group if="$(arg gui)">
         <include file="$(find panda_moveit_config)/launch/moveit_rviz.launch">
-            <arg name="rviz_config" value="$(find panda_moveit_config)/launch/moveit.rviz"/>
+            <arg name="rviz_tutorial" value="false"/>
             <arg name="debug" value="$(arg debug)"/>
         </include>
     </group>

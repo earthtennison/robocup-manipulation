@@ -1,6 +1,5 @@
 controller_list:
   - name: fake_panda_arm_controller
-    type: $(arg execution_type)
     joints:
       - panda_joint1
       - panda_joint2
@@ -10,9 +9,9 @@ controller_list:
       - panda_joint6
       - panda_joint7
   - name: fake_hand_controller
-    type: $(arg execution_type)
     joints:
       - panda_finger_joint1
-initial:  # Define initial robot poses.
-  - group: panda_arm
-    pose: home
+      - panda_finger_joint2
+initial:
+  - group: panda_arm_hand
+    pose: ready
