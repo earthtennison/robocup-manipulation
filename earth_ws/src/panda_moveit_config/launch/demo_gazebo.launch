@@ -23,12 +23,13 @@
 
   <!-- Gazebo specific options -->
   <arg name="gazebo_gui" default="true"/>
-  <arg name="paused" default="false"/>
+  <arg name="paused" default="true"/>
 
   <!-- launch the gazebo simulator and spawn the robot -->
   <include file="$(find panda_moveit_config)/launch/gazebo.launch" >
     <arg name="paused" value="$(arg paused)"/>
     <arg name="gazebo_gui" value="$(arg gazebo_gui)"/>
+    <arg name="world_path" value="$(find panda_moveit_config)/worlds/pick_and_place_box.world"/>
   </include>
 
   <!-- If needed, broadcast static tf for robot root -->

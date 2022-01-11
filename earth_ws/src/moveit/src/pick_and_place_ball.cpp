@@ -41,6 +41,8 @@ void object_coor_callback(const geometry_msgs::Pose::ConstPtr msg)
       moveit::planning_interface::MoveGroupInterface group("panda_arm");
       group.setPlanningTime(45.0);
       pick(group);
+      ros::WallDuration(5.0).sleep();
+      place(group);
       ros::WallDuration(1.0).sleep();
 
   }
@@ -71,8 +73,9 @@ void closedGripper(trajectory_msgs::JointTrajectory& posture)
     /* Set them as closed. */
     posture.points.resize(1);
     posture.points[0].positions.resize(2);
-    posture.points[0].positions[0] = 0.00;
-    posture.points[0].positions[1] = 0.00;
+    //TODO: find another way to neglect not fully closed gripper
+    posture.points[0].positions[0] = 0.015;
+    posture.points[0].positions[1] = 0.015;
     posture.points[0].time_from_start = ros::Duration(0.5);
 }
 
@@ -131,13 +134,13 @@ void place(moveit::planning_interface::MoveGroupInterface& group)
     // Setting place location pose
     place_location[0].place_pose.header.frame_id = "panda_link0";
     tf2::Quaternion orientation;
-    orientation.setRPY(0, 0, M_PI / 2); //(0, 0, 90)
+    orientation.setRPY(0, 0, 0); //(0, 0, 90)
     place_location[0].place_pose.pose.orientation = tf2::toMsg(orientation);
 
     /* While placing it is the exact location of the center of the object. */
-    place_location[0].place_pose.pose.position.x = 0;
-    place_location[0].place_pose.pose.position.y = 0.5;
-    place_location[0].place_pose.pose.position.z = 0.5;
+    place_location[0].place_pose.pose.position.x = 0.5;
+    place_location[0].place_pose.pose.position.y = 0.0;
+    place_location[0].place_pose.pose.position.z = 0.42;
 
     // Setting pre-place approach
     // ++++++++++++++++++++++++++
@@ -152,8 +155,8 @@ void place(moveit::planning_interface::MoveGroupInterface& group)
     // ++++++++++++++++++++++++++
     /* Defined with respect to frame_id */
     place_location[0].post_place_retreat.direction.header.frame_id = "panda_link0";
-    /* Direction is set as negative y axis */
-    place_location[0].post_place_retreat.direction.vector.y = -1.0;
+    /* Direction is set as positive z axis */
+    place_location[0].post_place_retreat.direction.vector.z = 1.0;
     place_location[0].post_place_retreat.min_distance = 0.1;
     place_location[0].post_place_retreat.desired_distance = 0.25;
 
