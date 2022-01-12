@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: dodo_arm_config
+    relative_path: urdf/dodo_arm.xacro
+    xacro_args: ""
+  SRDF:
+    relative_path: config/dodo_arm.srdf
+  CONFIG:
+    author_name: Krittapat Onthuam
+    author_email: ktponthuam@gmail.com
+    generated_timestamp: 1639382730
