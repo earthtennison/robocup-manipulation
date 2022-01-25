@@ -1,8 +1,8 @@
-# Install script for directory: /home/krittapat/cr3_ws/src/tesr_ros_cr3_pkg
+# Install script for directory: /home/earth10/robocup-manipulation/cr3_ws/src/tesr_ros_cr3_pkg
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/krittapat/cr3_ws/install")
+  set(CMAKE_INSTALL_PREFIX "/home/earth10/robocup-manipulation/cr3_ws/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,17 +38,17 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/krittapat/cr3_ws/build/tesr_ros_cr3_pkg/catkin_generated/installspace/tesr_ros_cr3_pkg.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/earth10/robocup-manipulation/cr3_ws/build/tesr_ros_cr3_pkg/catkin_generated/installspace/tesr_ros_cr3_pkg.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tesr_ros_cr3_pkg/cmake" TYPE FILE FILES
-    "/home/krittapat/cr3_ws/build/tesr_ros_cr3_pkg/catkin_generated/installspace/tesr_ros_cr3_pkgConfig.cmake"
-    "/home/krittapat/cr3_ws/build/tesr_ros_cr3_pkg/catkin_generated/installspace/tesr_ros_cr3_pkgConfig-version.cmake"
+    "/home/earth10/robocup-manipulation/cr3_ws/build/tesr_ros_cr3_pkg/catkin_generated/installspace/tesr_ros_cr3_pkgConfig.cmake"
+    "/home/earth10/robocup-manipulation/cr3_ws/build/tesr_ros_cr3_pkg/catkin_generated/installspace/tesr_ros_cr3_pkgConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tesr_ros_cr3_pkg" TYPE FILE FILES "/home/krittapat/cr3_ws/src/tesr_ros_cr3_pkg/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tesr_ros_cr3_pkg" TYPE FILE FILES "/home/earth10/robocup-manipulation/cr3_ws/src/tesr_ros_cr3_pkg/package.xml")
 endif()
 

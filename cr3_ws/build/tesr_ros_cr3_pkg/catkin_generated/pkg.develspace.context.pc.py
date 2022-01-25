@@ -4,5 +4,5 @@ PROJECT_PKG_CONFIG_INCLUDE_DIRS = "".split(';') if "" != "" else []
 PROJECT_CATKIN_DEPENDS = "".replace(';', ' ')
 PKG_CONFIG_LIBRARIES_WITH_PREFIX = "".split(';') if "" != "" else []
 PROJECT_NAME = "tesr_ros_cr3_pkg"
-PROJECT_SPACE_DIR = "/home/krittapat/cr3_ws/devel"
+PROJECT_SPACE_DIR = "/home/earth10/robocup-manipulation/cr3_ws/devel"
 PROJECT_VERSION = "0.0.0"

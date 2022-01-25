@@ -78,7 +78,7 @@ time.sleep(0.5)
 client_dashboard.User(0)
 client_dashboard.Tool(0)
 
-_thread.start_new_thread(CR3_feedback, ("Thread-1",))
+thread.start_new_thread(CR3_feedback, ("Thread-1",))
 
 # Variables
 msg = JointState()

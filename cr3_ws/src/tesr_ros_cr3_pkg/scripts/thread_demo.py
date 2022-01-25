@@ -1,12 +1,16 @@
 import thread
 
 def a(w):
-    print(w)
+    while True:
+        print(w)
+
 def b(w):
-    print(w)
+    while True:
+        print(w)
 
 thread.start_new_thread(a, ("this is a function",))
 thread.start_new_thread(b, ("this is b function",))
 
-while True:
-    pass
+if __name__ == "__main__":
+    while True:
+        pass

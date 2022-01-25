@@ -1,4 +1,4 @@
-prefix=/home/krittapat/cr3_ws/devel
+prefix=/home/earth10/robocup-manipulation/cr3_ws/devel
 
 Name: tesr_ros_cr3_pkg
 Description: Description of tesr_ros_cr3_pkg
