@@ -1,0 +1,2 @@
+tesr_ros_cr3_pkg
+-DCATKIN_DEVEL_PREFIX=/home/krittapat/cr3_ws/devel -DCMAKE_INSTALL_PREFIX=/home/krittapat/cr3_ws/install -G Unix Makefiles

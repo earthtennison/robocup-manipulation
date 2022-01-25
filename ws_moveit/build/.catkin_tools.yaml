@@ -1,6 +1,0 @@
-devel_space: /home/krittapat/ws_moveit/devel
-install: false
-install_space: /home/krittapat/ws_moveit/install
-profile: default
-source_space: /home/krittapat/ws_moveit/src
-workspace: /home/krittapat/ws_moveit
