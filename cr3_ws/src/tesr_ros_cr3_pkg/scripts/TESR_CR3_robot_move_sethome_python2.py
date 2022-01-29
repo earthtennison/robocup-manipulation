@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 
 from dobot_api import dobot_api_dashboard, dobot_api_feedback, MyType
 import time
