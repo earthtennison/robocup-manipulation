@@ -52,3 +52,11 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tesr_ros_cr3_pkg" TYPE FILE FILES "/home/earth10/robocup-manipulation/cr3_ws/src/tesr_ros_cr3_pkg/package.xml")
 endif()
 
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/tesr_ros_cr3_pkg" TYPE PROGRAM FILES "/home/earth10/robocup-manipulation/cr3_ws/build/tesr_ros_cr3_pkg/catkin_generated/installspace/cr3_feedback.py")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/tesr_ros_cr3_pkg" TYPE PROGRAM FILES "/home/earth10/robocup-manipulation/cr3_ws/build/tesr_ros_cr3_pkg/catkin_generated/installspace/cr3_controller.py")
+endif()
+

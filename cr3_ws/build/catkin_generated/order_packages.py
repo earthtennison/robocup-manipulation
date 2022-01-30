@@ -2,4 +2,4 @@
 source_root_dir = '/home/earth10/robocup-manipulation/cr3_ws/src'
 whitelisted_packages = ''.split(';') if '' != '' else []
 blacklisted_packages = ''.split(';') if '' != '' else []
-underlay_workspaces = '/home/earth10/cr3_ws/devel;/opt/ros/melodic'.split(';') if '/home/earth10/cr3_ws/devel;/opt/ros/melodic' != '' else []
+underlay_workspaces = '/home/earth10/robocup-manipulation/cr3_ws/devel;/opt/ros/melodic'.split(';') if '/home/earth10/robocup-manipulation/cr3_ws/devel;/opt/ros/melodic' != '' else []

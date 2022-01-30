@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 
 import rospy
 from sensor_msgs.msg import JointState
@@ -32,36 +32,26 @@ client_dashboard = dobot_api_dashboard(CR3_ip, 29999)
 client_feedback = dobot_api_feedback(CR3_ip, 30003)
 
 # The feedback information about port 30003 is displayed
-def CR3_feedback(threadName):
-    global dobot_Enable,client_feedback
-    global cr3_joint1,cr3_joint2,cr3_joint3,cr3_joint4,cr3_joint5,cr3_joint6
-    while dobot_Enable == True:
-        time.sleep(0.05)
-        all = client_feedback.socket_feedback.recv(10240)
-        data = all[0:1440]
-        a = np.frombuffer(data, dtype=MyType)
-        try:
-            if hex((a['test_value'][0])) == '0x123456789abcdef':
-                print("============== Feed Back ===============")
-                CR3_endpoint =  np.around(a['Tool_vector_target'], decimals=4)[0]
-                print("CR3_endpoint: [x:{0}] , [y:{1}] , [z:{2}] , [rx:{3}] , [ry:{4}] , [rz:{5}]".format(CR3_endpoint[0],CR3_endpoint[1],CR3_endpoint[2],CR3_endpoint[3],CR3_endpoint[4],CR3_endpoint[5]))                            
-                CR3_joint = np.around(a['q_target'], decimals=4)[0]
-                print("CR3_joint: [j1:{0}] , [j2:{1}] , [j3:{2}] , [j4:{3}] , [j5:{4}] , [j6:{5}]".format(CR3_joint[0],CR3_joint[1],CR3_joint[2],CR3_joint[3],CR3_joint[4],CR3_joint[5]))
-                print("========================================")
+def CR3_feedback():
+    time.sleep(0.05)
+    all = client_feedback.socket_feedback.recv(10240)
+    data = all[0:1440]
+    a = np.frombuffer(data, dtype=MyType)
+    try:
+        if hex((a['test_value'][0])) == '0x123456789abcdef':
+            print("============== Feed Back ===============")
+            CR3_endpoint =  np.around(a['Tool_vector_target'], decimals=4)[0]
+            print("CR3_endpoint: [x:{0}] , [y:{1}] , [z:{2}] , [rx:{3}] , [ry:{4}] , [rz:{5}]".format(CR3_endpoint[0],CR3_endpoint[1],CR3_endpoint[2],CR3_endpoint[3],CR3_endpoint[4],CR3_endpoint[5]))                            
+            CR3_joint = np.around(a['q_target'], decimals=4)[0]
+            print("CR3_joint: [j1:{0}] , [j2:{1}] , [j3:{2}] , [j4:{3}] , [j5:{4}] , [j6:{5}]".format(CR3_joint[0],CR3_joint[1],CR3_joint[2],CR3_joint[3],CR3_joint[4],CR3_joint[5]))
+            print("========================================")
+    except:
+        print("Some error with robot.")
 
-                cr3_joint1 = CR3_joint[0]
-                cr3_joint2 = CR3_joint[1]
-                cr3_joint3 = CR3_joint[2]
-                cr3_joint4 = CR3_joint[3]
-                cr3_joint5 = CR3_joint[4]
-                cr3_joint6 = CR3_joint[5]
 
-        except:
-            print("Some error with robot.")
-            
-    client_dashboard.DisableRobot()
-    client_feedback.close()
-    print('!!!!!! client_feedback END !!!!!!')
+    # Enable threads on ports 29999 and 30003
+    client_dashboard = dobot_api_dashboard('192.168.5.6', 29999)
+    client_feedback = dobot_api_feedback('192.168.5.6', 30003)
 
 
 client_dashboard.DisableRobot()
