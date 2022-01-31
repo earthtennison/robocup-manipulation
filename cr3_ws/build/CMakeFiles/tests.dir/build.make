@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/earth10/robocup-manipulation/cr3_ws/src
+CMAKE_SOURCE_DIR = /home/krittapat/robocup-manipulation/cr3_ws/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/earth10/robocup-manipulation/cr3_ws/build
+CMAKE_BINARY_DIR = /home/krittapat/robocup-manipulation/cr3_ws/build
 
 # Utility rule file for tests.
 
@@ -67,6 +67,6 @@ CMakeFiles/tests.dir/clean:
 .PHONY : CMakeFiles/tests.dir/clean
 
 CMakeFiles/tests.dir/depend:
-	cd /home/earth10/robocup-manipulation/cr3_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/earth10/robocup-manipulation/cr3_ws/src /home/earth10/robocup-manipulation/cr3_ws/src /home/earth10/robocup-manipulation/cr3_ws/build /home/earth10/robocup-manipulation/cr3_ws/build /home/earth10/robocup-manipulation/cr3_ws/build/CMakeFiles/tests.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/krittapat/robocup-manipulation/cr3_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/krittapat/robocup-manipulation/cr3_ws/src /home/krittapat/robocup-manipulation/cr3_ws/src /home/krittapat/robocup-manipulation/cr3_ws/build /home/krittapat/robocup-manipulation/cr3_ws/build /home/krittapat/robocup-manipulation/cr3_ws/build/CMakeFiles/tests.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/tests.dir/depend
 

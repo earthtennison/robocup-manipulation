@@ -8,4 +8,4 @@ moveit_setup_assistant_config:
   CONFIG:
     author_name: EIC
     author_email: robocup.cu@gmail.com
-    generated_timestamp: 1643437579
+    generated_timestamp: 1643604153

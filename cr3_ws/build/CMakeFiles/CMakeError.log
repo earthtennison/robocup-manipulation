@@ -1,24 +1,24 @@
 Determining if the pthread_create exist failed with the following output:
-Change Dir: /home/earth10/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp
+Change Dir: /home/krittapat/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_c3cfa/fast"
-/usr/bin/make -f CMakeFiles/cmTC_c3cfa.dir/build.make CMakeFiles/cmTC_c3cfa.dir/build
-make[1]: Entering directory '/home/earth10/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_c3cfa.dir/CheckSymbolExists.c.o
-/usr/bin/cc    -o CMakeFiles/cmTC_c3cfa.dir/CheckSymbolExists.c.o   -c /home/earth10/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
-Linking C executable cmTC_c3cfa
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c3cfa.dir/link.txt --verbose=1
-/usr/bin/cc      -rdynamic CMakeFiles/cmTC_c3cfa.dir/CheckSymbolExists.c.o  -o cmTC_c3cfa 
-CMakeFiles/cmTC_c3cfa.dir/CheckSymbolExists.c.o: In function `main':
+Run Build Command:"/usr/bin/make" "cmTC_23729/fast"
+/usr/bin/make -f CMakeFiles/cmTC_23729.dir/build.make CMakeFiles/cmTC_23729.dir/build
+make[1]: Entering directory '/home/krittapat/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_23729.dir/CheckSymbolExists.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_23729.dir/CheckSymbolExists.c.o   -c /home/krittapat/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_23729
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_23729.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_23729.dir/CheckSymbolExists.c.o  -o cmTC_23729 
+CMakeFiles/cmTC_23729.dir/CheckSymbolExists.c.o: In function `main':
 CheckSymbolExists.c:(.text+0x1b): undefined reference to `pthread_create'
 collect2: error: ld returned 1 exit status
-CMakeFiles/cmTC_c3cfa.dir/build.make:97: recipe for target 'cmTC_c3cfa' failed
-make[1]: *** [cmTC_c3cfa] Error 1
-make[1]: Leaving directory '/home/earth10/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp'
-Makefile:126: recipe for target 'cmTC_c3cfa/fast' failed
-make: *** [cmTC_c3cfa/fast] Error 2
+CMakeFiles/cmTC_23729.dir/build.make:97: recipe for target 'cmTC_23729' failed
+make[1]: *** [cmTC_23729] Error 1
+make[1]: Leaving directory '/home/krittapat/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_23729/fast' failed
+make: *** [cmTC_23729/fast] Error 2
 
-File /home/earth10/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+File /home/krittapat/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
 /* */
 #include <pthread.h>
 
@@ -34,22 +34,22 @@ int main(int argc, char** argv)
 }
 
 Determining if the function pthread_create exists in the pthreads failed with the following output:
-Change Dir: /home/earth10/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp
+Change Dir: /home/krittapat/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_7c91d/fast"
-/usr/bin/make -f CMakeFiles/cmTC_7c91d.dir/build.make CMakeFiles/cmTC_7c91d.dir/build
-make[1]: Entering directory '/home/earth10/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_7c91d.dir/CheckFunctionExists.c.o
-/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_7c91d.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.10/Modules/CheckFunctionExists.c
-Linking C executable cmTC_7c91d
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7c91d.dir/link.txt --verbose=1
-/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_7c91d.dir/CheckFunctionExists.c.o  -o cmTC_7c91d -lpthreads 
+Run Build Command:"/usr/bin/make" "cmTC_53450/fast"
+/usr/bin/make -f CMakeFiles/cmTC_53450.dir/build.make CMakeFiles/cmTC_53450.dir/build
+make[1]: Entering directory '/home/krittapat/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_53450.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_53450.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.10/Modules/CheckFunctionExists.c
+Linking C executable cmTC_53450
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_53450.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_53450.dir/CheckFunctionExists.c.o  -o cmTC_53450 -lpthreads 
 /usr/bin/ld: cannot find -lpthreads
 collect2: error: ld returned 1 exit status
-CMakeFiles/cmTC_7c91d.dir/build.make:97: recipe for target 'cmTC_7c91d' failed
-make[1]: *** [cmTC_7c91d] Error 1
-make[1]: Leaving directory '/home/earth10/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp'
-Makefile:126: recipe for target 'cmTC_7c91d/fast' failed
-make: *** [cmTC_7c91d/fast] Error 2
+CMakeFiles/cmTC_53450.dir/build.make:97: recipe for target 'cmTC_53450' failed
+make[1]: *** [cmTC_53450] Error 1
+make[1]: Leaving directory '/home/krittapat/robocup-manipulation/cr3_ws/build/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_53450/fast' failed
+make: *** [cmTC_53450/fast] Error 2
 
 

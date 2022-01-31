@@ -1,2 +1,2 @@
-tesr_ros_cr3_pkg
--DCATKIN_DEVEL_PREFIX=/home/earth10/robocup-manipulation/cr3_ws/devel -DCMAKE_INSTALL_PREFIX=/home/earth10/robocup-manipulation/cr3_ws/install -G Unix Makefiles
+cr3_moveit_config:tesr_ros_cr3_pkg
+-DCATKIN_DEVEL_PREFIX=/home/krittapat/robocup-manipulation/cr3_ws/devel -DCMAKE_INSTALL_PREFIX=/home/krittapat/robocup-manipulation/cr3_ws/install -G Unix Makefiles

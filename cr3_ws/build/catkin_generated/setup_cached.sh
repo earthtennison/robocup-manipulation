@@ -7,4 +7,7 @@
 # new environment variables
 
 # modified environment variables
-export PWD='/home/earth10/robocup-manipulation/cr3_ws/build'
+export LD_LIBRARY_PATH='/opt/ros/melodic/lib'
+export PKG_CONFIG_PATH='/opt/ros/melodic/lib/pkgconfig'
+export PWD='/home/krittapat/robocup-manipulation/cr3_ws/build'
+export ROS_PACKAGE_PATH='/home/krittapat/robocup-manipulation/cr3_ws/src:/opt/ros/melodic/share'
