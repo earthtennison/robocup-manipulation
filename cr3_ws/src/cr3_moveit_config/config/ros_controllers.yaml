@@ -15,16 +15,71 @@ hardware_interface:
     - joint4
     - joint5
     - joint6
-  sim_control_mode: 1  # 0: position, 1: velocity
+  sim_control_mode: 0  # 0: position, 1: velocity
 # Publish all joint states
 # Creates the /joint_states topic necessary in ROS
 joint_state_controller:
   type: joint_state_controller/JointStateController
   publish_rate: 50
+cr3_arm_controller:
+    type: effort_controllers/JointTrajectoryController
+    joints:
+      - joint1
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+      - joint6
+    gains:
+      joint1:
+        p: 100
+        d: 10
+        i: 0.01
+        i_clamp: 1
+      joint2:
+        p: 500
+        d: 100
+        i: 0.05
+        i_clamp: 1
+      joint3:
+        p: 800
+        d: 100
+        i: 0.1
+        i_clamp: 1
+      joint4:
+        p: 500
+        d: 10
+        i: 0.01
+        i_clamp: 1
+      joint5:
+        p: 500
+        d: 10
+        i: 0.01
+        i_clamp: 1
+      joint6:
+        p: 500
+        d: 10
+        i: 0.01
+        i_clamp: 1
+    constraints:
+        goal_time: 0.6
+        stopped_velocity_tolerance: 0
+        joint1: {trajectory: 0.1, goal: 0.1}
+        joint2: {trajectory: 0.1, goal: 0.1}
+        joint3: {trajectory: 0.1, goal: 0.1}
+        joint4: {trajectory: 0.1, goal: 0.1}
+        joint5: {trajectory: 0.1, goal: 0.1}
+        joint6: {trajectory: 0.1, goal: 0.1}
+    state_publish_rate: 25  
 controller_list:
-  - name: arm_controller
+  - name: cr3_arm_controller
     action_ns: follow_joint_trajectory
     default: True
     type: FollowJointTrajectory
     joints:
-      []
+      - joint1
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+      - joint6
