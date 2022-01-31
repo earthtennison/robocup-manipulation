@@ -5,4 +5,5 @@
 # This file includes the relevant testing commands required for 
 # testing this directory and lists subdirectories to be tested as well.
 subdirs("gtest")
+subdirs("cr3_moveit_config")
 subdirs("tesr_ros_cr3_pkg")

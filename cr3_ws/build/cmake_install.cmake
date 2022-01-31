@@ -131,6 +131,7 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/earth10/robocup-manipulation/cr3_ws/build/gtest/cmake_install.cmake")
+  include("/home/earth10/robocup-manipulation/cr3_ws/build/cr3_moveit_config/cmake_install.cmake")
   include("/home/earth10/robocup-manipulation/cr3_ws/build/tesr_ros_cr3_pkg/cmake_install.cmake")
 
 endif()
