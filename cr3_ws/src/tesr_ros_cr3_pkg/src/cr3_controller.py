@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 # ros library
-from click import password_option
 import rospy
 from std_msgs.msg import String
 from sensor_msgs.msg import JointState
+from tesr_ros_cr3_pkg.msg import JointCommand
 
 # cr3 library
 from dobot_api import dobot_api_dashboard, dobot_api_feedback, MyType
@@ -71,7 +71,7 @@ def CR3_feedback():
 if __name__ == '__main__':
 
     rospy.init_node('cr3_controller', anonymous=True)
-    rospy.Subscriber("/cr3_command", String, control_cb)
+    rospy.Subscriber("/cr3_command", JointCommand, control_cb)
     pub = rospy.Publisher("/joint_states", JointState, queue_size=10)
     rate = rospy.Rate(10) # 10hz
     rospy.on_shutdown(on_shutdown)

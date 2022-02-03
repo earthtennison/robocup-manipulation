@@ -1,0 +1,75 @@
+//http://clopema.felk.cvut.cz/redmine/projects/clopema/wiki/Sending_trajectory_to_the_controller
+//http://wiki.ros.org/actionlib_tutorials/Tutorials/SimpleActionServer%28ExecuteCallbackMethod%29
+//http://wiki.ros.org/actionlib_tutorials/Tutorials/SimpleActionServer%28GoalCallbackMethod%29
+#include <ros/ros.h>
+#include <actionlib/server/simple_action_server.h>
+#include <control_msgs/FollowJointTrajectoryAction.h>
+#include <trajectory_msgs/JointTrajectory.h>
+#include <vector>
+#include "tesr_ros_cr3_pkg/JointCommand.h"
+
+class RobotTrajectoryFollower
+{
+protected:
+
+  ros::NodeHandle nh_;
+  // NodeHandle instance must be created before this line. Otherwise strange error may occur.
+  actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> as_;
+  trajectory_msgs::JointTrajectory goal_;
+  std::string action_name_;
+
+  // publisher
+  ros::Publisher pub = nh_.advertise<tesr_ros_cr3_pkg::JointCommand>("cr3_command", 10);
+  tesr_ros_cr3_pkg::JointCommand msg;
+
+public:
+
+  RobotTrajectoryFollower(std::string name) :
+    as_(nh_, name, false),
+    action_name_(name)
+  {
+    as_.registerGoalCallback(boost::bind(&RobotTrajectoryFollower::goalCB, this));
+    as_.registerPreemptCallback(boost::bind(&RobotTrajectoryFollower::preemptCB, this));
+
+    as_.start();
+  }
+
+  ~RobotTrajectoryFollower(void)//Destructor
+  {
+  }
+
+  void goalCB()
+  {
+    // accept the new goal
+    goal_ = as_.acceptNewGoal()->trajectory;
+    std::vector<double> joint_positions = goal_.points[0].positions;
+    int joint_number = joint_positions.size();
+    for (int i = 0; i < joint_number; i++){
+      ROS_INFO("goal is :%f", joint_positions[i]);
+    }
+
+    // publish to cr3_controller node
+    msg.joint_commands = joint_positions;
+    pub.publish(msg);
+    
+  }
+
+  void preemptCB()
+  {
+    ROS_INFO("%s: Preempted", action_name_.c_str());
+    // set the action state to preempted
+    as_.setPreempted();
+  }
+
+};
+
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "trajectory_follower_server");
+
+  RobotTrajectoryFollower RobotTrajectoryFollower("/cr3_arm_controller/follow_joint_trajectory");
+  
+  ros::spin();
+
+  return 0;
+}

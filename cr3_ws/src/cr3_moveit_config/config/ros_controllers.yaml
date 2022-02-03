@@ -22,7 +22,7 @@ joint_state_controller:
   type: joint_state_controller/JointStateController
   publish_rate: 50
 cr3_arm_controller:
-    type: effort_controllers/JointTrajectoryController
+    type: position_controllers/JointTrajectoryController
     joints:
       - joint1
       - joint2
@@ -31,45 +31,22 @@ cr3_arm_controller:
       - joint5
       - joint6
     gains:
-      joint1:
-        p: 100
-        d: 10
-        i: 0.01
-        i_clamp: 1
-      joint2:
-        p: 500
-        d: 100
-        i: 0.05
-        i_clamp: 1
-      joint3:
-        p: 800
-        d: 100
-        i: 0.1
-        i_clamp: 1
-      joint4:
-        p: 500
-        d: 10
-        i: 0.01
-        i_clamp: 1
-      joint5:
-        p: 500
-        d: 10
-        i: 0.01
-        i_clamp: 1
-      joint6:
-        p: 500
-        d: 10
-        i: 0.01
-        i_clamp: 1
+      joint1: { p: 12000, d: 50, i: 0.0, i_clamp: 10000 }
+      joint2: { p: 30000, d: 100, i: 0.02, i_clamp: 10000 }
+      joint3: { p: 18000, d: 50, i: 0.01, i_clamp: 1 }
+      joint4: { p: 18000, d: 70, i: 0.01, i_clamp: 10000 }
+      joint5: { p: 12000, d: 70, i: 0.01, i_clamp: 1 }
+      joint6: { p: 7000, d: 50, i: 0.01, i_clamp: 1 }
+      joint7: { p: 2000, d: 20, i: 0.0, i_clamp: 1 }
     constraints:
-        goal_time: 0.6
-        stopped_velocity_tolerance: 0
-        joint1: {trajectory: 0.1, goal: 0.1}
-        joint2: {trajectory: 0.1, goal: 0.1}
-        joint3: {trajectory: 0.1, goal: 0.1}
-        joint4: {trajectory: 0.1, goal: 0.1}
-        joint5: {trajectory: 0.1, goal: 0.1}
-        joint6: {trajectory: 0.1, goal: 0.1}
+        goal_time: 2.0
+        stopped_velocity_tolerance: 0.1
+        joint1: {trajectory: 1, goal: 1}
+        joint2: {trajectory: 1, goal: 1}
+        joint3: {trajectory: 1, goal: 1}
+        joint4: {trajectory: 1, goal: 1}
+        joint5: {trajectory: 1, goal: 1}
+        joint6: {trajectory: 1, goal: 1}
     state_publish_rate: 25  
 controller_list:
   - name: cr3_arm_controller
