@@ -1,5 +1,4 @@
-
-
+ 
 from dobot_api import dobot_api_dashboard, dobot_api_feedback, MyType
 import _thread
 import time
@@ -36,6 +35,55 @@ def CR3_feedback(threadName):
     client_feedback.close()
     print('!!!!!! client_feedback END !!!!!!')
 
+def pick():
+        #open gripper
+        client_dashboard.DO(2,1)
+        client_dashboard.DO(1,0)
+        time.sleep(3)
+        # Call the JointMovJ directive     
+        client_feedback.RelMovL(0, 0, -145)
+        time.sleep(3) 
+        #close gripper
+        client_dashboard.DO(2,0)
+        client_dashboard.DO(1,1)
+        time.sleep(3)
+        client_feedback.RelMovL(0, 0, 145)
+        time.sleep(3)
+
+def place():
+        #move relative to y 
+        client_feedback.RelMovL(0,100,0)
+        time.sleep(3)
+        #move relative to Z down  
+        client_feedback.RelMovL(0,0,-145)
+        time.sleep(3)
+        #open gripper 
+        client_dashboard.DO(2,1)
+        client_dashboard.DO(1,0)
+        time.sleep(3)
+        #move relative to z up   
+        client_feedback.RelMovL(0,0,145)
+        time.sleep(3) 
+        #close gripper
+        client_dashboard.DO(2,0)
+        client_dashboard.DO(1,1)
+        time.sleep(3)
+
+def set_init_pos():
+        client_feedback.JointMovJ(0.39,-0.19,89.83,0.51,-90.42,-44.89)
+        time.sleep(3)
+
+def stop_watch():
+    global start, dobot_Enable
+    if time.time() - start > 10:
+        dobot_Enable = False
+        
+def move():
+        set_init_pos()   
+        pick()
+        place()
+                
+
 # Enable threads on ports 29999 and 30003
 client_dashboard = dobot_api_dashboard('192.168.5.6', 29999)
 client_feedback = dobot_api_feedback('192.168.5.6', 30003)
@@ -54,6 +102,8 @@ time.sleep(0.5)
 # Select user and Tool coordinate system 0
 client_dashboard.User(0)
 client_dashboard.Tool(0)
+client_dashboard.DO(2,0)
+client_dashboard.DO(1,1)
 
 _thread.start_new_thread(CR3_feedback, ("Thread-1",))
 
@@ -66,13 +116,7 @@ try:
         index : Digital output index (Value range:1~24)
         status : Status of digital signal output port(0:Low level，1:High level
         """
-        
-        client_dashboard.DO(2,1)
-        client_dashboard.DO(1,0)
-        time.sleep(5)
-        client_dashboard.DO(2,0)
-        client_dashboard.DO(1,1)
-        time.sleep(5)
+        move()
         
     
 except KeyboardInterrupt:
@@ -82,5 +126,7 @@ except KeyboardInterrupt:
 client_dashboard.close()
 client_feedback.close()
 print("END program")
+
+
 
 
