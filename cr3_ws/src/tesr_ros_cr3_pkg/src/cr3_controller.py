@@ -15,11 +15,16 @@ import threading
 import numpy as np
 import math
 
+def rad_to_deg(angle):
+    return angle * 180/ math.pi
+
 def control_cb(data):
     global client_feedback
-    rospy.loginfo(data.data)
-    client_feedback.JointMovJ(0,0,0,0,int(data.data),0)
-    time.sleep(5)
+    rospy.loginfo("moving arm")
+    com = [rad_to_deg(j) for j in list(data.joint_commands)]
+    client_feedback.JointMovJ(com[0], com[1], com[2], com[3], com[4], com[5])
+    
+    time.sleep(0.1)
 
 def on_shutdown():
     global client_feedback, client_dashboard

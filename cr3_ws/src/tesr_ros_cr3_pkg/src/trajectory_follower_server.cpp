@@ -21,17 +21,20 @@ protected:
   // publisher
   ros::Publisher pub = nh_.advertise<tesr_ros_cr3_pkg::JointCommand>("cr3_command", 10);
   tesr_ros_cr3_pkg::JointCommand msg;
+  ros::Rate loop_rate;
 
 public:
 
   RobotTrajectoryFollower(std::string name) :
     as_(nh_, name, false),
-    action_name_(name)
+    action_name_(name),
+    loop_rate(10)
   {
     as_.registerGoalCallback(boost::bind(&RobotTrajectoryFollower::goalCB, this));
     as_.registerPreemptCallback(boost::bind(&RobotTrajectoryFollower::preemptCB, this));
 
     as_.start();
+    
   }
 
   ~RobotTrajectoryFollower(void)//Destructor
@@ -42,7 +45,13 @@ public:
   {
     // accept the new goal
     goal_ = as_.acceptNewGoal()->trajectory;
-    std::vector<double> joint_positions = goal_.points[0].positions;
+
+    int count = 0;
+    int trajectory_len = goal_.points.size();
+  while (ros::ok() && count < trajectory_len)
+  {
+
+    std::vector<double> joint_positions = goal_.points[count].positions;
     int joint_number = joint_positions.size();
     for (int i = 0; i < joint_number; i++){
       ROS_INFO("goal is :%f", joint_positions[i]);
@@ -51,6 +60,12 @@ public:
     // publish to cr3_controller node
     msg.joint_commands = joint_positions;
     pub.publish(msg);
+
+    ros::spinOnce();
+
+    loop_rate.sleep();
+    ++count;
+  }
     
   }
 
