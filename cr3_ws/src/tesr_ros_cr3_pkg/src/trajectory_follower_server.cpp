@@ -19,7 +19,7 @@ protected:
   std::string action_name_;
 
   // publisher
-  ros::Publisher pub = nh_.advertise<tesr_ros_cr3_pkg::JointCommand>("cr3_command", 10);
+  ros::Publisher pub = nh_.advertise<tesr_ros_cr3_pkg::JointCommand>("cr3_command", 100);
   tesr_ros_cr3_pkg::JointCommand msg;
   ros::Rate loop_rate;
 
@@ -52,10 +52,10 @@ public:
   {
 
     std::vector<double> joint_positions = goal_.points[count].positions;
-    int joint_number = joint_positions.size();
-    for (int i = 0; i < joint_number; i++){
-      ROS_INFO("goal is :%f", joint_positions[i]);
-    }
+    // int joint_number = joint_positions.size();
+    // for (int i = 0; i < joint_number; i++){
+    //   ROS_INFO("goal is :%f", joint_positions[i]);
+    // }
 
     // publish to cr3_controller node
     msg.joint_commands = joint_positions;

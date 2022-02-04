@@ -5,14 +5,12 @@ from dobot_api import dobot_api_dashboard, dobot_api_feedback, MyType
 import time
 import numpy as np
 import threading
-import binascii
- 
-dobot_Enable = True
+
 
 # The feedback information about port 30003 is displayed
 def CR3_feedback():
-    global dobot_Enable,client_feedback
-    while dobot_Enable == True:
+    global client_feedback
+    while True:
         time.sleep(0.05)
         all = client_feedback.socket_feedback.recv(10240)
         all = all[2:-1]
