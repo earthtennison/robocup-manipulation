@@ -1,0 +1,3 @@
+<launch>
+    <node name="cr3_controller" pkg="tesr_ros_cr3_pkg" type="cr3_controller.py"/>
+</launch>

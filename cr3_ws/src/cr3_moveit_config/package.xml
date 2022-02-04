@@ -16,6 +16,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>tesr_ros_cr3_pkg</build_depend>
+
   <run_depend>moveit_ros_move_group</run_depend>
   <run_depend>moveit_fake_controller_manager</run_depend>
   <run_depend>moveit_kinematics</run_depend>
@@ -31,7 +33,7 @@
   <run_depend>xacro</run_depend>
   <!-- This package is referenced in the warehouse launch files, but does not build out of the box at the moment. Commented the dependency until this works. -->
   <!-- <run_depend>warehouse_ros_mongo</run_depend> -->
-    <run_depend>tesr_ros_cr3_pkg</run_depend>
+  <run_depend>tesr_ros_cr3_pkg</run_depend>
 
 
 </package>

@@ -4,6 +4,7 @@
 import rospy
 from std_msgs.msg import String
 from sensor_msgs.msg import JointState
+from tesr_ros_cr3_pkg.msg import JointCommand
 
 # cr3 library
 from dobot_api import dobot_api_dashboard, dobot_api_feedback, MyType
@@ -14,11 +15,16 @@ import threading
 import numpy as np
 import math
 
+def rad_to_deg(angle):
+    return angle * 180/ math.pi
+
 def control_cb(data):
     global client_feedback
-    rospy.loginfo(data.data)
-    client_feedback.JointMovJ(0,0,0,0,int(data.data),0)
-    time.sleep(5)
+    rospy.loginfo("moving arm")
+    com = [rad_to_deg(j) for j in list(data.joint_commands)]
+    client_feedback.JointMovJ(com[0], com[1], com[2], com[3], com[4], com[5])
+    
+    time.sleep(0.1)
 
 def on_shutdown():
     global client_feedback, client_dashboard
@@ -37,11 +43,24 @@ def CR3_feedback():
     try:
         if hex((a['test_value'][0]))[:13] == '0x123456789ab':
             print("============== Feed Back ===============")
-            CR3_endpoint =  np.around(a['Tool_vector_target'], decimals=4)[0]
+            CR3_endpoint =  np.around(a['tool_vector_actual'], decimals=4)[0]
             print("CR3_endpoint: [x:{0}] , [y:{1}] , [z:{2}] , [rx:{3}] , [ry:{4}] , [rz:{5}]".format(CR3_endpoint[0],CR3_endpoint[1],CR3_endpoint[2],CR3_endpoint[3],CR3_endpoint[4],CR3_endpoint[5]))                            
-            CR3_joint = np.around(a['q_target'], decimals=4)[0]
+            CR3_joint = np.around(a['q_actual'], decimals=4)[0]
             print("CR3_joint: [j1:{0}] , [j2:{1}] , [j3:{2}] , [j4:{3}] , [j5:{4}] , [j6:{5}]".format(CR3_joint[0],CR3_joint[1],CR3_joint[2],CR3_joint[3],CR3_joint[4],CR3_joint[5]))
+            print("robot_mode: {}\n safety_mode: {}\nprogram_state: {}\n safety_status: {}".format(a['robot_mode'],a['safety_mode'], a['program_state'], a['safety_status']))
             print("========================================")
+
+            # check robot alarm
+            if int(a['robot_mode'][0]) == 9:
+                rospy.logerr("Some error with robot, clearing alarm")
+                client_dashboard.ClearError()
+                time.sleep(0.5)
+                client_dashboard.EnableRobot()
+                time.sleep(0.5)
+            elif int(a['robot_mode'][0]) == 7:
+                rospy.loginfo("robot moving...")
+            elif int(a['robot_mode'][0]) == 5:
+                rospy.loginfo("robot standy")
 
             cr3_joint1 = CR3_joint[0]
             cr3_joint2 = CR3_joint[1]
@@ -50,14 +69,14 @@ def CR3_feedback():
             cr3_joint5 = CR3_joint[4]
             cr3_joint6 = CR3_joint[5]
 
-    except:
-        print("Some error with robot.")
+    except Exception as e:
+        rospy.logerr(e)
 
 
 if __name__ == '__main__':
 
     rospy.init_node('cr3_controller', anonymous=True)
-    rospy.Subscriber("/cr3_command", String, control_cb)
+    rospy.Subscriber("/cr3_command", JointCommand, control_cb)
     pub = rospy.Publisher("/joint_states", JointState, queue_size=10)
     rate = rospy.Rate(10) # 10hz
     rospy.on_shutdown(on_shutdown)
