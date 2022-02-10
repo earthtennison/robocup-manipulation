@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: tesr_ros_cr3_pkg
+    relative_path: urdf/cr3_robot_w_gripper.xacro
+    xacro_args: ""
+  SRDF:
+    relative_path: config/cr3_robot.srdf
+  CONFIG:
+    author_name: EIC
+    author_email: robocup.cu@gmail.com
+    generated_timestamp: 1644334847
