@@ -112,6 +112,27 @@ target_link_libraries(objpub
   ${Boost_LIBRARIES}
 )
 
+add_executable(move src/demo/move_group.cpp)
+target_link_libraries(move
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+
+add_executable(posepub src/demo/publisher_pose.cpp)
+target_link_libraries(posepub
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+
+add_executable(D src/demo/do_move.cpp)
+target_link_libraries(D
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+
 #############
 ## INSTALL ##
 #############
@@ -133,5 +154,8 @@ install(DIRECTORY resources DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 install(TARGETS
   ${PROJECT_NAME}_grasp_generator_demo
   objpub
+  move
+  posepub
+  D
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
