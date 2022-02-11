@@ -27,9 +27,19 @@ void inpose(const geometry_msgs::Pose& pose)
     ROS_INFO_STREAM("Set");
     static const std::string PLANNING_GROUP = "arm";
     moveit::planning_interface::MoveGroupInterface arm_group(PLANNING_GROUP);
-    arm_group.setPoseTarget(pose);
+    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+    // moveit_msgs::RobotTrajectory trajectory;
+   
 
-    arm_group.move();
+    arm_group.setPoseTarget(pose);
+    bool success = (arm_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    if (success == true){
+      ROS_INFO("Planning sucessful");
+      arm_group.move();
+    }
+
+    
+    
     ROS_INFO_STREAM("Move");
 
 }
@@ -40,7 +50,7 @@ int main(int argc, char** argv)
     ros::NodeHandle node_handle;
     geometry_msgs::Pose Dpose;
 
-    ros::Subscriber pose_sub = node_handle.subscribe("Position",2,inpose);
+    ros::Subscriber pose_sub = node_handle.subscribe("/graspgen/waypoint",2,inpose);
     ros::AsyncSpinner spinner(0);
     spinner.start();
 

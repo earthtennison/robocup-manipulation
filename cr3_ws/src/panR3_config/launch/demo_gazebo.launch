@@ -34,6 +34,9 @@
     <arg name="urdf_path" value="$(arg urdf_path)"/>
   </include>
 
+  <include file="$(find cr3_panda_pkg)/launch/cr3_controller.launch"/>
+  
+
   <!-- If needed, broadcast static tf for robot root -->
   
 
