@@ -12,15 +12,15 @@
   <arg unless="$(arg verbose)" name="command_args" value="" />
   <arg     if="$(arg verbose)" name="command_args" value="--verbose" />
 
-  <!-- PANDA -->
-  <include file="$(find moveit_grasps)/launch/load_panda.launch">
-  </include>
+  <!-- Load Robot -->
+  <!-- <include file="$(find moveit_grasps)/launch/load_panda.launch">
+  </include> -->
 
   <!-- Start the demo -->
   <node name="moveit_grasps_demo" launch-prefix="$(arg launch_prefix)" pkg="moveit_grasps"
   type="moveit_grasps_grasp_generator_demo" output="screen" args="$(arg command_args)">
     <param name="ee_group_name" value="hand"/>
-    <param name="planning_group_name" value="panda_arm"/>
+    <param name="planning_group_name" value="arm"/>
     <rosparam command="load" file="$(find moveit_grasps)/config_robot/panda_grasp_data.yaml"/>
     <rosparam command="load" file="$(find moveit_grasps)/config/moveit_grasps_config.yaml"/>
   </node>

@@ -5,6 +5,10 @@
 #include <iostream>
 #include <vector>
 
+#include <moveit_msgs/DisplayTrajectory.h>
+#include <moveit/move_group_interface/move_group_interface.h>
+
+
 #include <moveit_grasps/grasp_generator.h>
 #include "moveit_grasps/GraspPose.h"
 
@@ -46,12 +50,32 @@ public:
 
     //<EDIT-----------------------------------------------------------------------------------------
 
-    pose_pub = nh_.advertise<geometry_msgs::Pose>("/graspgen/grasp_position", 2);
-    way_pub = nh_.advertise<moveit_grasps::GraspPose>("/graspgen/waypoint", 2);
-    obj_sub = nh_.subscribe("/obj_pose", 1000, &GraspGeneratorDemo::objCallback, this);
-   
+    // ---------------------------------------------------------------------------------------------
+    // Load the Robot Viz Tools for publishing to Rviz
+    visual_tools_.reset(new moveit_visual_tools::MoveItVisualTools("base_link"));
+    visual_tools_->setMarkerTopic("/rviz_visual_tools");
+    visual_tools_->loadMarkerPub();
+    visual_tools_->loadRobotStatePub("/display_robot_state");
+    visual_tools_->loadTrajectoryPub("/display_planned_path");
+    visual_tools_->loadSharedRobotState();
+    visual_tools_->getSharedRobotState()->setToDefaultValues();
+    visual_tools_->enableBatchPublishing();
+    visual_tools_->deleteAllMarkers();
+    visual_tools_->removeAllCollisionObjects();
+    // visual_tools_->hideRobot();
+    visual_tools_->trigger();
 
-    //-----------------------------------------------------------------------------------------EDIT>
+    // TODO(davetcoleman): do we need two VisualTools? ideally consolidate
+    grasp_visuals_.reset(new rviz_visual_tools::RvizVisualTools("base_link"));
+    grasp_visuals_->setMarkerTopic("/grasp_visuals");
+    grasp_visuals_->loadMarkerPub();
+    grasp_visuals_->enableBatchPublishing();
+    grasp_visuals_->deleteAllMarkers();
+    grasp_visuals_->trigger();
+
+    way_pub = nh_.advertise<geometry_msgs::Pose>("/graspgen/waypoint", 2);
+    // way_pub = nh_.advertise<moveit_grasps::GraspPose>("/graspgen/waypoint", 2);
+    obj_sub = nh_.subscribe("/obj_pose", 1000, &GraspGeneratorDemo::objCallback, this);
 
     
   }
@@ -67,28 +91,6 @@ public:
 
     ROS_INFO_STREAM_NAMED("demo", "End Effector: " << ee_group_name_);
 
-    // ---------------------------------------------------------------------------------------------
-    // Load the Robot Viz Tools for publishing to Rviz
-    visual_tools_.reset(new moveit_visual_tools::MoveItVisualTools("world"));
-    visual_tools_->setMarkerTopic("/rviz_visual_tools");
-    visual_tools_->loadMarkerPub();
-    visual_tools_->loadRobotStatePub("/display_robot_state");
-    visual_tools_->loadTrajectoryPub("/display_planned_path");
-    visual_tools_->loadSharedRobotState();
-    visual_tools_->getSharedRobotState()->setToDefaultValues();
-    visual_tools_->enableBatchPublishing();
-    visual_tools_->deleteAllMarkers();
-    visual_tools_->removeAllCollisionObjects();
-    visual_tools_->hideRobot();
-    visual_tools_->trigger();
-
-    // TODO(davetcoleman): do we need two VisualTools? ideally consolidate
-    grasp_visuals_.reset(new rviz_visual_tools::RvizVisualTools("world"));
-    grasp_visuals_->setMarkerTopic("/grasp_visuals");
-    grasp_visuals_->loadMarkerPub();
-    grasp_visuals_->enableBatchPublishing();
-    grasp_visuals_->deleteAllMarkers();
-    grasp_visuals_->trigger();
 
     // ---------------------------------------------------------------------------------------------
     // Load grasp data specific to our robot
@@ -157,7 +159,6 @@ public:
     {
       ROS_INFO_STREAM_NAMED("demo", "Adding random posed object ");
 
-      // generateTestObject(object_pose);
       object_pose.orientation.w = objpose->orientation.w;
       object_pose.orientation.x = objpose->orientation.x;
       object_pose.orientation.y = objpose->orientation.y;
@@ -177,25 +178,65 @@ public:
       grasp_visuals_->publishAxis(object_pose, rviz_visual_tools::MEDIUM);
       grasp_visuals_->trigger();
 
+      
+      
+      
       grasp_generator_->generateGrasps(visual_tools_->convertPose(object_pose), depth, width, height, grasp_data_,
                                        possible_grasps, grasp_generator_config);
+
+      
+      ROS_INFO("Finished generating grasp,begining planing");
+      
 
       if (possible_grasps.size() > 0)
       {
         visual_tools_->publishEEMarkers(possible_grasps.front()->grasp_.grasp_pose.pose, ee_jmg,
                                         grasp_data_->pre_grasp_posture_.points[0].positions, rviz_visual_tools::TRANSLUCENT_LIGHT,
                                         "demo_eef");
+        
+        way_pub.publish(possible_grasps.front()->grasp_.grasp_pose.pose);
 
-        //<EDIT-----------------------------------------------------------------------------
+        // publish_waypoint(possible_grasps.front(),way_pub);
+        // excute_catesian(possible_grasps.front());
 
-        publish_waypoint(possible_grasps.front(),way_pub);
-        pose_pub.publish(possible_grasps.front()->grasp_.grasp_pose.pose);
-
-        //-----------------------------------------------------------------------------EDIT>
         visual_tools_->trigger();
       }
       break;
     }
+  }
+
+  void excute_catesian(moveit_grasps::GraspCandidatePtr& valid_grasp_candidate)
+  {
+    geometry_msgs::Pose pose; 
+    moveit::planning_interface::MoveGroupInterface::Plan grasp_plan;
+    moveit::planning_interface::MoveGroupInterface move_group("arm");
+    moveit_msgs::RobotTrajectory trajectory;
+    EigenSTL::vector_Isometry3d grasp_waypoints;
+    std::vector<geometry_msgs::Pose> Cwaypoint;
+
+    GraspGenerator::getGraspWaypoints(valid_grasp_candidate, grasp_waypoints);
+
+    tf::poseEigenToMsg(grasp_waypoints[0],pose);
+    visual_tools_->publishAxisLabeled(grasp_waypoints[0], "state_0", rviz_visual_tools::SMALL);
+    move_group.setPoseTarget(pose);
+    move_group.move();
+
+
+    const double jump_threshold = 0.0;
+    const double eef_step = 0.01;
+    for (int state = 1; state < 4; state++)
+    {
+      tf::poseEigenToMsg(grasp_waypoints[state],pose);
+      visual_tools_->publishAxisLabeled(grasp_waypoints[state], "state_" + std::to_string(state), rviz_visual_tools::SMALL);
+      Cwaypoint.push_back(pose);
+    }
+
+    double fraction = move_group.computeCartesianPath(Cwaypoint, eef_step, jump_threshold, trajectory);
+
+    ROS_INFO_NAMED("Test", "Visualizing Cartesian path (%.2f%% acheived)", fraction * 100.0);
+
+    grasp_plan.trajectory_ = trajectory;
+    move_group.execute(grasp_plan);
   }
 
   void publish_waypoint(moveit_grasps::GraspCandidatePtr& valid_grasp_candidate, ros::Publisher& pose_publisher)
@@ -217,28 +258,6 @@ public:
     }
 
     pose_publisher.publish(waypoints_pose);
-  }
-
-  void generateTestObject(geometry_msgs::Pose& object_pose)
-  {
-    // Position
-    geometry_msgs::Pose start_object_pose;
-
-    start_object_pose.position.x = 0.5;
-    start_object_pose.position.y = 0.0;
-    start_object_pose.position.z = 0.5;
-
-    // Orientation
-    double angle = M_PI / 1.5;
-    Eigen::Quaterniond quat(Eigen::AngleAxis<double>(double(angle), Eigen::Vector3d::UnitZ()));
-    start_object_pose.orientation.x = quat.x();
-    start_object_pose.orientation.y = quat.y();
-    start_object_pose.orientation.z = quat.z();
-    start_object_pose.orientation.w = quat.w();
-
-    // Choose which object to test
-    object_pose = start_object_pose;
-    
   }
 
 };  // end of class
