@@ -22,7 +22,7 @@ def control_cb(data):
     global client_feedback
     rospy.loginfo("moving arm")
     com = [rad_to_deg(j) for j in list(data.joint_commands)]
-    client_feedback.JointMovJ(com[0], com[1], com[2], com[3], com[4], com[5])
+    client_feedback.ServoJ(com[0], com[1], com[2], com[3], com[4], com[5])
     time.sleep(0.05)
 
 def on_shutdown():
