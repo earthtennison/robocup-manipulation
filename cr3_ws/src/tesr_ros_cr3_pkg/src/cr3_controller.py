@@ -2,7 +2,7 @@
 
 # ros library
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import Bool
 from sensor_msgs.msg import JointState
 from tesr_ros_cr3_pkg.msg import JointCommand
 
@@ -18,12 +18,28 @@ import math
 def rad_to_deg(angle):
     return angle * 180/ math.pi
 
-def control_cb(data):
+def arm_cb(data):
     global client_feedback
     rospy.loginfo("moving arm")
     com = [rad_to_deg(j) for j in list(data.joint_commands)]
     client_feedback.ServoJ(com[0], com[1], com[2], com[3], com[4], com[5])
-    time.sleep(0.05)
+    time.sleep(0.01)
+    
+
+def gripper_cb(data):
+    global client_feedback
+    is_close = data.data
+    # True is closing gripper
+    if is_close:
+        #close gripper
+        client_dashboard.DO(2,0)
+        client_dashboard.DO(1,1)
+        time.sleep(0.5)
+    else:
+        #open gripper 
+        client_dashboard.DO(2,1)
+        client_dashboard.DO(1,0)
+        time.sleep(0.5)
 
 def on_shutdown():
     global client_feedback, client_dashboard
@@ -76,7 +92,8 @@ def CR3_feedback():
 if __name__ == '__main__':
 
     rospy.init_node('cr3_controller', anonymous=True)
-    rospy.Subscriber("/cr3_command", JointCommand, control_cb)
+    rospy.Subscriber("/cr3_arm_command", JointCommand, arm_cb)
+    rospy.Subscriber("/cr3_gripper_command", Bool, gripper_cb)
     pub = rospy.Publisher("/joint_states", JointState, queue_size=10)
     rate = rospy.Rate(10) # 10hz
     rospy.on_shutdown(on_shutdown)
@@ -141,4 +158,3 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             dobot_enable = False
             break
-    

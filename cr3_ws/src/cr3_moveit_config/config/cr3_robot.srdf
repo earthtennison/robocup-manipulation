@@ -26,6 +26,62 @@
         <joint name="joint5" value="0" />
         <joint name="joint6" value="0" />
     </group_state>
+    <group_state name="home_walkie" group="arm">
+        <joint name="joint1" value="1.507" />
+        <joint name="joint2" value="0" />
+        <joint name="joint3" value="2.267" />
+        <joint name="joint4" value="-2.267" />
+        <joint name="joint5" value="-1.507" />
+        <joint name="joint6" value="0" />
+    </group_state>
+    <group_state name="pregrasp" group="arm">
+        <joint name="joint1" value="1.500" />
+        <joint name="joint2" value="-0.191" />
+        <joint name="joint3" value="1.814" />
+        <joint name="joint4" value="-1.622" />
+        <joint name="joint5" value="-1.500" />
+        <joint name="joint6" value="0.785" />
+    </group_state>
+    <group_state name="grasp" group="arm">
+        <joint name="joint1" value="1.535" />
+        <joint name="joint2" value="0.576" />
+        <joint name="joint3" value="0.900" />
+        <joint name="joint4" value="-1.448" />
+        <joint name="joint5" value="-1.535" />
+        <joint name="joint6" value="0.785" />
+    </group_state>
+    <group_state name="lift" group="arm">
+        <joint name="joint1" value="1.535" />
+        <joint name="joint2" value="0.593" />
+        <joint name="joint3" value="0.785" />
+        <joint name="joint4" value="-1.361" />
+        <joint name="joint5" value="-1.535" />
+        <joint name="joint6" value="0.785" />
+    </group_state>
+    <group_state name="preplace1" group="arm">
+        <joint name="joint1" value="2.006" />
+        <joint name="joint2" value="0.122" />
+        <joint name="joint3" value="1.500" />
+        <joint name="joint4" value="-1.622" />
+        <joint name="joint5" value="-2.006" />
+        <joint name="joint6" value="0.785" />
+    </group_state>
+    <group_state name="preplace2" group="arm">
+        <joint name="joint1" value="1.849" />
+        <joint name="joint2" value="0.611" />
+        <joint name="joint3" value="0.820" />
+        <joint name="joint4" value="-1.430" />
+        <joint name="joint5" value="-1.849" />
+        <joint name="joint6" value="0.785" />
+    </group_state>
+    <group_state name="place" group="arm">
+        <joint name="joint1" value="1.849" />
+        <joint name="joint2" value="0.611" />
+        <joint name="joint3" value="0.890" />
+        <joint name="joint4" value="-1.483" />
+        <joint name="joint5" value="-1.849" />
+        <joint name="joint6" value="0.785" />
+    </group_state>
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="Link1" link2="Link2" reason="Adjacent" />
