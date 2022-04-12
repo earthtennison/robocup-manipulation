@@ -4,5 +4,4 @@
   <param name="moveit_controller_manager" value="$(arg moveit_controller_manager)"/>
   <!-- load controller_list -->
   <rosparam file="$(find panda_moveit_config)/config/panda_gripper_controllers.yaml"/>
-  <!-- <rosparam file="$(find panda_moveit_config)/config/ros_controllers.yaml"/> -->
  </launch>

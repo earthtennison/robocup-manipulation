@@ -1,5 +1,6 @@
 <launch>
-    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find franka_description)/robots/panda_arm_hand.urdf.xacro" />
+    <arg name="load_gripper" default="true" />
+    <param name="robot_description" command="$(find xacro)/xacro $(find franka_description)/robots/panda_arm.urdf.xacro hand:=$(arg load_gripper)" />
 
     <!-- GAZEBO arguments -->
     <arg name="paused" default="false" />

@@ -53,6 +53,8 @@ add_executable(pick_and_place src/pick_and_place.cpp)
 target_link_libraries(pick_and_place ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 add_executable(pick_and_place_ball src/pick_and_place_ball.cpp)
 target_link_libraries(pick_and_place_ball ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(pick_with_constraint src/pick_with_constraint.cpp)
+target_link_libraries(pick_with_constraint ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 catkin_install_python(PROGRAMS
   src/cv_node.py
