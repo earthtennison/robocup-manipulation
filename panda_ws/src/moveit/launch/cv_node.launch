@@ -1,0 +1,6 @@
+<launch>
+
+<node name="cv_node" pkg="moveit" type="cv_node.py" respawn="false" output="screen">
+  </node>
+
+</launch>
