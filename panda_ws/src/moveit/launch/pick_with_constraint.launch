@@ -1,5 +1,5 @@
 <launch>
-  <include file="$(find panda_moveit_config)/launch/demo.launch" />
+  <include file="$(find panda_simulation)/launch/simulation_with_prism.launch" />
 
   <node name="pick_with_constraint" pkg="moveit" type="pick_with_constraint" respawn="false" output="screen">
   </node>

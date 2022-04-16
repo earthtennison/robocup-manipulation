@@ -2,13 +2,13 @@
     <param name="robot_description" command="$(find xacro)/xacro --inorder $(find franka_description)/robots/panda_arm_hand.urdf.xacro" />
 
     <!-- GAZEBO arguments -->
-    <arg name="paused" default="false" />
+    <arg name="paused" default="true" />
     <arg name="use_sim_time" default="true" />
     <arg name="gui" default="true" />
     <arg name="headless" default="false" />
     <arg name="debug" default="false" />
     <arg name="load_gripper" default="true" />
-    <arg name="world_path" default="$(find panda_simulation)/worlds/pick_and_place_box.world"/>
+    <arg name="world_path" default="$(find panda_simulation)/worlds/pick_and_place_prism.world"/>
 
     <!--launch GAZEBO with own world configuration -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -20,12 +20,9 @@
         <arg name="headless" value="$(arg headless)" />
     </include>
 
-    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model panda" />
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model panda
+        -J panda_joint4 -1.1" />
 
-    <!--spawn big box-->
-    <!-- <param name="box_description" command="$(find xacro)/xacro $(find panda_simulation)/models/big_box.xacro"/> -->
-    <!-- <node name="box_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" args="robot_description:=box_description" /> -->
-    <!-- <node name="spawn_object" pkg="gazebo_ros" type="spawn_model" args="-param box_description -urdf -model big_box"/> -->
 
     <!-- Load joint controller configurations from YAML file to parameter server -->
     <rosparam file="$(find panda_simulation)/config/panda_control.yaml" command="load" />
