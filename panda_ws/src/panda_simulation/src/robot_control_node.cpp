@@ -6,11 +6,26 @@
 #include <ros/ros.h>
 #include <boost/filesystem.hpp>
 
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <moveit_msgs/DisplayRobotState.h>
+#include <moveit_msgs/DisplayTrajectory.h>
+
+#include <moveit_visual_tools/moveit_visual_tools.h>
+#include <std_msgs/String.h>
+#include <geometry_msgs/Pose.h>
+
+#include <tf2/LinearMath/Quaternion.h>
 #include <vector>
+
 
 static const std::string PLANNING_GROUP_ARM = "panda_arm";
 static const std::string APP_DIRECTORY_NAME = ".panda_simulation";
+
+////////////////////////////////////////////////////////////
+
+static const std::vector<double> OBJECT_POSITION = {0.5, 0.0, 0.5}; // default {0.5, 0.0, 0.5}
+
+////////////////////////////////////////////////////////////
+
 
 moveit_msgs::CollisionObject extractObstacleFromJson(Json::Value &root, std::string name)
 {
@@ -53,87 +68,44 @@ moveit_msgs::CollisionObject extractObstacleFromJson(Json::Value &root, std::str
   return std::move(collision_object);
 }
 
-/////////////////////////////////////////////////////////////
-std::vector<double> object_position = {0.5, 0.0, 0.5}; // default {0.5, 0.0, 0.5}
+void move(moveit::planning_interface::MoveGroupInterface &move_group_interface, geometry_msgs::Pose goal_pose)
+  {
+    namespace rvt = rviz_visual_tools;
+    const moveit::core::JointModelGroup* joint_model_group = move_group_interface.getCurrentState()->getJointModelGroup(PLANNING_GROUP_ARM);
 
-////////////////////////////////////////////////////////////
+    moveit_visual_tools::MoveItVisualTools visual_tools("panda_link0");
+    visual_tools.deleteAllMarkers();
+    // set target pose
+    geometry_msgs::Pose target_pose1;
+    target_pose1.orientation.w = goal_pose.orientation.w;
+    target_pose1.orientation.x = goal_pose.orientation.x;
+    target_pose1.orientation.y = goal_pose.orientation.y;
+    target_pose1.orientation.z = goal_pose.orientation.z;
+    target_pose1.position.x = goal_pose.position.x;
+    target_pose1.position.y = goal_pose.position.y;
+    target_pose1.position.z = goal_pose.position.z;
 
-void openGripper(trajectory_msgs::JointTrajectory& posture)
-{
-    /* Add both finger joints of panda robot. */
-    posture.joint_names.resize(2);
-    posture.joint_names[0] = "panda_finger_joint1";
-    posture.joint_names[1] = "panda_finger_joint2";
+    move_group_interface.setPoseTarget(target_pose1);
+    ROS_INFO("target set");
 
-    /* Set them as open, wide enough for the object to fit. */
-    // object width is 0.02
-    posture.points.resize(1);
-    posture.points[0].positions.resize(2);
-    posture.points[0].positions[0] = 0.04;
-    posture.points[0].positions[1] = 0.04;
-    posture.points[0].time_from_start = ros::Duration(0.5);
-}
+    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
-void closedGripper(trajectory_msgs::JointTrajectory& posture)
-{
-    /* Add both finger joints of panda robot. */
-    posture.joint_names.resize(2);
-    posture.joint_names[0] = "panda_finger_joint1";
-    posture.joint_names[1] = "panda_finger_joint2";
+    ROS_INFO("target set1");
+    bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    ROS_INFO("target set2");
+    ROS_INFO("Plan %s", success ? "success" : "failure");
 
-    /* Set them as closed. */
-    posture.points.resize(1);
-    posture.points[0].positions.resize(2);
-    posture.points[0].positions[0] = 0.00;
-    posture.points[0].positions[1] = 0.00;
-    posture.points[0].time_from_start = ros::Duration(0.5);
-}
+    // visualize plan
+    visual_tools.publishAxisLabeled(target_pose1, "pose 1");
+    visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+    visual_tools.trigger();
 
-void pick(moveit::planning_interface::MoveGroupInterface& move_group)
-{
-    std::vector<moveit_msgs::Grasp> grasps;
-    grasps.resize(1);
+    bool success_execute = (move_group_interface.execute(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    ROS_INFO("Plan %s", success_execute ? "success" : "failure");
+    ROS_INFO("Successfully executed!");
+  }
 
-    // the position for panda_link8 = 0.5 - (length of cube/2 - distance b/w panda_link8 and palm of eef (0.058) - some extra padding)
-    grasps[0].grasp_pose.header.frame_id = "panda_link0";
-    tf2::Quaternion orientation;
-    orientation.setRPY(-M_PI/2, -M_PI/4, -M_PI/2); //(-90, -45, -90)
-    grasps[0].grasp_pose.pose.orientation = tf2::toMsg(orientation);
-    grasps[0].grasp_pose.pose.position.x = object_position[0] - 0.085;
-    grasps[0].grasp_pose.pose.position.y = object_position[1];
-    grasps[0].grasp_pose.pose.position.z = object_position[2];
-
-    // Setting pre-grasp approach
-    grasps[0].pre_grasp_approach.direction.header.frame_id = "panda_link0";
-    // Direction is set as positive x axis
-    grasps[0].pre_grasp_approach.direction.vector.x = 1.0;
-    grasps[0].pre_grasp_approach.min_distance = 0.095;
-    grasps[0].pre_grasp_approach.desired_distance = 0.115;
-
-    // Setting post-grasp retreat
-    grasps[0].post_grasp_retreat.direction.header.frame_id = "panda_link0";
-    // Direction is set as positive z axis
-    grasps[0].post_grasp_retreat.direction.vector.z = 1.0;
-    grasps[0].post_grasp_retreat.min_distance = 0.1;
-    grasps[0].post_grasp_retreat.desired_distance = 0.25;
-
-    // open gripper pose
-    openGripper(grasps[0].pre_grasp_posture);
-
-    // close gripper pose
-    closedGripper(grasps[0].grasp_posture);
-
-    // Set support surface as table1.
-    move_group.setSupportSurfaceName("table1");
-
-    // pick it
-    move_group.pick("object1", grasps);
-
-
-}
-
-
-void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface)
+  void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface)
 {
     // create vector to hold 3 object
     std::vector<moveit_msgs::CollisionObject> collision_objects;
@@ -172,9 +144,9 @@ void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface& pla
     collision_objects[1].primitives[0].dimensions[2] = 0.2;
 
     collision_objects[1].primitive_poses.resize(1);
-    collision_objects[1].primitive_poses[0].position.x = object_position[0];
-    collision_objects[1].primitive_poses[0].position.y = object_position[1];
-    collision_objects[1].primitive_poses[0].position.z = object_position[2];
+    collision_objects[1].primitive_poses[0].position.x = OBJECT_POSITION[0];
+    collision_objects[1].primitive_poses[0].position.y = OBJECT_POSITION[1];
+    collision_objects[1].primitive_poses[0].position.z = OBJECT_POSITION[2];
 
     collision_objects[1].operation = collision_objects[1].ADD;
 
@@ -192,7 +164,9 @@ int main(int argc, char **argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
+  // declare interface for moveit
   moveit::planning_interface::MoveGroupInterface move_group_arm(PLANNING_GROUP_ARM);
+  moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
 
   ros::Publisher planning_scene_diff_publisher = node_handle.advertise<moveit_msgs::PlanningScene>("planning_scene", 1);
   ros::WallDuration sleep_t(0.5);
@@ -265,24 +239,48 @@ int main(int argc, char **argv)
 
     ROS_INFO("robot_control_node is ready");
 
-    /////////////////////// pick and place //////////////////////
-    // some delay
-    ros::WallDuration(2.0).sleep();
-
-    // declare planning scene interface for add collision object
-    moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-    move_group_arm.setPlanningTime(45.0);
+    /////////////// planning scene interface /////////////
 
     addCollisionObjects(planning_scene_interface);
 
-    ROS_INFO("Collision object added to the scene");
+    ////////////// move group interface /////////////////
 
-    // some delay
-    ros::WallDuration(2.0).sleep();
+    ros::WallDuration(3.0).sleep();
 
-    pick(move_group_arm);
+    // pregrasp
+    // the position for panda_link8 = object pose - (length of cube/2 - distance b/w panda_link8 and palm of eef (0.058) - some extra padding) - (desired offset for pregasp)
+    geometry_msgs::Pose pregrasp;
+    pregrasp.position.x = OBJECT_POSITION[0] - 0.085 - 0.115;
+    pregrasp.position.y = OBJECT_POSITION[1];
+    pregrasp.position.z = OBJECT_POSITION[2];
 
-    ros::WallDuration(1.0).sleep();
+    tf2::Quaternion quat;
+    quat.setRPY( -M_PI/2, -M_PI/4, -M_PI/2 );
+
+    pregrasp.orientation.x = quat.getX();
+    pregrasp.orientation.y = quat.getY();
+    pregrasp.orientation.z = quat.getZ();
+    pregrasp.orientation.w = quat.getW();
+
+    move(move_group_arm, pregrasp);
+
+    // grasps
+
+    ros::WallDuration(3.0).sleep();
+
+    geometry_msgs::Pose grasp;
+    grasp.position.x = OBJECT_POSITION[0] - 0.085;
+    grasp.position.y = OBJECT_POSITION[1];
+    grasp.position.z = OBJECT_POSITION[2];
+
+    quat.setRPY( -M_PI/2, -M_PI/4, -M_PI/2 );
+
+    grasp.orientation.x = quat.getX();
+    grasp.orientation.y = quat.getY();
+    grasp.orientation.z = quat.getZ();
+    grasp.orientation.w = quat.getW();
+
+    move(move_group_arm, grasp);
 
     ros::waitForShutdown();
 
