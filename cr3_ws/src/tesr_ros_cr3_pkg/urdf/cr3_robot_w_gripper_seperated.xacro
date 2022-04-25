@@ -18,10 +18,10 @@
     <transmission name="${transmission}">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="${joint}">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       </joint>
       <actuator name="${motor}">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
         <mechanicalReduction>1</mechanicalReduction>
       </actuator>
     </transmission>
@@ -42,7 +42,7 @@
       </geometry>
     </visual>
     <collision>
-      <origin xyz="0 0 0" rpy="0 0 0" />
+      <origin xyz="0 0 0" rpy="0 0 -1.57" />
       <geometry>
         <mesh filename="package://tesr_ros_cr3_pkg/meshes/base_link.STL" />
       </geometry>
@@ -52,6 +52,7 @@
   <joint name="world_joint" type="fixed">
     <parent link="world" />
     <child link="base_link" />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
   </joint>
 
   <link name="Link1">
@@ -210,17 +211,17 @@
   </link>
   <joint name="joint6" type="revolute">
     <origin xyz="0 0.105 0" rpy="-1.5708 0 0" />
-    <parent link="Link5" />
+    <parent link="Link5" />d
     <child link="Link6" />
     <axis xyz="0 0 1" />
     <limit lower="-3.14" upper="3.14" effort="0" velocity="0" />
     <dynamics damping="1.0" />
   </joint>
 
-  <link name="Gripper">
+  <link name="hand">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0" />
-      <mass value="0.95" />
+      <mass value="0.75" />
       <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
     </inertial>
     <visual>
@@ -238,12 +239,12 @@
   </link>
   <joint name="joint7" type="fixed">
     <parent link="Link6" />
-    <child link="Gripper" />
+    <child link="hand" />
   </joint>
-  <link name="FingerL">
+  <link name="finger_l">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0" />
-      <mass value="0.95" />
+      <mass value="0.10" />
       <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
     </inertial>
     <visual>
@@ -253,23 +254,23 @@
       </geometry>
     </visual>
     <collision>
-      <origin xyz="0.053 0.035 0.05" rpy="1.54 0 0" />
+      <origin xyz="0.053 0.035 -0.015" rpy="1.54 0 0" />
       <geometry>
         <mesh filename="package://tesr_ros_cr3_pkg/meshes/FingerL.stl" scale="0.0008 0.0008 0.0008" />
       </geometry>
     </collision>
   </link>
-  <joint name="joint8" type="prismatic">
-    <parent link="Gripper" />
-    <child link="FingerL" />
+  <joint name="joint8" type="revolute">
+    <parent link="hand" />
+    <child link="finger_l" />
     <origin rpy="0 0 0" xyz="0 0 0.0584"/>
-    <axis xyz="1 0 0"/>
+    <axis xyz="0 0 1"/>
     <limit effort="20" lower="0.0" upper="0.04" velocity="0.2"/>
   </joint>
-  <link name="FingerR">
+  <link name="finger_r">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0" />
-      <mass value="0.95" />
+      <mass value="0.15" />
       <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
     </inertial>
     <visual>
@@ -279,17 +280,17 @@
       </geometry>
     </visual>
     <collision>
-      <origin xyz="0.053 0.035 0.05" rpy="1.54 0 0" />
+      <origin xyz="0.053 0.035 -0.015" rpy="1.54 0 0" />
       <geometry>
         <mesh filename="package://tesr_ros_cr3_pkg/meshes/FingerR v1.stl" scale="0.0008 0.0008 0.0008" />
       </geometry>
     </collision>
   </link>
-  <joint name="joint9" type="prismatic">
-    <parent link="Gripper" />
-    <child link="FingerR" />
+  <joint name="joint9" type="revolute">
+    <parent link="hand" />
+    <child link="finger_r" />
     <origin rpy="0 0 0" xyz="0 0 0.0584"/>
-    <axis xyz="-1 0 0"/>
+    <axis xyz="0 0 -1"/>
     <limit effort="20" lower="0.0" upper="0.04" velocity="0.2"/>
   </joint>
   <!-- xacro implement-->
@@ -313,7 +314,7 @@
         <xacro:arm_gazebo link="link4"/>
         <xacro:arm_gazebo link="link5"/>
         <xacro:arm_gazebo link="link6"/>
-        <xacro:arm_gazebo link="Gripper"/>
+        <xacro:arm_gazebo link="hand"/>
 
 
 </robot>
