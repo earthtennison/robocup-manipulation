@@ -2,16 +2,17 @@
     <param name="robot_description" command="$(find xacro)/xacro --inorder $(find franka_description)/robots/panda_arm_hand_camera.urdf.xacro" />
 
     <!-- GAZEBO arguments -->
-    <arg name="paused" default="false" />
+    <arg name="paused" default="true" />
     <arg name="use_sim_time" default="true" />
     <arg name="gui" default="true" />
     <arg name="headless" default="false" />
     <arg name="debug" default="false" />
     <arg name="load_gripper" default="true" />
+    <arg name="world_path" default="$(find panda_simulation)/worlds/pick_and_place_prism.world"/>
 
     <!--launch GAZEBO with own world configuration -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
-        <!-- <arg name="world_name" value="$(find robotics_assisted_tomography)/worlds/tomography.world"/> -->
+        <arg name="world_name" value="$(arg world_path)"/>
         <arg name="debug" value="$(arg debug)" />
         <arg name="gui" value="$(arg gui)" />
         <arg name="paused" value="$(arg paused)" />
@@ -19,7 +20,8 @@
         <arg name="headless" value="$(arg headless)" />
     </include>
 
-    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model panda" />
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model panda 
+        -J panda_joint4 -1.1" />
 
     <!-- Load joint controller configurations from YAML file to parameter server -->
     <rosparam file="$(find panda_simulation)/config/panda_control.yaml" command="load" />
@@ -55,11 +57,7 @@
     <!-- run custom node for automatic intialization -->
     <node pkg="panda_simulation" type="robot_state_initializer_node" name="robot_state_initializer_node" />
 
-    <!-- for web interface -->
-    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
-        <arg name="port" value="9090" />
-    </include>
-
-    <node pkg="tf2_web_republisher" type="tf2_web_republisher" name="tf2_web_republisher" />
+    <!-- run gripper action client -->
+    <node pkg="panda_gripper_pkg" type="simple_gripper_control" name="simple_gripper_control" />
 
 </launch>
