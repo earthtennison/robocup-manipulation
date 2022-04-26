@@ -169,6 +169,11 @@ int main(int argc, char **argv)
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
 
   ros::Publisher planning_scene_diff_publisher = node_handle.advertise<moveit_msgs::PlanningScene>("planning_scene", 1);
+
+  // rviz visual and moveit visual
+  moveit_visual_tools::MoveItVisualTools visual_tools("panda_link0");
+  visual_tools.deleteAllMarkers();
+
   ros::WallDuration sleep_t(0.5);
   while (planning_scene_diff_publisher.getNumSubscribers() < 1)
   {
@@ -239,9 +244,15 @@ int main(int argc, char **argv)
 
     ROS_INFO("robot_control_node is ready");
 
+    visual_tools.trigger();
+    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add collision object");
+
     /////////////// planning scene interface /////////////
 
     addCollisionObjects(planning_scene_interface);
+
+    visual_tools.trigger();
+    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to pregrasp");
 
     ////////////// move group interface /////////////////
 
@@ -263,7 +274,13 @@ int main(int argc, char **argv)
     pregrasp.orientation.w = quat.getW();
 
     move(move_group_arm, pregrasp);
+    
+    visual_tools.trigger();
+    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to grasp");
 
+    // open gripper
+
+    
     // grasps
 
     ros::WallDuration(3.0).sleep();
