@@ -3,5 +3,5 @@
   <param name="moveit_controller_manager" value="moveit_simple_controller_manager/MoveItSimpleControllerManager" />
 
   <!-- loads controller list to the param server -->
-  <rosparam file="$(find cr3_moveit_3)/config/ros_controllers.yaml"/>
+  <rosparam file="$(find cr3_moveit_3)/config/cr3_gripper_controller.yaml"/>
 </launch>
