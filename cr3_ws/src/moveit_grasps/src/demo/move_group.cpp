@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     geometry_msgs::Pose Dpose;
     
 
-    ros::Subscriber pose_sub = node_handle.subscribe("/graspgen/waypoint",2,inpose);
+    ros::Subscriber pose_sub = node_handle.subscribe("/moveit_grasps_demo/Position",2,inpose);
     ros::AsyncSpinner spinner(0);
     spinner.start();
 
