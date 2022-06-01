@@ -19,7 +19,7 @@ protected:
   std::string action_name_;
 
   // publisher
-  ros::Publisher pub = nh_.advertise<tesr_ros_cr3_pkg::JointCommand>("cr3_command", 100);
+  ros::Publisher pub = nh_.advertise<tesr_ros_cr3_pkg::JointCommand>("cr3_arm_command", 100);
   tesr_ros_cr3_pkg::JointCommand msg;
   ros::Rate loop_rate;
 
