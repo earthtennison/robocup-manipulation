@@ -13,9 +13,9 @@ double fRand(double fMin, double fMax)
 void generateRandomObject(geometry_msgs::Pose& object_pose)
 {
   // Position
-  object_pose.position.x = fRand(0.1, 0.9);  // 0.55);
-  object_pose.position.y = fRand(-0.28, 0.28);
-  object_pose.position.z = 0.02;
+  object_pose.position.x = fRand(0.1, 0.5);  // 0.55);
+  object_pose.position.y = fRand(-0.3, 0.3);
+  object_pose.position.z = 0.6;
 
   // Orientation
   double angle = M_PI * fRand(0.1, 1);
@@ -57,8 +57,8 @@ int main(int argc, char* argv[])
     spinner.start();
     while(ros::ok){
         visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to publish obj");
-        // generateRandomObject(object_pose);
-        generateTestObject(object_pose);
+        generateRandomObject(object_pose);
+        // generateTestObject(object_pose);
         obj_pub.publish(object_pose);
     }
 }

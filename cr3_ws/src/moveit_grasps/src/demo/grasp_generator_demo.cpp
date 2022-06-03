@@ -73,7 +73,7 @@ public:
     grasp_visuals_->deleteAllMarkers();
     grasp_visuals_->trigger();
 
-    way_pub = nh_.advertise<geometry_msgs::Pose>("/graspgen/waypoint", 2);
+    way_pub = nh_.advertise<geometry_msgs::Pose>("Position", 2);
     // way_pub = nh_.advertise<moveit_grasps::GraspPose>("/graspgen/waypoint", 2);
     obj_sub = nh_.subscribe("/obj_pose", 1000, &GraspGeneratorDemo::objCallback, this);
 
@@ -196,7 +196,7 @@ public:
         
         way_pub.publish(possible_grasps.front()->grasp_.grasp_pose.pose);
 
-        // publish_waypoint(possible_grasps.front(),way_pub);
+        //publish_waypoint(possible_grasps.front(),way_pub);
         // excute_catesian(possible_grasps.front());
 
         visual_tools_->trigger();
