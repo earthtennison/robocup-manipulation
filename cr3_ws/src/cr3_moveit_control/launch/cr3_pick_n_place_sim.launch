@@ -48,7 +48,7 @@
         <arg name="debug" value="$(arg debug)"/>
     </include> 
 
-    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"  />
+    <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"  /> -->
 
     <!-- launch robot control node for moveit motion planning -->
     <node pkg="cr3_moveit_control" type="robot_control_node_sim" name="robot_control_node_sim" output="screen" />
