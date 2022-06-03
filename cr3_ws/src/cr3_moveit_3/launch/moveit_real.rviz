@@ -114,7 +114,63 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
-          dummy_link:
+          finger_l:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          finger_r:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          hand:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          sensor_d435_bottom_screw_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_color_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_color_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_depth_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_depth_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_left_ir_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_left_ir_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          sensor_d435_right_ir_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_right_ir_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          world:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -198,7 +254,63 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
-          dummy_link:
+          finger_l:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          finger_r:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          hand:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          sensor_d435_bottom_screw_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_color_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_color_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_depth_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_depth_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_left_ir_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_left_ir_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          sensor_d435_right_ir_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          sensor_d435_right_ir_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          world:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -212,15 +324,14 @@ Visualization Manager:
       Marker Topic: /rviz_visual_tools
       Name: MarkerArray
       Namespaces:
-        Text: true
-        pose 1: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: dummy_link
+    Fixed Frame: base_link
     Frame Rate: 30
   Name: root
   Tools:

@@ -24,7 +24,6 @@
 
     <!-- Load joint controller configurations from YAML file to parameter server -->
     <rosparam file="$(find cr3_moveit_3)/config/cr3_control.yaml" command="load"/>
-p
     <!-- load the controllers -->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
     args= "joint_state_controller cr3_arm_controller cr3_hand_controller" />
@@ -52,7 +51,7 @@ p
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"  />
 
     <!-- launch robot control node for moveit motion planning -->
-    <node pkg="cr3_moveit_control" type="robot_control_node" name="robot_control_node" output="screen" />
+    <node pkg="cr3_moveit_control" type="robot_control_node_sim" name="robot_control_node_sim" output="screen" />
 
     <!-- run gripper action client -->
     <node pkg="cr3_gripper_pkg" type="simple_gripper_control" name="simple_gripper_control" />
