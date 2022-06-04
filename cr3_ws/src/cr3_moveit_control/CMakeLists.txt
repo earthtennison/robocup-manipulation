@@ -60,6 +60,9 @@ catkin_package(CATKIN_DEPENDS
 # Specify additional locations of header files Your package locations should be listed before other locations
 include_directories(${catkin_INCLUDE_DIRS})
 
+add_executable(kan_algorithm_grasp src/kan_algorithm_grasp.cpp)
+target_link_libraries(kan_algorithm_grasp ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+
 add_executable(robot_control_node_sim src/robot_control_node_sim.cpp)
 target_link_libraries(robot_control_node_sim ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
 
