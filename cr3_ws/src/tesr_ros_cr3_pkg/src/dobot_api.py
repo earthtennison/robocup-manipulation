@@ -1,3 +1,4 @@
+# ref https://github.com/Dobot-Arm/TCP-IP-Protocol/blob/master/README-EN.md
 
 import socket
 from threading import Timer
@@ -564,6 +565,31 @@ class dobot_api_feedback:
         x, y, z, a, b, c :Cartesian coordinate point value
         """
         string = "ServoP({:f},{:f},{:f},{:f},{:f},{:f})".format(x,y,z,a,b,c)
+        print(string)
+        self.socket_feedback.send(str.encode(string,'utf-8'))
+
+    def MoveJog(self, axisID, CoordType=2, User=0, Tool=0):
+        """
+        Jogging movement. The movement is not fixed distance.
+        axisID :
+            J1+ means joint 1 is moving in the positive direction and J1- means joint 1 is moving in the negative direction
+            J2+ means joint 2is moving in the positive direction and J2- means joint 2 is moving in the negative direction
+            J3+ means joint 3 is moving in the positive direction and J3- means joint 3 is moving in the negative direction
+            J4+ means joint 4 is moving in the positive direction and J4- means joint 4 is moving in the negative direction
+            J5+ means joint 5 is moving in the positive direction and J5- means joint 5 is moving in the negative direction
+            J6+ means joint 6 is moving in the positive direction and J6- means joint 6 is moving in the negative direction
+            X+ means joint X is moving in the positive direction and X- means joint X is moving in the negative direction
+            Y+ means joint Y is moving in the positive direction and Y- means joint Y is moving in the negative direction
+            Z+ means joint Z is moving in the positive direction andZ- means joint Z is moving in the negative direction
+            Rx+ means joint Rx is moving in the positive direction and Rx- means joint Rx is moving in the negative direction
+            Ry+ means joint Ry is moving in the positive direction and Ry- means joint Ry is moving in the negative direction
+            Rz+ means joint Rz is moving in the positive direction and Rz- means joint Rz is moving in the negative direction
+        
+        CoordType: 0: user coordinate system, 1: joint coordinate system, 2: tool coordinate system. The default value is 2.
+        User: User index 0 to 9. The default value is 0.
+        Tool: Tool index 0 to 9. The default value is 0.
+        """
+        string = "MoveJog({},{},{},{})".format(axisID,CoordType,User,Tool)
         print(string)
         self.socket_feedback.send(str.encode(string,'utf-8'))
 
