@@ -22,7 +22,7 @@ static const std::string APP_DIRECTORY_NAME = ".cr3_simulation";
 ////////////////////////////////////////////////////////////
 
 static const std::vector<double> OBJECT_POSITION = {0.5, 0, 0.5}; // default {0.5, 0.0, 0.5}
-
+const double tau = 2 * M_PI;
 ////////////////////////////////////////////////////////////
 
 moveit_msgs::CollisionObject extractObstacleFromJson(Json::Value &root, std::string name) {
@@ -64,18 +64,44 @@ moveit_msgs::CollisionObject extractObstacleFromJson(Json::Value &root, std::str
 
   return std::move(collision_object);
 }
-void compute_pregrasp(float** ORIENTATION, float** POSITION, int trial){
-  for(int i = 0; i < trial; i++){
-    tf2::Quaternion quat0;
-    quat0.setRPY(PREGRASP[trial][3], PREGRASP[trial][4], PREGRASP[trial][5]);
-    ORIENTATION[trial][0] = quat0.getX();
-    ORIENTATION[trial][1] = quat0.getY();
-    ORIENTATION[trial][2] = quat0.getZ();
-    ORIENTATION[trial][3] = quat0.getW();
+
+void roll_pitch_yaw(double** POSITION, int trial, double* OBJ_POS){
+  float arr[7];
+  arr[0] = -float(M_PI)/2.0;
+  arr[1] = -float(M_PI)/2.0 + float(M_PI)/6.0;//float(M_PI)/2.0;
+  arr[2] = -float(M_PI)/2.0 - float(M_PI)/6.0;
+  arr[3] = -float(M_PI)/2.0 + float(M_PI)/3.0;
+  arr[4] = -float(M_PI)/2.0 - float(M_PI)/3.0;
+  arr[5] = -float(M_PI)/2.0 + float(M_PI)/2.0;
+  arr[6] = -float(M_PI)/2.0 - float(M_PI)/2.0;
+  for(int i = 0; i < 7; i++){
+    ROS_INFO("loop narok");
+    POSITION[i][0] = OBJ_POS[0];
+    POSITION[i][1] = OBJ_POS[1];
+    POSITION[i][2] = OBJ_POS[2];
+    POSITION[i][3] = -M_PI/ 2.0;
+    POSITION[i][4] = -M_PI/ 4.0;
+    POSITION[i][5] = arr[i];
   }
+  ROS_INFO("RUNNING roll_pitch_yaw");
 }
-void move(moveit::planning_interface::MoveGroupInterface &move_group_interface, geometry_msgs::Pose goal_pose, std::string str0, float** POSITION, float** ORIENTATION, int trial) {
+
+void compute_pregrasp(double** ORIENTATION, double** POSITION, int trial){
+  
+  for(int i = 0; i < 7; i++){
+    ROS_INFO("Compute pregrasp");
+    tf2::Quaternion quat0;
+    quat0.setRPY(POSITION[i][3], POSITION[i][4], POSITION[i][5]);
+    ORIENTATION[i][0] = quat0.getX();
+    ORIENTATION[i][1] = quat0.getY();
+    ORIENTATION[i][2] = quat0.getZ();
+    ORIENTATION[i][3] = quat0.getW();
+  }
+  ROS_INFO("bruh bruh");
+}
+void move(moveit::planning_interface::MoveGroupInterface &move_group_interface, geometry_msgs::Pose goal_pose, std::string str0, double** POSITION, double** ORIENTATION, int trial) {
   //Joint model group
+  ROS_INFO("Shimpai");
   const moveit::core::JointModelGroup *joint_model_group =
       move_group_interface.getCurrentState()->getJointModelGroup(PLANNING_GROUP_ARM);
   
@@ -85,7 +111,10 @@ void move(moveit::planning_interface::MoveGroupInterface &move_group_interface, 
   geometry_msgs::Pose target_pose1;
   int number = 0;
   bool success = false;
+  ROS_INFO("Prepare to move");
+  int angle[7] = {0, 30, -30, 60, -60,  90, -90};
   while(number < trial){
+    ROS_INFO("MOVE MOVE MOVE");
     target_pose1.orientation.w = ORIENTATION[number][0];
     target_pose1.orientation.x = ORIENTATION[number][1];
     target_pose1.orientation.y = ORIENTATION[number][2];
@@ -93,13 +122,10 @@ void move(moveit::planning_interface::MoveGroupInterface &move_group_interface, 
     target_pose1.position.x = POSITION[number][0];
     target_pose1.position.y = POSITION[number][1];
     target_pose1.position.z = POSITION[number][2];
-    move_group_interface.setPoseTarget(target_pose1};
-    ROS_INFO("target set %f set 1", number);
-
+    move_group_interface.setPoseTarget(target_pose1);
+    ROS_INFO("target planning set order %d and  %d degree done lol lol lol", number + 1, angle[number]);
     moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-    ROS_INFO("target set %f set 2", number);
     success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-    ROS_INFO("target set %f set 3", number);
     ROS_INFO("Plan %s", success ? "success" : "failure");
     if(success == true){ 
       visual_tools.publishAxisLabeled(target_pose1, "pose 1");
@@ -107,7 +133,7 @@ void move(moveit::planning_interface::MoveGroupInterface &move_group_interface, 
       visual_tools.trigger();
       break;
     }
-    number += 1
+    number += 1;
   }
   
   // target_pose1.orientation.w = goal_pose.orientation.w;
@@ -214,16 +240,16 @@ void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface &pla
 
   planning_scene_interface.applyCollisionObjects(collision_objects);
 }
-void planning_pose(float*** GRASP_GEN, int trial, int stepp, geometry_msgs::Pose pose0, tf2::Quaternion quat0){
-  pose.position.x = GRASP_GEN[trial][stepp][0];
-  pose.position.y = GRASP_GEN[trial][stepp][1];
-  pose.position.z = GRASP_GEN[trial][stepp][2];
-  quat.setRPY(GRASP_GEN[trial][stepp][3], GRASP_GEN[trial][stepp], GRASP_GEN[trial][stepp]);
-  pose.orientation.x = quat.getX();
-  pose.orientation.y = quat.getY();
-  pose.orientation.z = quat.getZ();
-  pose.orientation.w = quat.getW();
-}
+// void planning_pose(float*** GRASP_GEN, int trial, int stepp, geometry_msgs::Pose pose, tf2::Quaternion quat){
+//   pose.position.x = GRASP_GEN[trial][stepp][0];
+//   pose.position.y = GRASP_GEN[trial][stepp][1];
+//   pose.position.z = GRASP_GEN[trial][stepp][2];
+//   quat.setRPY(GRASP_GEN[trial][stepp][3], GRASP_GEN[trial][stepp][4], GRASP_GEN[trial][stepp][5]);
+//   pose.orientation.x = quat.getX();
+//   pose.orientation.y = quat.getY();
+//   pose.orientation.z = quat.getZ();
+//   pose.orientation.w = quat.getW();
+// }
 
 int main(int argc, char **argv) {
   namespace fs = boost::filesystem;
@@ -323,33 +349,42 @@ int main(int argc, char **argv) {
     // pregrasp
     // the position for panda_link8 = object pose - (length of cube/2 - distance b/w panda_link8 and palm of eef (0.058)
     // - some extra padding) - (desired offset for pregasp)
-
-    // declare the succeed variable
-    bool succeed = false
-    geometry_msgs::Pose pose0;
-    tf2::Quaternion quat0;
-    pose0.position.x = OBJECT_POSITION[0];
-    pose0.position.y = OBJECT_POSITION[1];
-    pose0.position.z = OBJECT_POSITION[2];
-    quat0.setRPY(-M_PI / 2, -M_PI / 4, -M_PI / 2);
-    pose0.orientation.x = quat0.getX();
-    pose0.orientation.y = quat0.getY();
-    pose0.orientation.z = quat0.getZ();
-    pose0.orientation.w = quat0.getW();
-    
-    int number_of_repeat = 10;
+    // add the pointer for the convinience for calculation
+  
+    double* OBJ_POS;
+    OBJ_POS = (double *) malloc (3 * sizeof(double));
+    //Modify at here
+    OBJ_POS[0] = 0.2;
+    OBJ_POS[1] = 0;
+    OBJ_POS[2] = 0.3;
+    ROS_INFO("fishfhishfhishfishfhsdogg");
+    int number_of_repeat = 7;
     int number_of_step = 5;
-    float **PREGRASP;
-    PREGRASP = (float **) malloc (number_of_repeat * sizeof(float));
+    double **POSITION;
+    POSITION = (double **) malloc (number_of_repeat * sizeof(double));
     for(int i = 0; i < number_of_repeat; i++){
-      PREGRASP[i] = (float *) malloc (6 * sizeof(float));
+      POSITION[i] = (double *) malloc (6 * sizeof(double));
     }
+
+    double **ORIENTATION;
+    ORIENTATION = (double **) malloc (number_of_repeat * sizeof(double));
+    for(int i = 0; i < number_of_repeat; i++){
+      ORIENTATION[i] = (double *) malloc (4 * sizeof(double));
+    }
+    ROS_INFO("shrimp shrimp");
+    //use the roll pitch yaw algorithm
+    roll_pitch_yaw(POSITION, number_of_repeat, OBJ_POS);
+    ROS_INFO("ebi ebi");
+
+
+    compute_pregrasp(ORIENTATION, POSITION, number_of_repeat);
     //add the grasp gen function of the OBJECT_POSITION in the pointer
     //declare the pose function
     geometry_msgs::Pose poseA;
     tf2::Quaternion quatA;
-    int number_of_trial = 0
-  
+    ROS_INFO("FISHFISHFISH");
+    move(move_group_arm, poseA, "string", POSITION, ORIENTATION, number_of_repeat);
+    ROS_INFO("Dog Dog Dog");
     //left the loop  when the loop is ended
     //325426587360862563
     //bool fish = check_whether_move(move_group_arm, pose0, "Check Grasp LOL");
@@ -367,7 +402,6 @@ int main(int argc, char **argv) {
 
     // }
     geometry_msgs::Pose pose;
-    
     pose.position.x = OBJECT_POSITION[0];
     pose.position.y = OBJECT_POSITION[1] + 0.15;
     pose.position.z = OBJECT_POSITION[2];
@@ -380,7 +414,7 @@ int main(int argc, char **argv) {
     pose.orientation.z = quat.getZ();
     pose.orientation.w = quat.getW();
 
-      move(move_group_arm, pose, PREGRASP,);
+    //move(move_group_arm, pose, PREGRASP,);
 
     visual_tools.trigger();
     visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to open gripper");
@@ -406,7 +440,7 @@ int main(int argc, char **argv) {
     pose.orientation.z = quat.getZ();
     pose.orientation.w = quat.getW();
 
-      move(move_group_arm, pose, PREGRASP, );
+    //move(move_group_arm, pose, PREGRASP, );
 
     visual_tools.trigger();
     visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to close gripper");
@@ -433,7 +467,7 @@ int main(int argc, char **argv) {
     pose.orientation.z = quat.getZ();
     pose.orientation.w = quat.getW();
 
-    move(move_group_arm, pose);
+    //move(move_group_arm, pose);
 
     visual_tools.trigger();
     visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to end");
