@@ -58,7 +58,7 @@ Darknet3D::Darknet3D():
 
   darknet3d_pub_ = nh_.advertise<gb_visual_detection_3d_msgs::BoundingBoxes3d>(output_bbx3d_topic_, 100);
   markers_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/darknet_ros_3d/markers", 100);
-  object_pub_ = nh_.advertise<geometry_msgs::Pose>("/object_pose",100);
+  // object_pub_ = nh_.advertise<geometry_msgs::Pose>("/object_pose",100);
 
   yolo_sub_ = nh_.subscribe(input_bbx_topic_, 1, &Darknet3D::darknetCb, this);
   pointCloud_sub_ = nh_.subscribe(pointcloud_topic_, 1, &Darknet3D::pointCloudCb, this);
@@ -239,10 +239,10 @@ Darknet3D::publish_markers(const gb_visual_detection_3d_msgs::BoundingBoxes3d& b
 
 
   }
-  object_pose = msg.markers[0].pose;
-  markers_pub_.publish(msg);
-  object_pub_.publish(object_pose);
 
+  // object_pose = msg.markers[0].pose;
+  markers_pub_.publish(msg);
+  // object_pub_.publish(object_pose);
 
 }
 
