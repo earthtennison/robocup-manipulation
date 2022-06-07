@@ -108,62 +108,66 @@ Darknet3D::calculate_boxes(const sensor_msgs::PointCloud2& cloud_pc2,
 {
   boxes->header.stamp = cloud_pc2.header.stamp;
   boxes->header.frame_id = working_frame_;
+  ROS_INFO("")
+  if (original_bboxes_.size() > 0){
 
-  for (auto bbx : original_bboxes_)
-  {
-    if ((bbx.probability < minimum_probability_) ||
-        (std::find(interested_classes_.begin(), interested_classes_.end(), bbx.Class) == interested_classes_.end()))
+    for (auto bbx : original_bboxes_)
     {
-      continue;
-    }
-
-    int center_x, center_y;
-
-    center_x = (bbx.xmax + bbx.xmin) / 2;
-    center_y = (bbx.ymax + bbx.ymin) / 2;
-
-    int pcl_index = (center_y* cloud_pc2.width) + center_x;
-    pcl::PointXYZRGB center_point =  cloud_pcl->at(pcl_index);
-
-    if (std::isnan(center_point.x))
-      continue;
-
-    float maxx, minx, maxy, miny, maxz, minz;
-
-    maxx = maxy = maxz =  -std::numeric_limits<float>::max();
-    minx = miny = minz =  std::numeric_limits<float>::max();
-
-    for (int i = bbx.xmin; i < bbx.xmax; i++)
-      for (int j = bbx.ymin; j < bbx.ymax; j++)
+      if ((bbx.probability < minimum_probability_) ||
+          (std::find(interested_classes_.begin(), interested_classes_.end(), bbx.Class) == interested_classes_.end()))
       {
-        pcl_index = (j* cloud_pc2.width) + i;
-        pcl::PointXYZRGB point =  cloud_pcl->at(pcl_index);
-
-        if (std::isnan(point.x))
-          continue;
-
-        if (fabs(point.x - center_point.x) > mininum_detection_thereshold_)
-          continue;
-
-        maxx = std::max(point.x, maxx);
-        maxy = std::max(point.y, maxy);
-        maxz = std::max(point.z, maxz);
-        minx = std::min(point.x, minx);
-        miny = std::min(point.y, miny);
-        minz = std::min(point.z, minz);
+        continue;
       }
 
-    gb_visual_detection_3d_msgs::BoundingBox3d bbx_msg;
-    bbx_msg.Class = bbx.Class;
-    bbx_msg.probability = bbx.probability;
-    bbx_msg.xmin = minx;
-    bbx_msg.xmax = maxx;
-    bbx_msg.ymin = miny;
-    bbx_msg.ymax = maxy;
-    bbx_msg.zmin = minz;
-    bbx_msg.zmax = maxz;
+      int center_x, center_y;
 
-    boxes->bounding_boxes.push_back(bbx_msg);
+      center_x = (bbx.xmax + bbx.xmin) / 2;
+      center_y = (bbx.ymax + bbx.ymin) / 2;
+
+      int pcl_index = (center_y* cloud_pc2.width) + center_x;
+      pcl::PointXYZRGB center_point =  cloud_pcl->at(pcl_index);
+
+      if (std::isnan(center_point.x))
+        continue;
+
+      float maxx, minx, maxy, miny, maxz, minz;
+
+      maxx = maxy = maxz =  -std::numeric_limits<float>::max();
+      minx = miny = minz =  std::numeric_limits<float>::max();
+
+      for (int i = bbx.xmin; i < bbx.xmax; i++)
+        for (int j = bbx.ymin; j < bbx.ymax; j++)
+        {
+          pcl_index = (j* cloud_pc2.width) + i;
+          pcl::PointXYZRGB point =  cloud_pcl->at(pcl_index);
+
+          if (std::isnan(point.x))
+            continue;
+
+          if (fabs(point.x - center_point.x) > mininum_detection_thereshold_)
+            continue;
+
+          maxx = std::max(point.x, maxx);
+          maxy = std::max(point.y, maxy);
+          maxz = std::max(point.z, maxz);
+          minx = std::min(point.x, minx);
+          miny = std::min(point.y, miny);
+          minz = std::min(point.z, minz);
+        }
+
+      gb_visual_detection_3d_msgs::BoundingBox3d bbx_msg;
+      bbx_msg.Class = bbx.Class;
+      bbx_msg.probability = bbx.probability;
+      bbx_msg.xmin = minx;
+      bbx_msg.xmax = maxx;
+      bbx_msg.ymin = miny;
+      bbx_msg.ymax = maxy;
+      bbx_msg.zmin = minz;
+      bbx_msg.zmax = maxz;
+
+      boxes->bounding_boxes.push_back(bbx_msg);
+    }
+
   }
 }
 

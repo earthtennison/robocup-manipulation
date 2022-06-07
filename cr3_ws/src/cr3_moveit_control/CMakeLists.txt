@@ -30,7 +30,8 @@ find_package(catkin REQUIRED
                         rosbridge_server
                         rosbridge_msgs
                         rosapi
-                        tf2_web_republisher)
+                        tf2_web_republisher
+                        moveit_servo)
 
 # System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS filesystem)
@@ -50,6 +51,7 @@ catkin_package(CATKIN_DEPENDS
                controller_interface
                hardware_interface
                pluginlib
+               moveit_servo
                DEPENDS
                )
 
@@ -68,3 +70,6 @@ target_link_libraries(robot_control_node_sim ${catkin_LIBRARIES} boost_filesyste
 
 add_executable(robot_control_node_real src/robot_control_node_real.cpp)
 target_link_libraries(robot_control_node_real ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+
+add_executable(visual_servo src/visual_servo.cpp)
+target_link_libraries(visual_servo ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})

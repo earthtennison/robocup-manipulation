@@ -31,7 +31,6 @@
   <group unless="$(arg sim)">
     <!-- send robot urdf to param server -->
     <param name="robot_description" command="$(find xacro)/xacro '$(arg urdf_path)'"/>
-    <!-- <include file="$(find cr3_moveit_config)/launch/ros_controllers.launch"/> -->
     <!-- cr3 trajectory action server-->
     <node name="trajectory_follower_server" pkg="tesr_ros_cr3_pkg" type="trajectory_follower_server"/>
     <!-- cr3 controller-->
@@ -44,13 +43,13 @@
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
 
   <!-- Run the main MoveIt! executable without trajectory execution (we do not have controllers configured by default) -->
-  <include file="$(find cr3_moveit_config)/launch/move_group.launch">
+  <include file="$(find cr3_moveit_3)/launch/move_group.launch">
     <arg name="publish_monitored_planning_scene" value="true" />
   </include>
 
   <!-- Run Rviz and load the default config to see the state of the move_group node -->
-  <include file="$(find cr3_moveit_config)/launch/moveit_rviz.launch">
-    <arg name="rviz_config" value="$(find cr3_moveit_config)/launch/moveit.rviz"/>
+  <include file="$(find cr3_moveit_3)/launch/moveit_rviz.launch">
+    <arg name="rviz_config" value="$(find cr3_moveit_3)/launch/moveit.rviz"/>
     <arg name="debug" value="$(arg debug)"/>
   </include>
 
