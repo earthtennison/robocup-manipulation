@@ -108,8 +108,7 @@ Darknet3D::calculate_boxes(const sensor_msgs::PointCloud2& cloud_pc2,
 {
   boxes->header.stamp = cloud_pc2.header.stamp;
   boxes->header.frame_id = working_frame_;
-  ROS_INFO("")
-  if (original_bboxes_.size() > 0){
+
 
     for (auto bbx : original_bboxes_)
     {
@@ -168,7 +167,7 @@ Darknet3D::calculate_boxes(const sensor_msgs::PointCloud2& cloud_pc2,
       boxes->bounding_boxes.push_back(bbx_msg);
     }
 
-  }
+  
 }
 
 void
