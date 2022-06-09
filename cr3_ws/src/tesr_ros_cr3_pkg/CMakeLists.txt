@@ -164,6 +164,8 @@ target_link_libraries(trajectory_follower_server
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   src/cr3_controller.py
+  src/simple_color_detection.py
+  src/visual_servo.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

@@ -589,7 +589,8 @@ class dobot_api_feedback:
         User: User index 0 to 9. The default value is 0.
         Tool: Tool index 0 to 9. The default value is 0.
         """
-        string = "MoveJog({},{},{},{})".format(axisID,CoordType,User,Tool)
+        # string = "MoveJog({},CoordType={},User={},Tool={})".format(axisID,CoordType,User,Tool)
+        string = "MoveJog({})".format(axisID)
         print(string)
         self.socket_feedback.send(str.encode(string,'utf-8'))
 
