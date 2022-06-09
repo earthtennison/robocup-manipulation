@@ -379,7 +379,36 @@ class dobot_api_dashboard:
         data = self.socket_dashboard.recv(1024)
         print('receive:', bytes.decode(data,'utf-8'))
         return bytes.decode(data,'utf-8')
-    
+
+    def BrakeControl(self, axisID, value):
+        """
+        Control brake. The control of the brake should be carried out under the condition that the robot is enabled.
+        """
+        string = "BrakeControl({},{})".format(axisID, value)
+        print(string)
+        self.socket_dashboard.send(str.encode(string,'utf-8'))
+        self.WaitReply()
+
+    def SetCollideDrag(self, status):
+        """
+        Set whether drag is forced to enter (can enter drag even in error state).
+        status: force drag switch state, 0: disables the brake. 1: enable the brake
+        """
+        string = "SetCollideDrag({})".format(status)
+        print(string)
+        self.socket_dashboard.send(str.encode(string,'utf-8'))
+        self.WaitReply()
+
+    def StartDrag(self):
+        """
+        Set whether drag is forced to enter (can enter drag even in error state).
+        status: force drag switch state, 0: disables the brake. 1: enable the brake
+        """
+        string = "StartDrag()"
+        print(string)
+        self.socket_dashboard.send(str.encode(string,'utf-8'))
+        self.WaitReply()
+
     def Sync(self):
         """
         Synchronization instructions

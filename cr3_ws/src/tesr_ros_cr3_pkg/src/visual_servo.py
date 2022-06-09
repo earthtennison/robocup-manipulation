@@ -13,6 +13,7 @@ import math
 import time
 import threading
 import numpy as np
+import copy
 
 # ros library
 import rospy
@@ -22,6 +23,7 @@ from sensor_msgs.msg import JointState
 # cr3 library
 from dobot_api import dobot_api_dashboard, dobot_api_feedback, MyType
 
+Kp = 0.05
 
 def on_shutdown():
     global client_feedback, client_dashboard
@@ -76,7 +78,8 @@ class VisualServo():
         
         self._time_steer        = 0
         self._steer_sign_prev   = 0
-        self.stable_pose = cr3_endpoint
+        self.current_pose = copy.copy(cr3_endpoint)
+        self.start_pose = copy.copy(cr3_endpoint)
         
     @property
     def is_detected(self): return(time.time() - self._time_detected < 1.0)
@@ -95,10 +98,10 @@ class VisualServo():
         |         |
         |         o---> +x
         |
-        0------------------> -Y Robot Base Frame
+        0------------------> +Y Robot Base Frame
 
         """
-        global client_feedback
+        global client_feedback, cr3_endpoint
 
         rospy.loginfo("commanding for x,y = {},{}".format(self.blob_x, self.blob_y))
         x_tolerance = 10
@@ -106,41 +109,45 @@ class VisualServo():
         if self.is_detected:
 
             # safty check the endpoint coordinates
-            x_eff, y_eff, z_eff = cr3_endpoint[0], cr3_endpoint[1], cr3_endpoint[2]
-            rospy.loginfo("cr3_endpoint: [x:{0}] , [y:{1}] , [z:{2}]".format(x_eff, y_eff, z_eff))
-            if not -200 < y_eff < 200:
-                rospy.logerr("cr3 out of workspace!")
-                client_dashboard.ResetRobot()
+            x_eef, y_eef, z_eef, roll_eef, pitch_eef, yaw_eef = cr3_endpoint[0], cr3_endpoint[1], cr3_endpoint[2], cr3_endpoint[3], cr3_endpoint[4], cr3_endpoint[5]
+            # x_eef, y_eef, z_eef, roll_eef, pitch_eef, yaw_eef = self.current_pose[0], self.current_pose[1], self.current_pose[2], self.current_pose[3], self.current_pose[4], self.current_pose[5]
+            rospy.loginfo("cr3_endpoint: [x:{0}] , [y:{1}] , [z:{2}]".format(x_eef, y_eef, z_eef))
+            if not -400 < y_eef < 400:
+                rospy.logerr("cr3 out of workspace! moving to start position")
+                client_feedback.MovJ(self.start_pose[0], self.start_pose[1], self.start_pose[2], self.start_pose[3], self.start_pose[4], self.start_pose[5])
+                time.sleep(3)
+                self.current_pose = copy.copy(cr3_endpoint)
             else:
                 if self.blob_x > x_tolerance:
-                    rospy.loginfo("moving +x")
-                    client_feedback.MoveJog("Y-")
+                    rospy.loginfo("moving +x power {}".format(self.blob_x * Kp))
+                    y_eef += abs(self.blob_x * Kp)
                 elif self.blob_x < -1*x_tolerance:
-                    rospy.loginfo("moving -x")
-                    client_feedback.MoveJog("Y+")
+                    rospy.loginfo("moving -x power {}".format(self.blob_x * Kp))
+                    y_eef -= abs(self.blob_x * Kp)
                 else:
-                    rospy.loginfo("stop")
-                    client_dashboard.ResetRobot()
+                    rospy.loginfo("stop x")
 
-            # if self.blob_y > y_tolerance:
-            #     rospy.loginfo("moving +z")
-            #     client_feedback.MoveJog("Z+")
-            # elif self.blob_y < -1*y_tolerance:
-            #     rospy.loginfo("moving -z")
-            #     client_feedback.MoveJog("Z-")
-            # else:
-            #     rospy.loginfo("stop")
-            #     client_dashboard.ResetRobot()
+                if self.blob_y > y_tolerance:
+                    rospy.loginfo("moving +z power {}".format(self.blob_y * Kp))
+                    z_eef += abs(self.blob_y * Kp)
+                elif self.blob_y < -1*y_tolerance:
+                    rospy.loginfo("moving -z power {}".format(self.blob_y * Kp))
+                    z_eef -= abs(self.blob_y * Kp)
+                else:
+                    rospy.loginfo("stop z")
+
+                client_feedback.ServoP(x_eef, y_eef, z_eef, roll_eef, pitch_eef, yaw_eef)
+                # update current_pose
+                self.current_pose = x_eef, y_eef, z_eef, roll_eef, pitch_eef, yaw_eef
         else:
             rospy.loginfo("stop")
-            client_dashboard.ResetRobot()
 
             
 if __name__ == "__main__":
 
     rospy.init_node('visual_servo', anonymous=True)
     pub = rospy.Publisher("/joint_states", JointState, queue_size=10)
-    rate = rospy.Rate(10)
+    rate = rospy.Rate(30)
     rospy.on_shutdown(on_shutdown)
 
     # Enable threads on ports 29999 and 30003
@@ -176,6 +183,7 @@ if __name__ == "__main__":
     # run feedback in Background
     t1 = threading.Thread(name="thread1", target=cr3_feedback)
     t1.start()
+    time.sleep(1)
     
     # rospy.loginfo("start node")
     robot = VisualServo()
