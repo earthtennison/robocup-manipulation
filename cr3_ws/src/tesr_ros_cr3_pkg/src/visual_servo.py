@@ -68,7 +68,7 @@ def cr3_feedback():
 
 class VisualServo():
     def __init__(self):
-        global cr3_endpoint
+        global cr3_endpoint, cr3_joint
         self.blob_x         = 0.0
         self.blob_y         = 0.0
         self._time_detected = 0.0
@@ -79,7 +79,7 @@ class VisualServo():
         self._time_steer        = 0
         self._steer_sign_prev   = 0
         self.current_pose = copy.copy(cr3_endpoint)
-        self.start_pose = copy.copy(cr3_endpoint)
+        self.start_joint = copy.copy(cr3_joint)
         
     @property
     def is_detected(self): return(time.time() - self._time_detected < 1.0)
@@ -103,38 +103,47 @@ class VisualServo():
         """
         global client_feedback, cr3_endpoint
 
-        rospy.loginfo("commanding for x,y = {},{}".format(self.blob_x, self.blob_y))
+        # rospy.loginfo("commanding for x,y = {},{}".format(self.blob_x, self.blob_y))
         x_tolerance = 10
         y_tolerance = 10
         if self.is_detected:
 
             # safty check the endpoint coordinates
-            x_eef, y_eef, z_eef, roll_eef, pitch_eef, yaw_eef = cr3_endpoint[0], cr3_endpoint[1], cr3_endpoint[2], cr3_endpoint[3], cr3_endpoint[4], cr3_endpoint[5]
-            # x_eef, y_eef, z_eef, roll_eef, pitch_eef, yaw_eef = self.current_pose[0], self.current_pose[1], self.current_pose[2], self.current_pose[3], self.current_pose[4], self.current_pose[5]
+            # x_eef, y_eef, z_eef, roll_eef, pitch_eef, yaw_eef = cr3_endpoint[0], cr3_endpoint[1], cr3_endpoint[2], cr3_endpoint[3], cr3_endpoint[4], cr3_endpoint[5]
+            x_eef, y_eef, z_eef, roll_eef, pitch_eef, yaw_eef = self.current_pose[0], self.current_pose[1], self.current_pose[2], self.current_pose[3], self.current_pose[4], self.current_pose[5]
             rospy.loginfo("cr3_endpoint: [x:{0}] , [y:{1}] , [z:{2}]".format(x_eef, y_eef, z_eef))
-            if not -400 < y_eef < 400:
-                rospy.logerr("cr3 out of workspace! moving to start position")
-                client_feedback.MovJ(self.start_pose[0], self.start_pose[1], self.start_pose[2], self.start_pose[3], self.start_pose[4], self.start_pose[5])
-                time.sleep(3)
+            if not (-200 < y_eef < 200 and 200 < z_eef < 600) :
+                rospy.logerr("cr3 out of workspace! moving to {},{},{}".format(self.start_joint[0], self.start_joint[1], self.start_joint[2]))
+                client_feedback.JointMovJ(self.start_joint[0], self.start_joint[1], self.start_joint[2], self.start_joint[3], self.start_joint[4], self.start_joint[5])
+                time.sleep(10)
                 self.current_pose = copy.copy(cr3_endpoint)
             else:
+                # TODO use pid
                 if self.blob_x > x_tolerance:
-                    rospy.loginfo("moving +x power {}".format(self.blob_x * Kp))
-                    y_eef += abs(self.blob_x * Kp)
+                    # rospy.loginfo("moving +x power {}".format(self.blob_x * Kp))
+                    # y_eef += abs(self.blob_x * Kp)
+                    rospy.loginfo("moving +x")
+                    y_eef += 0.5
                 elif self.blob_x < -1*x_tolerance:
-                    rospy.loginfo("moving -x power {}".format(self.blob_x * Kp))
-                    y_eef -= abs(self.blob_x * Kp)
+                    # rospy.loginfo("moving -x power {}".format(self.blob_x * Kp))
+                    # y_eef -= abs(self.blob_x * Kp)
+                    rospy.loginfo("moving -x")
+                    y_eef -= 0.5
                 else:
                     rospy.loginfo("stop x")
 
                 if self.blob_y > y_tolerance:
-                    rospy.loginfo("moving +z power {}".format(self.blob_y * Kp))
-                    z_eef += abs(self.blob_y * Kp)
+                    # rospy.loginfo("moving +z power {}".format(self.blob_y * Kp))
+                    # z_eef += abs(self.blob_y * Kp)
+                    rospy.loginfo("moving +y")
+                    z_eef += 0.5
                 elif self.blob_y < -1*y_tolerance:
-                    rospy.loginfo("moving -z power {}".format(self.blob_y * Kp))
-                    z_eef -= abs(self.blob_y * Kp)
+                    # rospy.loginfo("moving -z power {}".format(self.blob_y * Kp))
+                    # z_eef -= abs(self.blob_y * Kp)
+                    rospy.loginfo("moving -y")
+                    z_eef -= 0.5
                 else:
-                    rospy.loginfo("stop z")
+                    rospy.loginfo("stop y")
 
                 client_feedback.ServoP(x_eef, y_eef, z_eef, roll_eef, pitch_eef, yaw_eef)
                 # update current_pose
@@ -147,7 +156,7 @@ if __name__ == "__main__":
 
     rospy.init_node('visual_servo', anonymous=True)
     pub = rospy.Publisher("/joint_states", JointState, queue_size=10)
-    rate = rospy.Rate(30)
+    rate = rospy.Rate(20)
     rospy.on_shutdown(on_shutdown)
 
     # Enable threads on ports 29999 and 30003
