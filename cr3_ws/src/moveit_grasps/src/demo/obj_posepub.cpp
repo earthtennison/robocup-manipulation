@@ -15,7 +15,7 @@ void generateRandomObject(geometry_msgs::Pose& object_pose)
   // Position
   object_pose.position.x = fRand(0.1, 0.5);  // 0.55);
   object_pose.position.y = fRand(-0.3, 0.3);
-  object_pose.position.z = 0.6;
+  object_pose.position.z = 0.3;
 
   // Orientation
   double angle = M_PI * fRand(0.1, 1);
