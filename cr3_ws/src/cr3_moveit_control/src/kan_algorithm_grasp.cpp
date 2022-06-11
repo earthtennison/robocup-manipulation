@@ -20,7 +20,7 @@
 static const std::string PLANNING_GROUP_ARM = "arm";
 static const std::string APP_DIRECTORY_NAME = ".cr3_simulation";
 ////////////////////////////////////////////////////////////
-
+// 
 static const std::vector<double> OBJECT_POSITION = {0.5, 0, 0.5}; // default {0.5, 0.0, 0.5}
 const double tau = 2 * M_PI;
 ////////////////////////////////////////////////////////////
@@ -99,7 +99,10 @@ void compute_pregrasp(double** ORIENTATION, double** POSITION, int trial){
   }
   ROS_INFO("bruh bruh");
 }
-void move(moveit::planning_interface::MoveGroupInterface &move_group_interface, geometry_msgs::Pose goal_pose, std::string str0, double** POSITION, double** ORIENTATION, int trial) {
+void move(moveit::planning_interface::MoveGroupInterface 
+&move_group_interface, geometry_msgs::Pose goal_pose, 
+std::string str0, double** POSITION, 
+double** ORIENTATION, int trial) {
   //Joint model group
   ROS_INFO("Shimpai");
   const moveit::core::JointModelGroup *joint_model_group =
@@ -355,8 +358,8 @@ int main(int argc, char **argv) {
     OBJ_POS = (double *) malloc (3 * sizeof(double));
     //Modify at here
     OBJ_POS[0] = 0.2;
-    OBJ_POS[1] = 0;
-    OBJ_POS[2] = 0.3;
+    OBJ_POS[1] = 0.2;
+    OBJ_POS[2] = 0;
     ROS_INFO("fishfhishfhishfishfhsdogg");
     int number_of_repeat = 7;
     int number_of_step = 5;

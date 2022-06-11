@@ -1,0 +1,10 @@
+#request x y z rowputch yaw
+float64 kan_x
+float64 kan_y
+float64 kan_z
+float64 kan_roll
+float64 kan_pitch
+float64 kan_yawn
+---
+#response true false
+bool kansuccessgrasp
