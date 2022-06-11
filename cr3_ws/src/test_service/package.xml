@@ -54,8 +54,11 @@
   <depend>sensor_msgs</depend>
   <depend>moveit_visual_tools</depend>
   <depend>rviz_visual_tools</depend>
-  <build_depend>message_generation</build_depend>
+  <depend>message_generation</depend>
+  <depend>actionlib</depend>
+  <depend>actionlib_msgs</depend>
   <exec_depend>message_runtime</exec_depend>
+  
 
 
   <!-- The export tag contains other, unspecified, tags -->

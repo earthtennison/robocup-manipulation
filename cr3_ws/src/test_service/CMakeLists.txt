@@ -13,6 +13,7 @@ rospy
 sensor_msgs
 geometry_msgs
 message_generation
+actionlib_msgs
 
 )
 
@@ -64,17 +65,17 @@ add_service_files(
 )
 
 ## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
+add_action_files(
+  FILES
+  obj2pose_action.action
+)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
 DEPENDENCIES
 std_msgs
 geometry_msgs
+actionlib_msgs
 )
 
 ################################################
@@ -109,7 +110,7 @@ geometry_msgs
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES test_service
-#  CATKIN_DEPENDS other_catkin_pkg
+ CATKIN_DEPENDS actionlib_msgs
 #  DEPENDS system_lib
 )
 
