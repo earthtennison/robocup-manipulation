@@ -37,6 +37,7 @@ add_library(${PROJECT_NAME}
   src/darknet_ros_3d/Darknet3D.cpp
   src/darknet_ros_3d/Darknet3DListener.cpp
   src/darknet_ros_3d/tf_camera.cpp
+  
 )
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
@@ -49,6 +50,9 @@ target_link_libraries(darknet3d_listener_node ${catkin_LIBRARIES} ${PROJECT_NAME
 
 add_executable(tf_camera src/darknet_ros_3d/tf_camera.cpp)
 target_link_libraries(tf_camera ${catkin_LIBRARIES} ${PROJECT_NAME})
+
+add_executable(detect_3d_server src/darknet_ros_3d/detect_3d_server.cpp)
+target_link_libraries(detect_3d_server ${catkin_LIBRARIES} ${PROJECT_NAME})
 
 
 roslint_cpp(

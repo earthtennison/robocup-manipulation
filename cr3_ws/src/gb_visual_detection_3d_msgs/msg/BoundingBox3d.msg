@@ -1,3 +1,4 @@
+std_msgs/Header header
 string Class
 float64 probability
 float64 xmin
