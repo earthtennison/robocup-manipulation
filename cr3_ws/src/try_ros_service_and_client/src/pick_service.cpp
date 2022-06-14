@@ -67,6 +67,9 @@ moveit_msgs::CollisionObject extractObstacleFromJson(Json::Value &root, std::str
   return std::move(collision_object);  
 }
 // Generate Angle of Grasp Pose 
+// Calculation Algorithm
+//========================================================================================
+//========================================================================================
 void roll_pitch_yawn(double** POSITION, int trial, double* OBJ_POS){
   float arr[7];
   // Algorithm from 0 +30 -30 +60 -60 +90 -90
@@ -77,6 +80,7 @@ void roll_pitch_yawn(double** POSITION, int trial, double* OBJ_POS){
   arr[4] = -float(M_PI)/2.0 - float(M_PI)/3.0;
   arr[5] = -float(M_PI)/2.0 + float(M_PI)/2.0;
   arr[6] = -float(M_PI)/2.0 - float(M_PI)/2.0;
+
   for(int i = 0; i < 7; i++){
     POSITION[i][0] = OBJ_POS[0];
     POSITION[i][1] = OBJ_POS[1];
@@ -85,17 +89,13 @@ void roll_pitch_yawn(double** POSITION, int trial, double* OBJ_POS){
     POSITION[i][4] = -M_PI / 4.0;
     POSITION[i][5] = arr[i];
   }
-  ROS_INFO("Running roll pitch yawn");
 }
-
 // Void generate_pregrasp
-
 // transform from roll pitch yaw coordinate to wxyz coordinate
 // TODO ==> compute_grasp() --> transform_euler_to_wxyz
-void compute_pregrasp(double** ORIENTATION, double** POSITION, int trial)
+void transform_euler_to_wxyz(double** ORIENTATION, double** POSITION, int trial)
 {
   for(int i = 0; i < 7; i++){
-    ROS_INFO("Compute pregrasp");
     tf2::Quaternion quat0;
     quat0.setRPY(POSITION[i][3], POSITION[i][4], POSITION[i][5]);
     ORIENTATION[i][0] = quat0.getX();
@@ -104,10 +104,10 @@ void compute_pregrasp(double** ORIENTATION, double** POSITION, int trial)
     ORIENTATION[i][3] = quat0.getW();
   }
 }
-
+//===========================================================================================
+//===========================================================================================
 
 void move(moveit::planning_interface::MoveGroupInterface &move_group_interface,
-	  geometry_msgs::Pose goal_pose,
 	  std::string str0, double** POSITION,
 	  double** ORIENTATION, int trial){
   //Joint model group
@@ -123,27 +123,39 @@ void move(moveit::planning_interface::MoveGroupInterface &move_group_interface,
   //random the target pose
   // to print an angle 
   int angle[7] = {0, 30, -30, 60, -60, 90, -90};
+
+  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
   while(number < trial){
-    target_pose1.orientation.w = ORIENTATION[number][0];
-    target_pose1.orientation.x = ORIENTATION[number][1];
-    target_pose1.orientation.y = ORIENTATION[number][2];
-    target_pose1.orientation.z = ORIENTATION[number][3];
-    target_pose1.position.x = ORIENTATION[number][0];
-    target_pose1.position.y = ORIENTATION[number][1];
-    target_pose1.position.z = ORIENTATION[number][2];
+    target_pose1.orientation.x = ORIENTATION[number][0];
+    target_pose1.orientation.y = ORIENTATION[number][1];
+    target_pose1.orientation.z = ORIENTATION[number][2];
+    target_pose1.orientation.w = ORIENTATION[number][3];
+    target_pose1.position.x = POSITION[number][0];
+    target_pose1.position.y = POSITION[number][1];
+    target_pose1.position.z = POSITION[number][2];
     move_group_interface.setPoseTarget(target_pose1);
     ROS_INFO("target planning set order %d and %d degree done", number+1, angle[number]);
-    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+
     //=======================================================================================================//
     success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
     ROS_INFO("Plan %s", success ? "success" : "failure");
     //=======================================================================================================//
+      // visualize plan
+    visual_tools.publishAxisLabeled(target_pose1, "pose 1");
+    visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+    visual_tools.trigger();
     //TODO = fill try catch instead 
     if(success == true){
       break;
     }
     number += 1;
   }
+
+  bool success_execute =
+      (move_group_interface.execute(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  ROS_INFO("Execute %s", success_execute ? "success" : "failure");
+  success = success && success_execute;
+
 }
 
 void move_catesian(moveit::planning_interface::MoveGroupInterface &move_group_interface, geometry_msgs::Pose current_pose, float x, float y, float z) {
@@ -250,19 +262,17 @@ bool kan_grasp_server(try_ros_service_and_client::kan_pick::Request &req,
   ROS_INFO("Node Handle");
   ros::Publisher gripper_command_publisher = nh1.advertise<std_msgs::Bool>("/gripper_command",10);
   ROS_INFO("Gripper command publisher");
-  ros::AsyncSpinner spinner(1);
-  spinner.start();
+  /// spinner
 
-  ROS_INFO("dusfahoaeroh");
+  // The fracture of broken code
   moveit::planning_interface::MoveGroupInterface move_group_arm(PLANNING_GROUP_ARM);
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-  
   ros::Publisher planning_scene_diff_publisher = nh1.advertise<moveit_msgs::PlanningScene>("planning_scene", 1);
 
   // declare interface for moveit
   moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
   visual_tools.deleteAllMarkers();
-
+  ROS_INFO("deleteall marker");
   ros::WallDuration sleep_t(0.5);
   while (planning_scene_diff_publisher.getNumSubscribers() < 1)
   {
@@ -272,6 +282,7 @@ bool kan_grasp_server(try_ros_service_and_client::kan_pick::Request &req,
   moveit_msgs::PlanningScene planning_scene;
   //
   // read JSON files from ~/.cr3_simulation
+  ROS_INFO("read json files is READY");
   fs::path home(getenv("HOME"));
   fs::path app_directory(home);
   if (fs::is_directory(home)){
@@ -294,7 +305,6 @@ bool kan_grasp_server(try_ros_service_and_client::kan_pick::Request &req,
       }
     }
   }
-
   std::vector<moveit_msgs::CollisionObject> collision_objects;
   ROS_INFO_STREAM(app_directory << " is a directory containing:");
   for (auto &entry : boost::make_iterator_range(fs::directory_iterator(app_directory), {})){
@@ -319,8 +329,6 @@ bool kan_grasp_server(try_ros_service_and_client::kan_pick::Request &req,
   ROS_INFO_STREAM("# collision objects " << planning_scene.world.collision_objects.size());
   planning_scene.is_diff = true;
   planning_scene_diff_publisher.publish(planning_scene);
-
-  ROS_INFO("robot_control_node is ready");
   
     // visual_tools.trigger();
   // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add collision object");
@@ -329,9 +337,11 @@ bool kan_grasp_server(try_ros_service_and_client::kan_pick::Request &req,
 
   // addCollisionObjects(planning_scene_interface);
   
-  visual_tools.trigger();
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to pregrasp");
+  // visual_tools.trigger();
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to pregrasp");
   
+  
+  //============= Declare Advanced Pointer for Calculation=====================
   double* OBJ_POS;
   OBJ_POS = (double *) malloc (3 * sizeof(double));
   OBJ_POS[0] = pos_x;
@@ -351,13 +361,18 @@ bool kan_grasp_server(try_ros_service_and_client::kan_pick::Request &req,
     ORIENTATION[i] = (double *) malloc (4 * sizeof(double));
   }
 
+  
+  //Initialized roll pith yawn angle
   roll_pitch_yawn(POSITION, number_of_repeat, OBJ_POS);
   //add the grasp gen function of the OBjECT_POSITION in the pointer
   //declare the pose function;
-  geometry_msgs::Pose poseA;
-  tf2::Quaternion quatA;
-  move(move_group_arm, poseA, "string", POSITION, ORIENTATION, number_of_repeat);
-  //check whether it is true
+
+  //Transform the euler coordinate towards wxyz
+  transform_euler_to_wxyz(ORIENTATION, POSITION, number_of_repeat);
+  
+  //Calculate the optimum pose
+  move(move_group_arm, "string", POSITION, ORIENTATION, number_of_repeat);
+  //check whether it is true then return "success value"
   res.success_grasp = success;
   ROS_INFO(res.success_grasp ? "true" : "false");
   return true;
@@ -368,11 +383,15 @@ bool kan_grasp_server(try_ros_service_and_client::kan_pick::Request &req,
 int main(int argc, char **argv){
   
   ros::init(argc, argv, "pick_success_server");
+  ros::AsyncSpinner spinner(0);
+  spinner.start();
   ros::NodeHandle nh;
   ros::ServiceServer service = nh.advertiseService("pick_success", kan_grasp_server);
 
   ////////////// move group interface /////////////////
-  
+    // rviz visual and moveit visual
+  moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
+  visual_tools.deleteAllMarkers();
   // ros::WallDuration(3.0).sleep();
 
   // pregrasp
@@ -380,6 +399,7 @@ int main(int argc, char **argv){
   // - some extra padding) - (desired offset for pregasp)
   // add the pointer for the convinience for calculation
   ROS_INFO("Ready to add six parameter");
-  ros::spin();
+  ros::waitForShutdown();
   return 0;
 }
+

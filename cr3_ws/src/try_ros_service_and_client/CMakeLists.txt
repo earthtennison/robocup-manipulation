@@ -244,6 +244,12 @@ include_directories(${catkin_INCLUDE_DIRS})
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+catkin_install_python(PROGRAMS
+  src/pick_client_python.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 include_directories(${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 add_executable(pick_service src/pick_service.cpp)
@@ -253,3 +259,6 @@ add_dependencies(pick_service try_ros_service_and_client_gencpp)
 add_executable(pick_client src/pick_client.cpp)
 target_link_libraries(pick_client ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
 add_dependencies(pick_client try_ros_service_and_client_gencpp)
+
+add_executable(movegroup_interface src/movegroup_interface.cpp)
+target_link_libraries(movegroup_interface ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})

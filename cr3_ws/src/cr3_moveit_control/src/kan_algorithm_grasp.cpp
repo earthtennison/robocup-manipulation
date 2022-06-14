@@ -100,7 +100,7 @@ void compute_pregrasp(double** ORIENTATION, double** POSITION, int trial){
   ROS_INFO("bruh bruh");
 }
 void move(moveit::planning_interface::MoveGroupInterface 
-&move_group_interface, geometry_msgs::Pose goal_pose, 
+&move_group_interface, 
 std::string str0, double** POSITION, 
 double** ORIENTATION, int trial) {
   //Joint model group
@@ -383,10 +383,8 @@ int main(int argc, char **argv) {
     compute_pregrasp(ORIENTATION, POSITION, number_of_repeat);
     //add the grasp gen function of the OBJECT_POSITION in the pointer
     //declare the pose function
-    geometry_msgs::Pose poseA;
-    tf2::Quaternion quatA;
     ROS_INFO("FISHFISHFISH");
-    move(move_group_arm, poseA, "string", POSITION, ORIENTATION, number_of_repeat);
+    move(move_group_arm, "string", POSITION, ORIENTATION, number_of_repeat);
     ROS_INFO("Dog Dog Dog");
     //left the loop  when the loop is ended
     //325426587360862563

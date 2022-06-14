@@ -17,7 +17,9 @@ find_package(catkin REQUIRED
                         joint_trajectory_controller
                         robot_state_publisher
                         roscpp
-                        std_msgs
+			rospy
+			std_msgs
+			message_generation
                         tf
                         xacro
                         moveit_core
@@ -31,7 +33,8 @@ find_package(catkin REQUIRED
                         rosbridge_msgs
                         rosapi
                         tf2_web_republisher
-                        moveit_servo)
+                        moveit_servo
+			)
 
 # System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS filesystem)
@@ -42,9 +45,14 @@ message(${JSONCPP_LIBRARIES})
 
 # ################################################################################################################################
 # catkin specific configuration ##
+add_service_files(FILES kan_pick.srv)
+
+generate_messages(DEPENDENCIES std_msgs
+  geometry_msgs)
 # ################################################################################################################################
 # The catkin_package macro generates cmake config files for your package Declare things to be passed to dependent projects
 catkin_package(CATKIN_DEPENDS
+               message_runtime
                moveit_core
                moveit_visual_tools
                moveit_ros_planning_interface
@@ -54,12 +62,14 @@ catkin_package(CATKIN_DEPENDS
                moveit_servo
                DEPENDS
                )
-
 # ################################################################################################################################
 # Build ##
 # ################################################################################################################################
 
 # Specify additional locations of header files Your package locations should be listed before other locations
+catkin_install_python(PROGRAMS src/pick_client_python.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 include_directories(${catkin_INCLUDE_DIRS})
 
 add_executable(kan_algorithm_grasp src/kan_algorithm_grasp.cpp)
@@ -73,3 +83,11 @@ target_link_libraries(robot_control_node_real ${catkin_LIBRARIES} boost_filesyst
 
 add_executable(visual_servo src/visual_servo.cpp)
 target_link_libraries(visual_servo ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+
+add_executable(pick_service1 src/pick_service.cpp)
+target_link_libraries(pick_service1 ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+add_dependencies(pick_service1 cr3_moveit_control)
+
+add_executable(pick_client1 src/pick_client.cpp)
+target_link_libraries(pick_client1 ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+add_dependencies(pick_client1 cr3_moveit_control)
