@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>test_service</name>
+  <name>server_2dto3d</name>
   <version>0.0.0</version>
-  <description>The test_service package</description>
+  <description>The server_2dto3d package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/test_service</url> -->
+  <!-- <url type="website">http://wiki.ros.org/server_2dto3d</url> -->
 
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->
@@ -49,17 +49,6 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>roscpp</depend>
-  <depend>rospy</depend>
-  <depend>sensor_msgs</depend>
-  <depend>libpcl-all</depend>
-  <depend>moveit_visual_tools</depend>
-  <depend>rviz_visual_tools</depend>
-  <depend>message_generation</depend>
-  <depend>actionlib</depend>
-  <depend>actionlib_msgs</depend>
-  <exec_depend>message_runtime</exec_depend>
-  
 
 
   <!-- The export tag contains other, unspecified, tags -->

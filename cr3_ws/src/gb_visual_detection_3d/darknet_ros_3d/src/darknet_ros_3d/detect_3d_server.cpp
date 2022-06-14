@@ -163,13 +163,14 @@ Darknet3D::calculate_boxes(const sensor_msgs::PointCloud2& cloud_pc2,
 
 int main(int argc, char **argv)
 {
-  darknet_ros_3d::Darknet3D darknet3d;
-  ros::Rate loop_rate(10);
+  
 
   ros::init(argc, argv, "add_two_ints_server");
+  darknet_ros_3d::Darknet3D darknet3d;
+  ros::Rate loop_rate(10);
   darknet3d.update();
-  ros::spinOnce();
-  loop_rate.sleep();
+  ros::spin();
+  // loop_rate.sleep();
 
   return 0;
 }
