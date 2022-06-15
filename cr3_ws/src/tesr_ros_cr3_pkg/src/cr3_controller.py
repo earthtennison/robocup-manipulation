@@ -23,8 +23,7 @@ def arm_cb(data):
     rospy.loginfo("moving arm")
     com = [rad_to_deg(j) for j in list(data.joint_commands)]
     client_feedback.ServoJ(com[0], com[1], com[2], com[3], com[4], com[5])
-    time.sleep(0.01)
-    
+    time.sleep(0.01) 
 
 def gripper_cb(data):
     global client_feedback
