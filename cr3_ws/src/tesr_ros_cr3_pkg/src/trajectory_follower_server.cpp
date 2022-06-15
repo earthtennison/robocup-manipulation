@@ -16,6 +16,8 @@ protected:
   // NodeHandle instance must be created before this line. Otherwise strange error may occur.
   actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> as_;
   trajectory_msgs::JointTrajectory goal_;
+  control_msgs::FollowJointTrajectoryResult result_;
+  control_msgs::FollowJointTrajectoryFeedback feedback_;
   std::string action_name_;
 
   // publisher
@@ -48,24 +50,28 @@ public:
 
     int count = 0;
     int trajectory_len = goal_.points.size();
-  while (ros::ok() && count < trajectory_len)
-  {
+    while (ros::ok() && count < trajectory_len)
+    {
 
-    std::vector<double> joint_positions = goal_.points[count].positions;
-    // int joint_number = joint_positions.size();
-    // for (int i = 0; i < joint_number; i++){
-    //   ROS_INFO("goal is :%f", joint_positions[i]);
-    // }
+      std::vector<double> joint_positions = goal_.points[count].positions;
+      // int joint_number = joint_positions.size();
+      // for (int i = 0; i < joint_number; i++){
+      //   ROS_INFO("goal is :%f", joint_positions[i]);
+      // }
 
-    // publish to cr3_controller node
-    msg.joint_commands = joint_positions;
-    pub.publish(msg);
+      // publish to cr3_controller node
+      msg.joint_commands = joint_positions;
+      pub.publish(msg);
 
-    ros::spinOnce();
+      ros::spinOnce();
 
-    loop_rate.sleep();
-    ++count;
-  }
+      loop_rate.sleep();
+      ++count;
+    }
+
+    // send succeed to result action
+    result_.SUCCESSFUL;
+    as_.setSucceeded(result_);
     
   }
 
@@ -83,7 +89,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "trajectory_follower_server");
 
   RobotTrajectoryFollower RobotTrajectoryFollower("/cr3_arm_controller/follow_joint_trajectory");
-  
+
   ros::spin();
 
   return 0;

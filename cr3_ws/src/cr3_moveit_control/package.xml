@@ -17,7 +17,9 @@
 
 
   <buildtool_depend>catkin</buildtool_depend>
-
+  <build_depend>rospy</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>geometry_msgs</build_depend>
   <depend>controller_manager</depend>
   <depend>effort_controllers</depend>
   <depend>gazebo_ros</depend>
@@ -45,7 +47,15 @@
   <depend>moveit_visual_tools</depend>
   <depend>controller_interface</depend>
   <depend>hardware_interface</depend>
-
+  <depend>moveit_servo</depend>
+  
+  <build_export_depend>rospy</build_export_depend>
+  <!-- <build_export_depend>message_generation</build_export_depend> -->
+  <build_export_depend>geometry_msgs</build_export_depend>
+  
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>pluginlib</exec_depend>
 
 </package>

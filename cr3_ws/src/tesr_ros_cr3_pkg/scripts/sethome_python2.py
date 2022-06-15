@@ -47,9 +47,13 @@ client_dashboard.Tool(0)
 try:
     while dobot_Enable == True:
         # Call the JointMovJ directive
-        
+        client_dashboard.ClearError()
+        time.sleep(0.5)
+
         client_feedback.JointMovJ(0,0.0,0,0,0,0)
-        print("Home position reached")
+        print("setting home")
+
+        time.sleep(2)
     
 except KeyboardInterrupt:
     dobot_Enable = False

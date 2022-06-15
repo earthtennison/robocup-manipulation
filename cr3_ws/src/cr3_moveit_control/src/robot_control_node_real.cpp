@@ -22,7 +22,7 @@ static const std::string APP_DIRECTORY_NAME = ".cr3_simulation";
 
 ////////////////////////////////////////////////////////////
 
-static const std::vector<double> OBJECT_POSITION = {0.5, 0.0, 0.5}; // default {0.5, 0.0, 0.5}
+static const std::vector<double> OBJECT_POSITION = {0.0, -0.5, 0.2}; // default {0.5, 0.0, 0.5}
 
 ////////////////////////////////////////////////////////////
 
@@ -87,9 +87,7 @@ void move(moveit::planning_interface::MoveGroupInterface &move_group_interface, 
 
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
-  ROS_INFO("target set1");
   bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  ROS_INFO("target set2");
   ROS_INFO("Plan %s", success ? "success" : "failure");
 
   // visualize plan
@@ -99,8 +97,7 @@ void move(moveit::planning_interface::MoveGroupInterface &move_group_interface, 
 
   bool success_execute =
       (move_group_interface.execute(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  ROS_INFO("Plan %s", success_execute ? "success" : "failure");
-  ROS_INFO("Successfully executed!");
+  ROS_INFO("Execute %s", success_execute ? "success" : "failure");
 }
 
 void move_catesian(moveit::planning_interface::MoveGroupInterface &move_group_interface,
@@ -185,7 +182,7 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "robot_control_node");
 
   ros::NodeHandle nh;
-  ros::Publisher gripper_command_publisher = nh.advertise<std_msgs::Bool>("/gripper_command", 10);
+  ros::Publisher gripper_command_publisher = nh.advertise<std_msgs::Bool>("/cr3_gripper_command", 10);
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
@@ -215,9 +212,9 @@ int main(int argc, char **argv) {
     if (!fs::exists(app_directory) && !fs::is_directory(app_directory)) {
       ROS_WARN_STREAM(app_directory << " does not exist");
 
-      // Create .panda_simulation directory
+      // Create .cr3_simulation directory
       std::string path(getenv("HOME"));
-      path += "/.panda_simulation";
+      path += "/.cr3_simulation";
       ROS_INFO("Creating %s collision objects directory.", path);
       try {
         boost::filesystem::create_directory(path);
@@ -259,94 +256,101 @@ int main(int argc, char **argv) {
 
     ROS_INFO("robot_control_node is ready");
 
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add collision object");
+    ros::WallDuration(3.0).sleep();
+    // visual_tools.trigger();
+    // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add collision object");
 
     /////////////// planning scene interface /////////////
 
-    addCollisionObjects(planning_scene_interface);
+    // addCollisionObjects(planning_scene_interface);
 
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to pregrasp");
+    // visual_tools.trigger();
+    // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to pregrasp");
 
     ////////////// move group interface /////////////////
 
     // ros::WallDuration(3.0).sleep();
 
-    // pregrasp
-    // the position for panda_link8 = object pose - (length of cube/2 - distance b/w panda_link8 and palm of eef (0.058)
-    // - some extra padding) - (desired offset for pregasp)
-    geometry_msgs::Pose pose;
-    pose.position.x = OBJECT_POSITION[0] - 0.085 - 0.115;
-    pose.position.y = OBJECT_POSITION[1];
-    pose.position.z = OBJECT_POSITION[2];
+    while (true){
+      // pregrasp
+      // the position for panda_link8 = object pose - (length of cube/2 - distance b/w panda_link8 and palm of eef (0.058)
+      // - some extra padding) - (desired offset for pregasp)
+      geometry_msgs::Pose pose;
+      pose.position.x = OBJECT_POSITION[0];
+      pose.position.y = OBJECT_POSITION[1] + 0.085 + 0.115;
+      pose.position.z = OBJECT_POSITION[2];
 
-    tf2::Quaternion quat;
-    quat.setRPY(-M_PI / 2, -M_PI / 4, -M_PI / 2);
+      tf2::Quaternion quat;
+      quat.setRPY(-M_PI / 2, -M_PI / 4, M_PI);
 
-    pose.orientation.x = quat.getX();
-    pose.orientation.y = quat.getY();
-    pose.orientation.z = quat.getZ();
-    pose.orientation.w = quat.getW();
+      pose.orientation.x = quat.getX();
+      pose.orientation.y = quat.getY();
+      pose.orientation.z = quat.getZ();
+      pose.orientation.w = quat.getW();
 
-    move(move_group_arm, pose);
+      move(move_group_arm, pose);
 
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to open gripper");
+      ros::WallDuration(3.0).sleep();
+      // visual_tools.trigger();
+      // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to open gripper");
 
-    // open gripper
-    std_msgs::Bool gripper_command_msg;
-    gripper_command_msg.data = false;
-    gripper_command_publisher.publish(gripper_command_msg);
+      // open gripper
+      std_msgs::Bool gripper_command_msg;
+      gripper_command_msg.data = false;
+      gripper_command_publisher.publish(gripper_command_msg);
 
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to grasp pose");
+      ros::WallDuration(3.0).sleep();
+      // visual_tools.trigger();
+      // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to grasp pose");
 
-    // grasps pose
+      // grasps pose
 
-    pose.position.x = OBJECT_POSITION[0] - 0.085;
-    pose.position.y = OBJECT_POSITION[1];
-    pose.position.z = OBJECT_POSITION[2];
+      pose.position.x = OBJECT_POSITION[0];
+      pose.position.y = OBJECT_POSITION[1] + 0.085;
+      pose.position.z = OBJECT_POSITION[2];
 
-    quat.setRPY(-M_PI / 2, -M_PI / 4, -M_PI / 2);
+      quat.setRPY(-M_PI / 2, -M_PI / 4, M_PI);
 
-    pose.orientation.x = quat.getX();
-    pose.orientation.y = quat.getY();
-    pose.orientation.z = quat.getZ();
-    pose.orientation.w = quat.getW();
+      pose.orientation.x = quat.getX();
+      pose.orientation.y = quat.getY();
+      pose.orientation.z = quat.getZ();
+      pose.orientation.w = quat.getW();
 
-    move(move_group_arm, pose);
+      move(move_group_arm, pose);
 
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to close gripper");
+      ros::WallDuration(3.0).sleep();
+      // visual_tools.trigger();
+      // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to close gripper");
 
-    // close gripper
+      // close gripper
 
-    gripper_command_msg.data = true;
-    gripper_command_publisher.publish(gripper_command_msg);
+      gripper_command_msg.data = true;
+      gripper_command_publisher.publish(gripper_command_msg);
 
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to lift");
+      ros::WallDuration(3.0).sleep();
+      // visual_tools.trigger();
+      // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to lift");
 
-    // lift
+      // lift
 
-    // move_catesian(move_group_arm, pose, 0.0, 0.0, 0.05);
-    pose.position.x = OBJECT_POSITION[0] - 0.085;
-    pose.position.y = OBJECT_POSITION[1];
-    pose.position.z = OBJECT_POSITION[2] + 0.2;
+      // move_catesian(move_group_arm, pose, 0.0, 0.0, 0.05);
+      pose.position.x = OBJECT_POSITION[0];
+      pose.position.y = OBJECT_POSITION[1] + 0.085;
+      pose.position.z = OBJECT_POSITION[2] + 0.05;
 
-    quat.setRPY(-M_PI / 2, -M_PI / 4, -M_PI / 2);
+      quat.setRPY(-M_PI / 2, -M_PI / 4, M_PI);
 
-    pose.orientation.x = quat.getX();
-    pose.orientation.y = quat.getY();
-    pose.orientation.z = quat.getZ();
-    pose.orientation.w = quat.getW();
+      pose.orientation.x = quat.getX();
+      pose.orientation.y = quat.getY();
+      pose.orientation.z = quat.getZ();
+      pose.orientation.w = quat.getW();
 
-    move(move_group_arm, pose);
+      move(move_group_arm, pose);
 
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to end");
-
+      ros::WallDuration(3.0).sleep();
+      // visual_tools.trigger();
+      // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to end");
+    }
     ros::waitForShutdown();
 
     return 0;

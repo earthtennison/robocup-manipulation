@@ -24,4 +24,11 @@ client_dashboard.Tool(0)
 while True:
     # Remove alarm
     client_dashboard.ClearError()
-    time.sleep(0.5)
+    time.sleep(2)
+    # Description The upper function was enabled successfully
+    client_dashboard.ResetRobot()
+    client_dashboard.BrakeControl(6,0)
+    client_dashboard.BrakeControl(5,0)
+    client_dashboard.StartDrag()
+    # client_dashboard.BrakeControl(6,0)
+    # client_dashboard.SetCollideDrag(0)

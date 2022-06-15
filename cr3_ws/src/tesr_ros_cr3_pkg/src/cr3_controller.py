@@ -26,18 +26,20 @@ def arm_cb(data):
     time.sleep(0.01) 
 
 def gripper_cb(data):
-    global client_feedback
+    global client_feedback, cr3_joint8, cr3_joint9
     is_close = data.data
     # True is closing gripper
     if is_close:
         #close gripper
         client_dashboard.DO(2,0)
         client_dashboard.DO(1,1)
+        cr3_joint8, cr3_joint9 = 0,0
         time.sleep(0.5)
     else:
         #open gripper 
         client_dashboard.DO(2,1)
         client_dashboard.DO(1,0)
+        cr3_joint8, cr3_joint9 = math.pi/2, math.pi/2
         time.sleep(0.5)
 
 def on_shutdown():
@@ -124,10 +126,12 @@ if __name__ == '__main__':
     cr3_joint4 = 0
     cr3_joint5 = 0
     cr3_joint6 = 0
+    cr3_joint8 = 0
+    cr3_joint9 = 0
 
     msg = JointState()
     msg.header.frame_id = ""
-    msg.name = ["joint1","joint2","joint3","joint4","joint5","joint6"]
+    msg.name = ["joint1","joint2","joint3","joint4","joint5","joint6", "joint8", "joint9"]
 
     dobot_enable = True
 
@@ -143,10 +147,12 @@ if __name__ == '__main__':
             joint4 = cr3_joint4*math.pi / 180
             joint5 = cr3_joint5*math.pi / 180
             joint6 = cr3_joint6*math.pi / 180
+            joint8 = cr3_joint8*math.pi / 180
+            joint9 = cr3_joint9*math.pi / 180
             # Initialize the time of publishing
             msg.header.stamp = rospy.Time.now()
             # Joint angle values
-            msg.position = [joint1, joint2, joint3, joint4, joint5, joint6]
+            msg.position = [joint1, joint2, joint3, joint4, joint5, joint6, joint8, joint9]
             # Publish message
             pub.publish(msg)
             # Increase sequence
