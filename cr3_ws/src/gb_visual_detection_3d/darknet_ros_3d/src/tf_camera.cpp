@@ -22,11 +22,10 @@ int main(int argc, char** argv){
   transformStamped.transform.rotation.z = q.z();
   transformStamped.transform.rotation.w = q.w();
 
-  ros::Rate rate(20);
+  ros::Rate rate(1000);
   while (node.ok()){
     transformStamped.header.stamp = ros::Time::now();
     tfb.sendTransform(transformStamped);
-    ros::spinOnce();
     rate.sleep();
 
   }

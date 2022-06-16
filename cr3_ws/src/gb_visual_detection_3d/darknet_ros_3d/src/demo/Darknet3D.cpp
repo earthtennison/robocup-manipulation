@@ -67,6 +67,7 @@ Darknet3D::Darknet3D():
   
 }
 
+
 void
 Darknet3D::initParams()
 {
@@ -103,17 +104,18 @@ void
 Darknet3D::calculate_boxes(const sensor_msgs::PointCloud2& cloud_pc2,
     const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_pcl,
     gb_visual_detection_3d_msgs::BoundingBoxes3d* boxes)
-{
+{ROS_INFO("in100");
   boxes->header.stamp = cloud_pc2.header.stamp;
   boxes->header.frame_id = working_frame_;
 
 
     for (auto bbx : original_bboxes_)
-    {
+    {ROS_INFO("in0");
       if ((bbx.probability < minimum_probability_) ||
           (std::find(interested_classes_.begin(), interested_classes_.end(), bbx.Class) == interested_classes_.end()))
       {
         continue;
+        ROS_INFO("in1");
       }
 
       int center_x, center_y;
@@ -134,7 +136,7 @@ Darknet3D::calculate_boxes(const sensor_msgs::PointCloud2& cloud_pc2,
 
       for (int i = bbx.xmin; i < bbx.xmax; i++)
         for (int j = bbx.ymin; j < bbx.ymax; j++)
-        {
+        {ROS_INFO("in2");
           pcl_index = (j* cloud_pc2.width) + i;
           pcl::PointXYZRGB point =  cloud_pcl->at(pcl_index);
 
@@ -150,6 +152,7 @@ Darknet3D::calculate_boxes(const sensor_msgs::PointCloud2& cloud_pc2,
           minx = std::min(point.x, minx);
           miny = std::min(point.y, miny);
           minz = std::min(point.z, minz);
+
         }
 
       gb_visual_detection_3d_msgs::BoundingBox3d bbx_msg;
@@ -163,25 +166,32 @@ Darknet3D::calculate_boxes(const sensor_msgs::PointCloud2& cloud_pc2,
       bbx_msg.zmax = maxz;
 
       boxes->bounding_boxes.push_back(bbx_msg);
+      ROS_INFO("in3");
     }
-
+ROS_INFO("in4");
   
 }
 
 void
 Darknet3D::update()
-{
+{ROS_INFO("in102");
+
+  ROS_INFO_STREAM(ros::Time::now);
+  ROS_INFO("hkhid");
+  ROS_INFO_STREAM(last_detection_ts_);
+  ROS_INFO_STREAM((ros::Time::now() - last_detection_ts_).toSec());
+
   if ((ros::Time::now() - last_detection_ts_).toSec() > 2.0)
     return;
-
+ROS_INFO("in103");
   if ((darknet3d_pub_.getNumSubscribers() == 0) &&
       (markers_pub_.getNumSubscribers() == 0))
     return;
-
+ROS_INFO("in104");
   sensor_msgs::PointCloud2 local_pointcloud;
 
   try
-  {
+  {ROS_INFO("in109");
     pcl_ros::transformPointCloud(working_frame_, point_cloud_, local_pointcloud, tfListener_);
   }
   catch(tf::TransformException& ex)
@@ -190,11 +200,12 @@ Darknet3D::update()
     return;
   }
 
+ROS_INFO("in101");
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcrgb(new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::fromROSMsg(local_pointcloud, *pcrgb);
 
   gb_visual_detection_3d_msgs::BoundingBoxes3d msg;
-
+ROS_INFO("in99");
   calculate_boxes(local_pointcloud, pcrgb, &msg);
 
   darknet3d_pub_.publish(msg);

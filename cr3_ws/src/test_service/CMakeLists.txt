@@ -10,7 +10,12 @@ project(test_service)
 find_package(catkin REQUIRED COMPONENTS
 roscpp
 rospy
+sensor_msgs
+geometry_msgs
 message_generation
+actionlib_msgs
+pcl_ros
+pcl_conversions
 )
 
 ## System dependencies are found with CMake's conventions
@@ -56,21 +61,22 @@ message_generation
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  ServiceExample.srv
-  GetPhoto.srv
+  image2obj_service.srv
+  obj2pose_service.srv
 )
 
 ## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
+add_action_files(
+  FILES
+  obj2pose_action.action
+)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
 DEPENDENCIES
 std_msgs
+geometry_msgs
+actionlib_msgs
 )
 
 ################################################
@@ -105,7 +111,7 @@ std_msgs
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES test_service
-#  CATKIN_DEPENDS other_catkin_pkg
+ CATKIN_DEPENDS actionlib_msgs
 #  DEPENDS system_lib
 )
 
@@ -116,9 +122,10 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-# ${catkin_INCLUDE_DIRS}
+include
+${catkin_INCLUDE_DIRS}
 )
+
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -133,7 +140,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/test_service_node.cpp)
+add_executable(fakesmach src/fakesmach.cpp)
+add_executable(pcdcd src/pcdcd.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -146,9 +154,8 @@ include_directories(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(fakesmach ${catkin_LIBRARIES})
+target_link_libraries(pcdcd ${catkin_LIBRARIES})
 
 #############
 ## Install ##
@@ -159,16 +166,20 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# catkin_install_python(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+catkin_install_python(PROGRAMS
+  scripts/objdetect_server.py
+  scripts/fakesmach_pyver.py
+  scripts/objreq_server.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
-# install(TARGETS ${PROJECT_NAME}_node
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+install(TARGETS
+  fakesmach
+  pcdcd
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html

@@ -35,23 +35,52 @@
 /* Author: Francisco Martín fmrico@gmail.com */
 /* Author: Fernando González fergonzaramos@yahoo.es  */
 
+#ifndef DARKNET_ROS_3D_DARKNET3D_H
+#define DARKNET_ROS_3D_DARKNET3D_H
+
 #include <ros/ros.h>
 
-#include "darknet_ros_3d/Darknet3D.h"
+#include <gb_visual_detection_3d_msgs/BoundingBoxes3d.h>
+#include <darknet_ros_msgs/BoundingBox.h>
+#include <sensor_msgs/PointCloud2.h>
 
-int main(int argc, char **argv)
+#include <pcl_ros/point_cloud.h>
+#include <tf/transform_listener.h>
+
+#include <vector>
+#include <string>
+
+#include <gb_visual_detection_3d_msgs/Detect3d.h>
+
+namespace darknet_ros_3d
 {
-  ros::init(argc, argv, "darknet_3d");
-  darknet_ros_3d::Darknet3D darknet3d;
-  ros::Rate loop_rate(10);
 
-  while (ros::ok())
-  {
-    darknet3d.update();
+class Darknet3D
+{
+public:
+  Darknet3D();
 
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
+  virtual void update();
 
-  return 0;
-}
+private:
+  void initParams();
+  void calculate_boxes(const sensor_msgs::PointCloud2& cloud_pc2,
+    const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_pcl,
+    darknet_ros_msgs::BoundingBox bbx,
+    gb_visual_detection_3d_msgs::BoundingBox3d* bounding_box_3d);
+
+  bool detect_3d(gb_visual_detection_3d_msgs::Detect3d::Request &req,
+      gb_visual_detection_3d_msgs::Detect3d::Response &res);
+
+  ros::NodeHandle nh_;
+  tf::TransformListener tfListener_;
+  ros::ServiceServer darknet3d_server;
+  float mininum_detection_thereshold_, minimum_probability_;
+
+  std::string working_frame_;
+
+};
+
+};  // namespace darknet_ros_3d
+
+#endif  // DARKNET_ROS_3D_DARKNET3D_H
