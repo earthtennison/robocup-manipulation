@@ -24,6 +24,8 @@ static const std::string PLANNING_GROUP_ARM = "arm";
 bool success = false;
 bool has_trial = true;
 int number_of_trial = 7;
+
+ros::Publisher gripper_command_publisher;
 //===============================================================
 
 // Generate Angle of Grasp Pose
@@ -149,11 +151,11 @@ bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
   ori_w = req.geo_req.orientation.w;
   ROS_INFO("request: x=%lf, y=%lf, z=%lf, ox=%lf, oy=%lf, oz=%lf, ow=%lf", pos_x, pos_y, pos_z, ori_x, ori_y, ori_z, ori_w);
 
+  // pregrasp
+  geometry_msgs::Pose pose;
   if (has_trial){
     //============= Declare Advanced Pointer for Calculation=====================
-
-    geometry_msgs::Pose pose;
-    pose.position.x = pos_x; 
+    pose.position.x = pos_x + 0.1; 
     pose.position.y = pos_y;
     pose.position.z = pos_z;
     pose.orientation.x = ori_x;
@@ -166,11 +168,9 @@ bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
     compute_grasp(pose_array, pose, number_of_trial);
 
     ////////////// move group interface /////////////////
-
     move_with_trial(pose_array, number_of_trial);
   } else{
-    geometry_msgs::Pose pose;
-    pose.position.x = pos_x - 0.1; // minus with some offset
+    pose.position.x = pos_x + 0.1; // plus with some offset
     pose.position.y = pos_y;
     pose.position.z = pos_z;
     pose.orientation.x = ori_x;
@@ -180,6 +180,40 @@ bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
 
     move(pose);
   }
+  if (!success){
+    return false;
+  }
+
+  // open gripper
+  std_msgs::Bool gripper_command_msg;
+  gripper_command_msg.data = false;
+  gripper_command_publisher.publish(gripper_command_msg);
+
+  // grasps pose
+  move(req.geo_req);
+  if (!success){
+    return false;
+  }
+
+  // close gripper
+  gripper_command_msg.data = true;
+  gripper_command_publisher.publish(gripper_command_msg);
+
+  // lift
+  pose.position.x = pos_x; 
+  pose.position.y = pos_y;
+  pose.position.z = pos_z + 0.1;
+  pose.orientation.x = ori_x;
+  pose.orientation.y = ori_y;
+  pose.orientation.z = ori_z;
+  pose.orientation.w = ori_w;
+  move(pose);
+  if (!success){
+    return false;
+  }
+
+  // home
+  //TODO ice#elec
 
   // check whether it is true then return "success value"
   res.success_grasp = success;
@@ -194,6 +228,7 @@ int main(int argc, char **argv)
   ros::AsyncSpinner spinner(0);
   spinner.start();
   ros::NodeHandle nh;
+  gripper_command_publisher = nh.advertise<std_msgs::Bool>("/cr3_gripper_command", 10);
   ros::ServiceServer service = nh.advertiseService("cr3_pick", pick_server);
 
   ros::waitForShutdown();
