@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include "try_ros_service_and_client/kan_pick.h"
+#include "cr3_moveit_control/kan_pick.h"
 #include <cstdlib>
 
 int main(int argc, char **argv)
@@ -11,16 +11,17 @@ int main(int argc, char **argv)
       ROS_INFO("usage: add_six_ints_client X Y Z roll pitch yawn");
     }
   ros::NodeHandle nh;
-  ros::ServiceClient client = nh.serviceClient<try_ros_service_and_client::kan_pick>("pick_success");
-  try_ros_service_and_client::kan_pick srv;
+  ros::ServiceClient client = nh.serviceClient<cr3_moveit_control::kan_pick>("pick_success");
+  cr3_moveit_control::kan_pick srv;
   double posx, posy, posz, orix, oriy, oriz, oriw;
-  std::cin >> posx;
-  std::cin >> posy;
-  std::cin >> posz;
-  std::cin >> orix;
-  std::cin >> oriy;
-  std::cin >> oriz;
-  std::cin >> oriw;
+  // std::cin >> posx;
+  // std::cin >> posy;
+  // std::cin >> posz;
+  // std::cin >> orix;
+  // std::cin >> oriy;
+  // std::cin >> oriz;
+  // std::cin >> oriw;
+  posx = -0.3; posy = 0.0; posz = 0.4; orix =0; oriy = 0; oriz = 0; oriw =1;
   srv.request.geo_req.position.x = posx;
   srv.request.geo_req.position.y = posy;
   srv.request.geo_req.position.z = posz;

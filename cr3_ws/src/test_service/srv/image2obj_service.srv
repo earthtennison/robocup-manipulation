@@ -1,6 +1,0 @@
-bool request_obj
-string obj_name
----
-bool response_obj
-geometry_msgs/Pose obj_pose
-float32[] obj_size
