@@ -45,7 +45,7 @@ message(${JSONCPP_LIBRARIES})
 
 # ################################################################################################################################
 # catkin specific configuration ##
-add_service_files(FILES kan_pick.srv)
+add_service_files(FILES cr3_pick.srv)
 
 generate_messages(DEPENDENCIES std_msgs
   geometry_msgs)
@@ -84,13 +84,13 @@ target_link_libraries(robot_control_node_real ${catkin_LIBRARIES} boost_filesyst
 add_executable(visual_servo src/visual_servo.cpp)
 target_link_libraries(visual_servo ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
 
-add_executable(pick_service1 src/pick_service.cpp)
-target_link_libraries(pick_service1 ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
-add_dependencies(pick_service1 cr3_moveit_control)
+add_executable(pick_service src/pick_service.cpp)
+target_link_libraries(pick_service ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+add_dependencies(pick_service cr3_moveit_control)
 
-add_executable(pick_client1 src/pick_client.cpp)
-target_link_libraries(pick_client1 ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
-add_dependencies(pick_client1 cr3_moveit_control)
+add_executable(pick_client src/pick_client.cpp)
+target_link_libraries(pick_client ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+add_dependencies(pick_client cr3_moveit_control)
 
 add_executable(constraint_publisher src/constraint_publisher.cpp)
 target_link_libraries(constraint_publisher ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
