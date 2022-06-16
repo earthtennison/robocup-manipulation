@@ -64,7 +64,7 @@ namespace darknet_ros_3d
 
   private:
     void initParams();
-    void calculate_boxes(const sensor_msgs::PointCloud2 &cloud_pc2,
+    bool calculate_boxes(const sensor_msgs::PointCloud2 &cloud_pc2,
                          const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_pcl,
                          darknet_ros_msgs::BoundingBox bbx,
                          gb_visual_detection_3d_msgs::BoundingBox3d &bounding_box_3d);
@@ -75,8 +75,7 @@ namespace darknet_ros_3d
     ros::NodeHandle nh_;
     tf::TransformListener tfListener_;
     ros::ServiceServer darknet3d_server;
-    float mininum_detection_thereshold_, minimum_probability_;
-
+    float mininum_detection_thereshold_;
     std::string working_frame_;
   };
 

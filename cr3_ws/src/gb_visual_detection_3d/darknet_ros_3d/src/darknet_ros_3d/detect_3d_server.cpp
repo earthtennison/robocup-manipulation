@@ -61,16 +61,14 @@ namespace darknet_ros_3d
   {
     working_frame_ = "camera_link";
     mininum_detection_thereshold_ = 0.2f;
-    minimum_probability_ = 0.2f;
 
     nh_.param("working_frame", working_frame_, working_frame_);
     nh_.param("mininum_detection_thereshold", mininum_detection_thereshold_, mininum_detection_thereshold_);
-    nh_.param("minimum_probability", minimum_probability_, minimum_probability_);
   }
 
   bool Darknet3D::detect_3d(gb_visual_detection_3d_msgs::Detect3d::Request &req, gb_visual_detection_3d_msgs::Detect3d::Response &res)
   {
-
+    ROS_INFO("Reciving Service");
     sensor_msgs::PointCloud2 local_pointcloud;
 
     try
@@ -87,20 +85,18 @@ namespace darknet_ros_3d
     pcl::fromROSMsg(local_pointcloud, *pcrgb);
 
     gb_visual_detection_3d_msgs::BoundingBox3d bounding_box_3d;
-    Darknet3D::calculate_boxes(local_pointcloud, pcrgb, req.bounding_box, bounding_box_3d);
+    bool success = calculate_boxes(local_pointcloud, pcrgb, req.bounding_box, bounding_box_3d);
 
+    res.success = success;
     res.bounding_box_3d = bounding_box_3d;
     return true;
   }
 
-  void Darknet3D::calculate_boxes(const sensor_msgs::PointCloud2 &cloud_pc2,
+  bool Darknet3D::calculate_boxes(const sensor_msgs::PointCloud2 &cloud_pc2,
                                   const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_pcl,
                                   darknet_ros_msgs::BoundingBox bbx,
                                   gb_visual_detection_3d_msgs::BoundingBox3d &bounding_box_3d)
   {
-    bounding_box_3d.header.stamp = cloud_pc2.header.stamp;
-    bounding_box_3d.header.frame_id = working_frame_;
-
     int center_x, center_y;
 
     center_x = (bbx.xmax + bbx.xmin) / 2;
@@ -109,8 +105,8 @@ namespace darknet_ros_3d
     int pcl_index = (center_y * cloud_pc2.width) + center_x;
     pcl::PointXYZRGB center_point = cloud_pcl->at(pcl_index);
 
-    if (std::isnan(center_point.x))
-      return;
+    // if (std::isnan(center_point.x))
+    //   return false;
 
     float maxx, minx, maxy, miny, maxz, minz;
 
@@ -145,6 +141,8 @@ namespace darknet_ros_3d
     bounding_box_3d.ymax = maxy;
     bounding_box_3d.zmin = minz;
     bounding_box_3d.zmax = maxz;
+
+    return true;
   }
 
 };

@@ -1,0 +1,5 @@
+darknet_ros_msgs/BoundingBox bounding_box
+sensor_msgs/PointCloud2 point_cloud
+---
+BoundingBox3d bounding_box_3d
+bool success
