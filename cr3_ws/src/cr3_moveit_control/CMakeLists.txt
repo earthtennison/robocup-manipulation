@@ -45,7 +45,7 @@ message(${JSONCPP_LIBRARIES})
 
 # ################################################################################################################################
 # catkin specific configuration ##
-add_service_files(FILES kan_pick.srv)
+add_service_files(FILES kan_pick.srv kan_place.srv)
 
 generate_messages(DEPENDENCIES std_msgs
   geometry_msgs)
