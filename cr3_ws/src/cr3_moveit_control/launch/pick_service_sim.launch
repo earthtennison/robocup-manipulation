@@ -17,13 +17,15 @@
         <arg name="allow_trajectory_execution" value="true"/>
         <arg name="fake_execution" value="true"/>
         <arg name="info" value="true"/>
-    </include>>
+    </include>
 
     <include file="$(find cr3_moveit_3)/launch/moveit_rviz.launch" >
         <arg name="rviz_config" value="$(find cr3_moveit_3)/launch/moveit.rviz"/>
-    </include> 
+    </include>
 
-    
+    <!-- publish constraint collision object -->
+    <node pkg="cr3_moveit_control" type="constraint_publisher" name="constraint_publisher" output="screen" />
+
     <!-- launch robot control node for moveit motion planning -->
     <node pkg="cr3_moveit_control" type="pick_service" name="pick_service" output="screen" />
 

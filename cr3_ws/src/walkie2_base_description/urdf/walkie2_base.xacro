@@ -1,0 +1,113 @@
+<?xml version="1.0" ?>
+<robot name="walkie2_base" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:include filename="$(find walkie2_base_description)/urdf/materials.xacro" />
+<xacro:include filename="$(find walkie2_base_description)/urdf/walkie2_base.trans" />
+<xacro:include filename="$(find walkie2_base_description)/urdf/walkie2_base.gazebo" />
+<link name="base_link">
+  <inertial>
+    <origin xyz="0.3001026605889627 0.22105414801576878 0.17274709279612235" rpy="0 0 0"/>
+    <mass value="402.481804181889"/>
+    <inertia ixx="18.966681" iyy="19.561407" izz="13.651026" ixy="-0.000467" iyz="1.492371" ixz="-0.007281"/>
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://walkie2_base_description/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://walkie2_base_description/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="LM_1">
+  <inertial>
+    <origin xyz="0.04963466938861183 -1.6375789613221059e-15 5.204170427930421e-17" rpy="0 0 0"/>
+    <mass value="16.226883800866556"/>
+    <inertia ixx="0.087579" iyy="0.048877" izz="0.048877" ixy="-0.0" iyz="0.0" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.494 -0.25 -0.02" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://walkie2_base_description/meshes/LM_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.494 -0.25 -0.02" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://walkie2_base_description/meshes/LM_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="RM_1">
+  <inertial>
+    <origin xyz="-0.04963466938861179 1.609823385706477e-15 5.204170427930421e-17" rpy="0 0 0"/>
+    <mass value="16.226883800866556"/>
+    <inertia ixx="0.087579" iyy="0.048877" izz="0.048877" ixy="-0.0" iyz="-0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.106 -0.25 -0.02" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://walkie2_base_description/meshes/RM_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.106 -0.25 -0.02" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://walkie2_base_description/meshes/RM_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="BaseCR3_1">
+  <inertial>
+    <origin xyz="0.08222500000000008 -0.12142149999999997 -0.12260000000000004" rpy="0 0 0"/>
+    <mass value="14.169925233606987"/>
+    <inertia ixx="0.072049" iyy="0.034347" izz="0.101571" ixy="0.0" iyz="0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.218112 -0.146306 -0.693" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://walkie2_base_description/meshes/BaseCR3_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.218112 -0.146306 -0.693" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://walkie2_base_description/meshes/BaseCR3_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<joint name="Rev2" type="continuous">
+  <origin xyz="0.494 0.25 0.02" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="LM_1"/>
+  <axis xyz="1.0 0.0 0.0"/>
+</joint>
+
+<joint name="Rev3" type="continuous">
+  <origin xyz="0.106 0.25 0.02" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="RM_1"/>
+  <axis xyz="-1.0 0.0 0.0"/>
+</joint>
+
+<joint name="Slider12" type="prismatic">
+  <origin xyz="0.218112 0.146306 0.693" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="BaseCR3_1"/>
+  <axis xyz="0.0 0.0 1.0"/>
+  <limit upper="0.0" lower="-0.4648" effort="100" velocity="100"/>
+</joint>
+
+</robot>

@@ -9,9 +9,9 @@ def to_rad(deg):
     return deg * math.pi / 180.0
 
 def pick_service(goal_pose):
-    rospy.wait_for_service('pick_success')
+    rospy.wait_for_service('cr3_pick')
     try:
-        pick = rospy.ServiceProxy('pick_success', kan_pick)
+        pick = rospy.ServiceProxy('cr3_pick', cr3_pick)
         res = pick(goal_pose)
         return res.success_grasp
     except rospy.ServiceException as e:
@@ -22,9 +22,13 @@ if __name__ == "__main__":
         x = input("X ")
         y = input("y ")
         z = input("z ")
-        row = to_rad(input("row "))
-        pitch = to_rad(input("pitch "))
-        yaw = to_rad(input("yaw "))
+        row = to_rad(input("row (default -90) "))
+        pitch = to_rad(input("pitch (default -45) "))
+        yaw = to_rad(input("yaw (default 90) "))
+        # -M_PI / 2, -M_PI / 4, +M_PI / 2
+        # row = -1*math.pi/2
+        # pitch = -1*math.pi/4
+        # yaw = math.pi/2
         q = quaternion_from_euler(row, pitch, yaw)
 
         pose_goal = Pose()
