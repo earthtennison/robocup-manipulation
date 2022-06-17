@@ -391,7 +391,6 @@ class dobot_api_dashboard:
         if(self.socket_dashboard != 0):
             self.socket_dashboard.close()
 
-
 class dobot_api_feedback:
     """
     Define class dobot_api_feedback to establish a connection to Dobot
