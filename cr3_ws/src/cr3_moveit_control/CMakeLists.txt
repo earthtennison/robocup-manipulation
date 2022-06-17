@@ -68,6 +68,8 @@ catkin_package(CATKIN_DEPENDS
 
 # Specify additional locations of header files Your package locations should be listed before other locations
 catkin_install_python(PROGRAMS src/pick_client_python.py
+                              src/place_client_python.py
+                              src/pick_client_2_python.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 include_directories(${catkin_INCLUDE_DIRS})

@@ -375,12 +375,11 @@ int main(int argc, char **argv) {
       ORIENTATION[i] = (double *) malloc (4 * sizeof(double));
     }
     ROS_INFO("shrimp shrimp");
-
-
-    //===========================================================================//
     //use the roll pitch yaw algorithm
     roll_pitch_yaw(POSITION, number_of_repeat, OBJ_POS);
     ROS_INFO("ebi ebi");
+
+
     compute_pregrasp(ORIENTATION, POSITION, number_of_repeat);
     //add the grasp gen function of the OBJECT_POSITION in the pointer
     //declare the pose function
@@ -390,7 +389,7 @@ int main(int argc, char **argv) {
     //left the loop  when the loop is ended
     //325426587360862563
     //bool fish = check_whether_move(move_group_arm, pose0, "Check Grasp LOL");
-    //=============================================================================//
+    
     // if(){
 
     // }
