@@ -45,7 +45,7 @@ message(${JSONCPP_LIBRARIES})
 
 # ################################################################################################################################
 # catkin specific configuration ##
-add_service_files(FILES kan_pick.srv kan_place.srv)
+add_service_files(FILES kan_pick.srv  kan_place.srv pick_gen2.srv)
 
 generate_messages(DEPENDENCIES std_msgs
   geometry_msgs)
@@ -68,6 +68,8 @@ catkin_package(CATKIN_DEPENDS
 
 # Specify additional locations of header files Your package locations should be listed before other locations
 catkin_install_python(PROGRAMS src/pick_client_python.py
+                              src/place_client_python.py
+                              src/pick_client_2_python.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 include_directories(${catkin_INCLUDE_DIRS})
@@ -94,3 +96,11 @@ add_dependencies(pick_client1 cr3_moveit_control)
 
 add_executable(place_algorithm src/place_algorithm.cpp)
 target_link_libraries(place_algorithm ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+
+add_executable(place_service1 src/place_service.cpp)
+target_link_libraries(place_service1 ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+add_dependencies(place_service1 cr3_moveit_control)
+
+add_executable(pick_service2 src/pick_service_2.cpp)
+target_link_libraries(pick_service2 ${catkin_LIBRATIES} boost_filesystem ${JSONCPP_LIBRARIES})
+add_dependencies(pick_service2 cr3_moveit_control)
