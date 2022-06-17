@@ -55,32 +55,30 @@
 namespace darknet_ros_3d
 {
 
-class Darknet3D
-{
-public:
-  Darknet3D();
+  class Darknet3D
+  {
+  public:
+    Darknet3D();
 
-  virtual void update();
+    virtual void update();
 
-private:
-  void initParams();
-  void calculate_boxes(const sensor_msgs::PointCloud2& cloud_pc2,
-    const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_pcl,
-    darknet_ros_msgs::BoundingBox bbx,
-    gb_visual_detection_3d_msgs::BoundingBox3d* bounding_box_3d);
+  private:
+    void initParams();
+    bool calculate_boxes(const sensor_msgs::PointCloud2 &cloud_pc2,
+                         const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_pcl,
+                         darknet_ros_msgs::BoundingBox bbx,
+                         gb_visual_detection_3d_msgs::BoundingBox3d &bounding_box_3d);
 
-  bool detect_3d(gb_visual_detection_3d_msgs::Detect3d::Request &req,
-      gb_visual_detection_3d_msgs::Detect3d::Response &res);
+    bool detect_3d(gb_visual_detection_3d_msgs::Detect3d::Request &req,
+                   gb_visual_detection_3d_msgs::Detect3d::Response &res);
 
-  ros::NodeHandle nh_;
-  tf::TransformListener tfListener_;
-  ros::ServiceServer darknet3d_server;
-  float mininum_detection_thereshold_, minimum_probability_;
+    ros::NodeHandle nh_;
+    tf::TransformListener tfListener_;
+    ros::ServiceServer darknet3d_server;
+    float mininum_detection_thereshold_;
+    std::string working_frame_;
+  };
 
-  std::string working_frame_;
+}; // namespace darknet_ros_3d
 
-};
-
-};  // namespace darknet_ros_3d
-
-#endif  // DARKNET_ROS_3D_DARKNET3D_H
+#endif // DARKNET_ROS_3D_DARKNET3D_H
