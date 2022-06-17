@@ -78,6 +78,9 @@ target_link_libraries(kan_algorithm_grasp ${catkin_LIBRARIES} boost_filesystem $
 add_executable(robot_control_node_sim src/robot_control_node_sim.cpp)
 target_link_libraries(robot_control_node_sim ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
 
+add_executable(robot_control_node_sim_catesian src/robot_control_node_sim_catesian.cpp)
+target_link_libraries(robot_control_node_sim_catesian ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+
 add_executable(robot_control_node_real src/robot_control_node_real.cpp)
 target_link_libraries(robot_control_node_real ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
 
