@@ -1,27 +1,14 @@
 #!/usr/bin/python
 
+import math
 from dobot_api import dobot_api_dashboard, dobot_api_feedback, MyType
 import time
 import numpy as np
 
 dobot_Enable = True
 
-# The feedback information about port 30003 is displayed
-def CR3_feedback():
-    time.sleep(0.05)
-    all = client_feedback.socket_feedback.recv(10240)
-    data = all[0:1440]
-    a = np.frombuffer(data, dtype=MyType)
-    try:
-        if hex((a['test_value'][0])) == '0x123456789abcdef':
-            print("============== Feed Back ===============")
-            CR3_endpoint =  np.around(a['Tool_vector_target'], decimals=4)[0]
-            print("CR3_endpoint: [x:{0}] , [y:{1}] , [z:{2}] , [rx:{3}] , [ry:{4}] , [rz:{5}]".format(CR3_endpoint[0],CR3_endpoint[1],CR3_endpoint[2],CR3_endpoint[3],CR3_endpoint[4],CR3_endpoint[5]))                            
-            CR3_joint = np.around(a['q_target'], decimals=4)[0]
-            print("CR3_joint: [j1:{0}] , [j2:{1}] , [j3:{2}] , [j4:{3}] , [j5:{4}] , [j6:{5}]".format(CR3_joint[0],CR3_joint[1],CR3_joint[2],CR3_joint[3],CR3_joint[4],CR3_joint[5]))
-            print("========================================")
-    except:
-        print("Some error with robot.")
+def rad_to_deg(rad):
+    return rad*180/math.pi
 
 
 # Enable threads on ports 29999 and 30003
@@ -43,6 +30,8 @@ time.sleep(0.5)
 client_dashboard.User(0)
 client_dashboard.Tool(0)
 
+client_dashboard.AccL(10)
+client_dashboard.SpeedL(10)
 
 try:
     while dobot_Enable == True:
@@ -50,7 +39,14 @@ try:
         client_dashboard.ClearError()
         time.sleep(0.5)
 
-        client_feedback.JointMovJ(0,0.0,0,0,0,0)
+        # client_feedback.JointMovJ(0,0.0,0,0,0,0)
+        
+        # home walkie 1
+        # client_feedback.JointMovJ(rad_to_deg(0), rad_to_deg(0), rad_to_deg(2.267), rad_to_deg(-2.267), rad_to_deg(-1.507), -45)
+        
+        # home walkie 2
+        client_feedback.JointMovJ(rad_to_deg(0), rad_to_deg(0), rad_to_deg(2.267), rad_to_deg(0.875), rad_to_deg(1.507), rad_to_deg(2.355))
+
         print("setting home")
 
         time.sleep(2)

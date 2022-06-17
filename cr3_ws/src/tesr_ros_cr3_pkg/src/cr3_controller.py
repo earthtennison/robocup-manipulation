@@ -96,8 +96,8 @@ if __name__ == '__main__':
     rospy.init_node('cr3_controller', anonymous=True)
     rospy.Subscriber("/cr3_arm_command", JointCommand, arm_cb)
     rospy.Subscriber("/cr3_gripper_command", Bool, gripper_cb)
-    pub = rospy.Publisher("/joint_states", JointState, queue_size=10)
-    rate = rospy.Rate(10) # 10hz
+    pub = rospy.Publisher("/joint_states", JointState, queue_size=1000)
+    rate = rospy.Rate(20) # 10hz
     rospy.on_shutdown(on_shutdown)
 
     # Enable threads on ports 29999 and 30003
