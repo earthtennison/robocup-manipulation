@@ -259,14 +259,14 @@ int main(int argc, char **argv) {
 
     ROS_INFO("robot_control_node is ready");
 
-    visual_tools.trigger();
+    //visual_tools.trigger();
     visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add collision object");
 
     /////////////// planning scene interface /////////////
 
     addCollisionObjects(planning_scene_interface);
 
-    visual_tools.trigger();
+    //visual_tools.trigger();
     visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to pregrasp");
 
     ////////////// move group interface /////////////////
@@ -291,7 +291,7 @@ int main(int argc, char **argv) {
 
     move(move_group_arm, pose);
 
-    visual_tools.trigger();
+    //visual_tools.trigger();
     visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to open gripper");
 
     // open gripper
@@ -299,12 +299,82 @@ int main(int argc, char **argv) {
     gripper_command_msg.data = false;
     gripper_command_publisher.publish(gripper_command_msg);
 
-    visual_tools.trigger();
+    //visual_tools.trigger();
     visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to grasp pose");
+
+
+
+
+
+    //test move_catesian
+    visual_tools.trigger();
+    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to test move_catesian");
+    float pose_target_x = 0.0;
+    float pose_target_y = 0.0;
+    float pose_target_z = 0.0;  
+
+    pose_target_x = 0.1;
+    pose_target_y = 0.0;
+    pose_target_z = 0.0; 
+    move_catesian(move_group_arm, pose, pose_target_x,
+                                        pose_target_y,
+                                        pose_target_z );
+    visual_tools.trigger();
+    visual_tools.prompt("test move_catesian done");
+
+    //////
+    pose.position.x += pose_target_x;
+    pose.position.y += pose_target_y;
+    pose.position.z += pose_target_z;
+
+
+
+    pose_target_x = 0.0;
+    pose_target_y = 0.0;
+    pose_target_z = 0.05;
+    visual_tools.trigger();
+    visual_tools.prompt("up");
+    move_catesian(move_group_arm, pose, pose_target_x,
+                                        pose_target_y,
+                                        pose_target_z );
+    pose.position.x += pose_target_x;
+    pose.position.y += pose_target_y;
+    pose.position.z += pose_target_z;
+
+
+
+
+    pose_target_x = 0.0;
+    pose_target_y = -0.2;
+    pose_target_z = 0.0;
+    visual_tools.trigger();
+    visual_tools.prompt("right");
+    move_catesian(move_group_arm, pose, pose_target_x,
+                                        pose_target_y,
+                                        pose_target_z );
+    pose.position.x += pose_target_x;
+    pose.position.y += pose_target_y;
+    pose.position.z += pose_target_z;
+
+
+
+    pose_target_x = 0.0;
+    pose_target_y = 0.4;
+    pose_target_z = 0.0;
+    visual_tools.trigger();
+    visual_tools.prompt("left");
+    move_catesian(move_group_arm, pose, pose_target_x,
+                                        pose_target_y,
+                                        pose_target_z );   
+    pose.position.x += pose_target_x;
+    pose.position.y += pose_target_y;
+    pose.position.z += pose_target_z;                            
+    ////////
+
 
     // grasps pose
 
-    pose.position.x = OBJECT_POSITION[0] - 0.085;
+    pose.position.x = OBJECT_POSITION[0];
     pose.position.y = OBJECT_POSITION[1];
     pose.position.z = OBJECT_POSITION[2];
 
@@ -329,8 +399,6 @@ int main(int argc, char **argv) {
     visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to lift");
 
     // lift
-
-    move_catesian(move_group_arm, pose, 0.0, 0.0, 0.05);
     pose.position.x = OBJECT_POSITION[0] - 0.085;
     pose.position.y = OBJECT_POSITION[1];
     pose.position.z = OBJECT_POSITION[2] + 0.2;
