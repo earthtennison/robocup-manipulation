@@ -138,6 +138,74 @@ void move(geometry_msgs::Pose goal_pose) {
   success = success && success_execute;
 }
 
+
+void move_cartesian(geometry_msgs::Pose current_pose, float x, float y, float z) {
+  namespace rvt = rviz_visual_tools;
+  moveit::planning_interface::MoveGroupInterface move_group_interface(PLANNING_GROUP_ARM);
+  moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
+  visual_tools.deleteAllMarkers();
+
+  std::vector<geometry_msgs::Pose> waypoints;
+  waypoints.push_back(current_pose);
+
+  geometry_msgs::Pose target_pose = current_pose;
+  target_pose.position.x += x;
+  target_pose.position.y += y;
+  target_pose.position.z += z;
+  waypoints.push_back(target_pose);
+
+  moveit_msgs::RobotTrajectory trajectory;
+  const double jump_threshold = 0.0;
+  const double eef_step = 0.01;
+  double fraction = move_group_interface.computeCartesianPath(waypoints, eef_step, jump_threshold, trajectory);
+
+  // visualize plan
+  visual_tools.deleteAllMarkers();
+  visual_tools.publishPath(waypoints, rvt::LIME_GREEN, rvt::SMALL);
+  for (std::size_t i = 0; i < waypoints.size(); ++i)
+    visual_tools.publishAxisLabeled(waypoints[i], "pt" + std::to_string(i), rvt::SMALL);
+
+  bool success_execute = (move_group_interface.execute(trajectory) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  ROS_INFO("Execute %s", success_execute ? "success" : "failure");
+  success = success_execute;
+}
+
+void set_home_walkie2(void)
+{
+  moveit::planning_interface::MoveGroupInterface move_group_interface(PLANNING_GROUP_ARM);
+  // Raw pointers are frequently used to refer to the planning group for improved performance.
+  const robot_state::JointModelGroup* joint_model_group = move_group_interface.getCurrentState()->getJointModelGroup(PLANNING_GROUP_ARM);
+  moveit::core::RobotStatePtr current_state = move_group_interface.getCurrentState();
+
+  // Next get the current set of joint values for the group.
+  std::vector<double> joint_group_positions;
+  current_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
+
+  moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
+  visual_tools.deleteAllMarkers();
+
+  // Now, let's modify one of the joints, plan to the new joint space goal and visualize the plan.
+  joint_group_positions[0] = 0.0;  // radians
+  joint_group_positions[1] = 0.0;  // radians
+  joint_group_positions[2] = 2.267;  // radians
+  joint_group_positions[3] = 0.875;  // radians
+  joint_group_positions[4] = 1.507;  // radians
+  joint_group_positions[5] = 2.355;  // radians
+  move_group_interface.setJointValueTarget(joint_group_positions);
+  
+  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+  success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  ROS_INFO("Plan %s", success ? "success" : "failure");
+
+  // visualize plan
+  visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+  visual_tools.trigger();
+
+  bool success_execute = 
+        (move_group_interface.execute(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  ROS_INFO("Execute %s", success_execute ? "success" : "failure");
+  success = success && success_execute;
+}
 bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
                       cr3_moveit_control::cr3_pick::Response &res)
 {
@@ -190,7 +258,7 @@ bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
   gripper_command_publisher.publish(gripper_command_msg);
 
   // grasps pose
-  move(req.geo_req);
+  move_cartesian(pose, -0.1, 0, 0);
   if (!success){
     return false;
   }
@@ -200,26 +268,23 @@ bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
   gripper_command_publisher.publish(gripper_command_msg);
 
   // lift
-  pose.position.x = pos_x; 
-  pose.position.y = pos_y;
-  pose.position.z = pos_z + 0.1;
-  pose.orientation.x = ori_x;
-  pose.orientation.y = ori_y;
-  pose.orientation.z = ori_z;
-  pose.orientation.w = ori_w;
-  move(pose);
+  pose.position.x = pos_x;
+
+  move_cartesian(pose, 0, 0, 0.1);
   if (!success){
     return false;
   }
 
   // home
   //TODO ice#elec
+  set_home_walkie2();
 
   // check whether it is true then return "success value"
   res.success_grasp = success;
   ROS_INFO(res.success_grasp ? "true" : "false");
   return true;
 }
+
 
 int main(int argc, char **argv)
 {

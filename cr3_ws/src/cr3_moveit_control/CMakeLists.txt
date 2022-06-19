@@ -86,6 +86,9 @@ target_link_libraries(robot_control_node_sim_catesian ${catkin_LIBRARIES} boost_
 add_executable(robot_control_node_real src/robot_control_node_real.cpp)
 target_link_libraries(robot_control_node_real ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
 
+add_executable(robot_control_node_real_catesian src/robot_control_node_real_catesian.cpp)
+target_link_libraries(robot_control_node_real_catesian ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+
 add_executable(visual_servo src/visual_servo.cpp)
 target_link_libraries(visual_servo ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
 
