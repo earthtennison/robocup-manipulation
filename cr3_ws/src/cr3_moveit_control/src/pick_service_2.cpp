@@ -91,7 +91,7 @@ bool pick_server2(cr3_moveit_control::pick_gen2::Request &req,
     pose.position.y = pos_y;
     pose.position.z = pos_z;
     //Calculate angle
-    q_rot.setRPY(0,0,0);
+    q_rot.setRPY(0,- M_PI / 2.0,0);
     q_new = q_rot * q_orig;
     q_new.normalize();
     geometry_msgs::Pose new_pose = pose;
@@ -105,10 +105,10 @@ bool pick_server2(cr3_moveit_control::pick_gen2::Request &req,
     res.success_grasp = success;
     ROS_INFO(res.success_grasp ? "true" : "false");
     if(!success){
-        return false;
+      return false;
     }
     else{
-        return true;
+      return true;
     }
   }
   else if(side == "top"){
@@ -117,7 +117,7 @@ bool pick_server2(cr3_moveit_control::pick_gen2::Request &req,
     pose.position.y = pos_y;
     pose.position.z = pos_z + 0.1;
     //Calculate angle
-    q_rot.setRPY(0,- M_PI / 2.0,0);
+    q_rot.setRPY(0,-M_PI, 0);
     q_new = q_rot * q_orig;
     q_new.normalize();
     geometry_msgs::Pose new_pose = pose;
@@ -143,7 +143,7 @@ bool pick_server2(cr3_moveit_control::pick_gen2::Request &req,
     pose.position.y = pos_y - 0.1;
     pose.position.z = pos_z;
     //Calculate angle    
-    q_rot.setRPY(0,0,-M_PI / 2.0);
+    q_rot.setRPY(0,-M_PI / 2.0,-M_PI / 2.0);
     q_new = q_rot * q_orig;
     q_new.normalize();
     geometry_msgs::Pose new_pose = pose;
@@ -169,7 +169,7 @@ bool pick_server2(cr3_moveit_control::pick_gen2::Request &req,
     pose.position.y = pos_y + 0.1;
     pose.position.z = pos_z;
     //Calculate angle
-    q_rot.setRPY(0,0,M_PI / 2.0);
+    q_rot.setRPY(0, -M_PI / 2.0, M_PI / 2.0);
     q_new = q_rot * q_orig;
     q_new.normalize();
     geometry_msgs::Pose new_pose = pose;
@@ -195,7 +195,7 @@ bool pick_server2(cr3_moveit_control::pick_gen2::Request &req,
 }
 
 int main(int argc, char** argv){
-  ros::init(argc, argv, "pick_gen2_success_server");
+  ros::init(argc, argv, "pick_gen2_success");
   ros::AsyncSpinner spinner(0);
   spinner.start();
   ros::NodeHandle nh;

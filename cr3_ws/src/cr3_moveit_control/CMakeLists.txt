@@ -99,3 +99,7 @@ add_dependencies(pick_client cr3_moveit_control)
 
 add_executable(constraint_publisher src/constraint_publisher.cpp)
 target_link_libraries(constraint_publisher ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+
+add_executable(pick_service2 src/pick_service_2.cpp)
+target_link_libraries(pick_service2 ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+add_dependencies(pick_service2 cr3_moveit_control)
