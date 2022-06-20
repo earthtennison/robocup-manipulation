@@ -110,7 +110,7 @@ class SimpleColorDetector:
         if cv_image is not None :
             (rows,cols,channels) = cv_image.shape
             #--- Detect blobs
-            cv_image, x, y, w, h = simple_detect_bbox(cv_image, "green")
+            cv_image, x, y, w, h = simple_detect_bbox(cv_image, "blue")
 
             # calculate delta x, y
             delta_x = ((x+w/2) - cols / 2)

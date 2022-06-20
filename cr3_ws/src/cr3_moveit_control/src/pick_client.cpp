@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include "cr3_moveit_control/kan_pick.h"
+#include "cr3_moveit_control/cr3_pick.h"
 #include <cstdlib>
 
 int main(int argc, char **argv)
@@ -11,8 +11,8 @@ int main(int argc, char **argv)
       ROS_INFO("usage: add_six_ints_client X Y Z roll pitch yawn");
     }
   ros::NodeHandle nh;
-  ros::ServiceClient client = nh.serviceClient<cr3_moveit_control::kan_pick>("pick_success");
-  cr3_moveit_control::kan_pick srv;
+  ros::ServiceClient client = nh.serviceClient<cr3_moveit_control::cr3_pick>("pick_success");
+  cr3_moveit_control::cr3_pick srv;
   double posx, posy, posz, orix, oriy, oriz, oriw;
   // std::cin >> posx;
   // std::cin >> posy;

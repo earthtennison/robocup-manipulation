@@ -79,17 +79,17 @@ if __name__ == "__main__":
     client_dashboard.User(0)
     client_dashboard.Tool(0)
 
-    t1 = threading.Thread(name ="thread1", target = move)
+    # t1 = threading.Thread(name ="thread1", target = move)
     t2 = threading.Thread(name ="thread2", target = CR3_feedback)
-    t3 = threading.Thread(name ="thread3", target = stop_watch)
+    # t3 = threading.Thread(name ="thread3", target = stop_watch)
 
-    t1.start()
+    # t1.start()
     t2.start()
-    t3.start()
+    # t3.start()
 
-    t1.join()
-    t2.join()
-    t3.join()
+    # t1.join()
+    # t2.join()
+    # t3.join()
 
 
 

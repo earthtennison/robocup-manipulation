@@ -19,10 +19,11 @@
 
 static const std::string PLANNING_GROUP_ARM = "arm";
 static const std::string APP_DIRECTORY_NAME = ".cr3_simulation";
+
 ////////////////////////////////////////////////////////////
-// 
-static const std::vector<double> OBJECT_POSITION = {0.5, 0, 0.5}; // default {0.5, 0.0, 0.5}
-const double tau = 2 * M_PI;
+
+static const std::vector<double> OBJECT_POSITION = {0.0, -0.5, 0.2}; // default {0.5, 0.0, 0.5}
+
 ////////////////////////////////////////////////////////////
 
 moveit_msgs::CollisionObject extractObstacleFromJson(Json::Value &root, std::string name) {
@@ -65,110 +66,40 @@ moveit_msgs::CollisionObject extractObstacleFromJson(Json::Value &root, std::str
   return std::move(collision_object);
 }
 
-void roll_pitch_yaw(double** POSITION, int trial, double* OBJ_POS){
-  float arr[7];
-  arr[0] = -float(M_PI)/2.0;
-  arr[1] = -float(M_PI)/2.0 + float(M_PI)/6.0;//float(M_PI)/2.0;
-  arr[2] = -float(M_PI)/2.0 - float(M_PI)/6.0;
-  arr[3] = -float(M_PI)/2.0 + float(M_PI)/3.0;
-  arr[4] = -float(M_PI)/2.0 - float(M_PI)/3.0;
-  arr[5] = -float(M_PI)/2.0 + float(M_PI)/2.0;
-  arr[6] = -float(M_PI)/2.0 - float(M_PI)/2.0;
-  for(int i = 0; i < 7; i++){
-    ROS_INFO("loop narok");
-    POSITION[i][0] = OBJ_POS[0];
-    POSITION[i][1] = OBJ_POS[1];
-    POSITION[i][2] = OBJ_POS[2];
-    POSITION[i][3] = -M_PI/ 2.0;
-    POSITION[i][4] = -M_PI/ 4.0;
-    POSITION[i][5] = arr[i];
-  }
-  ROS_INFO("RUNNING roll_pitch_yaw");
-}
-
-void compute_pregrasp(double** ORIENTATION, double** POSITION, int trial){
-  
-  for(int i = 0; i < 7; i++){
-    ROS_INFO("Compute pregrasp");
-    tf2::Quaternion quat0;
-    quat0.setRPY(POSITION[i][3], POSITION[i][4], POSITION[i][5]);
-    ORIENTATION[i][0] = quat0.getX();
-    ORIENTATION[i][1] = quat0.getY();
-    ORIENTATION[i][2] = quat0.getZ();
-    ORIENTATION[i][3] = quat0.getW();
-  }
-  ROS_INFO("bruh bruh");
-}
-void move(moveit::planning_interface::MoveGroupInterface 
-&move_group_interface, 
-std::string str0, double** POSITION, 
-double** ORIENTATION, int trial) {
-  //Joint model group
-  ROS_INFO("Shimpai");
+void move(moveit::planning_interface::MoveGroupInterface &move_group_interface, geometry_msgs::Pose goal_pose) {
   const moveit::core::JointModelGroup *joint_model_group =
       move_group_interface.getCurrentState()->getJointModelGroup(PLANNING_GROUP_ARM);
-  
-moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
+
+  moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
   visual_tools.deleteAllMarkers();
   // set target pose
   geometry_msgs::Pose target_pose1;
-  int number = 0;
-  bool success = false;
-  ROS_INFO("Prepare to move");
-  int angle[7] = {0, 30, -30, 60, -60,  90, -90};
-  while(number < trial){
-    ROS_INFO("MOVE MOVE MOVE");
-    target_pose1.orientation.w = ORIENTATION[number][0];
-    target_pose1.orientation.x = ORIENTATION[number][1];
-    target_pose1.orientation.y = ORIENTATION[number][2];
-    target_pose1.orientation.z = ORIENTATION[number][3];
-    target_pose1.position.x = POSITION[number][0];
-    target_pose1.position.y = POSITION[number][1];
-    target_pose1.position.z = POSITION[number][2];
-    move_group_interface.setPoseTarget(target_pose1);
-    ROS_INFO("target planning set order %d and  %d degree done lol lol lol", number + 1, angle[number]);
-    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-    success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-    ROS_INFO("Plan %s", success ? "success" : "failure");
-    if(success == true){ 
-      visual_tools.publishAxisLabeled(target_pose1, "pose 1");
-      visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
-      visual_tools.trigger();
-      break;
-    }
-    number += 1;
-  }
-  
-  // target_pose1.orientation.w = goal_pose.orientation.w;
-  // target_pose1.orientation.x = goal_pose.orientation.x;
-  // target_pose1.orientation.y = goal_pose.orientation.y;
-  // target_pose1.orientation.z = goal_pose.orientation.z;
-  // target_pose1.position.x = goal_pose.position.x;
-  // target_pose1.position.y = goal_pose.position.y;
-  // target_pose1.position.z = goal_pose.position.z;
-  // //set pose target
-  // move_group_interface.setPoseTarget(target_pose1);
-  // ROS_INFO("target set");
-  
-  // moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-  // ROS_INFO("target set1");
-  // bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  // ROS_INFO("target set2");
-  
-  
-  // ROS_INFO("Plan %s", success ? "success" : "failure");
+  target_pose1.orientation.w = goal_pose.orientation.w;
+  target_pose1.orientation.x = goal_pose.orientation.x;
+  target_pose1.orientation.y = goal_pose.orientation.y;
+  target_pose1.orientation.z = goal_pose.orientation.z;
+  target_pose1.position.x = goal_pose.position.x;
+  target_pose1.position.y = goal_pose.position.y;
+  target_pose1.position.z = goal_pose.position.z;
 
-  // // visualize plan
-  // visual_tools.publishAxisLabeled(target_pose1, "pose 1");
-  // visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
-  // visual_tools.trigger();
+  move_group_interface.setPoseTarget(target_pose1);
+  ROS_INFO("target set");
 
-  // bool success_execute =
-  //     (move_group_interface.execute(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  // ROS_INFO("Plan %s", success_execute ? "success" : "failure");
-  // ROS_INFO("Successfully executed!");
+  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+
+  bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  ROS_INFO("Plan %s", success ? "success" : "failure");
+
+  // visualize plan
+  visual_tools.publishAxisLabeled(target_pose1, "pose 1");
+  visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+  visual_tools.trigger();
+
+  bool success_execute =
+      (move_group_interface.execute(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  ROS_INFO("Execute %s", success_execute ? "success" : "failure");
 }
- 
+
 void move_catesian(moveit::planning_interface::MoveGroupInterface &move_group_interface,
                    geometry_msgs::Pose current_pose, float x, float y, float z) {
   namespace rvt = rviz_visual_tools;
@@ -243,16 +174,6 @@ void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface &pla
 
   planning_scene_interface.applyCollisionObjects(collision_objects);
 }
-// void planning_pose(float*** GRASP_GEN, int trial, int stepp, geometry_msgs::Pose pose, tf2::Quaternion quat){
-//   pose.position.x = GRASP_GEN[trial][stepp][0];
-//   pose.position.y = GRASP_GEN[trial][stepp][1];
-//   pose.position.z = GRASP_GEN[trial][stepp][2];
-//   quat.setRPY(GRASP_GEN[trial][stepp][3], GRASP_GEN[trial][stepp][4], GRASP_GEN[trial][stepp][5]);
-//   pose.orientation.x = quat.getX();
-//   pose.orientation.y = quat.getY();
-//   pose.orientation.z = quat.getZ();
-//   pose.orientation.w = quat.getW();
-// }
 
 int main(int argc, char **argv) {
   namespace fs = boost::filesystem;
@@ -261,7 +182,7 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "robot_control_node");
 
   ros::NodeHandle nh;
-  ros::Publisher gripper_command_publisher = nh.advertise<std_msgs::Bool>("/gripper_command", 10);
+  ros::Publisher gripper_command_publisher = nh.advertise<std_msgs::Bool>("/cr3_gripper_command", 10);
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
@@ -335,6 +256,7 @@ int main(int argc, char **argv) {
 
     ROS_INFO("robot_control_node is ready");
 
+    ros::WallDuration(3.0).sleep();
     // visual_tools.trigger();
     // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add collision object");
 
@@ -342,138 +264,93 @@ int main(int argc, char **argv) {
 
     // addCollisionObjects(planning_scene_interface);
 
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to pregrasp");
+    // visual_tools.trigger();
+    // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to pregrasp");
 
     ////////////// move group interface /////////////////
 
     // ros::WallDuration(3.0).sleep();
 
-    // pregrasp
-    // the position for panda_link8 = object pose - (length of cube/2 - distance b/w panda_link8 and palm of eef (0.058)
-    // - some extra padding) - (desired offset for pregasp)
-    // add the pointer for the convinience for calculation
-  
-    double* OBJ_POS;
-    OBJ_POS = (double *) malloc (3 * sizeof(double));
-    //Modify at here
-    OBJ_POS[0] = 0.2;
-    OBJ_POS[1] = 0.2;
-    OBJ_POS[2] = 0;
-    ROS_INFO("fishfhishfhishfishfhsdogg");
-    int number_of_repeat = 7;
-    int number_of_step = 5;
-    double **POSITION;
-    POSITION = (double **) malloc (number_of_repeat * sizeof(double));
-    for(int i = 0; i < number_of_repeat; i++){
-      POSITION[i] = (double *) malloc (6 * sizeof(double));
+    while (true){
+      // pregrasp
+      // the position for panda_link8 = object pose - (length of cube/2 - distance b/w panda_link8 and palm of eef (0.058)
+      // - some extra padding) - (desired offset for pregasp)
+      geometry_msgs::Pose pose;
+      pose.position.x = OBJECT_POSITION[0];
+      pose.position.y = OBJECT_POSITION[1] + 0.085 + 0.115;
+      pose.position.z = OBJECT_POSITION[2];
+
+      tf2::Quaternion quat;
+      quat.setRPY(-M_PI / 2, -M_PI / 4, M_PI);
+
+      pose.orientation.x = quat.getX();
+      pose.orientation.y = quat.getY();
+      pose.orientation.z = quat.getZ();
+      pose.orientation.w = quat.getW();
+
+      move(move_group_arm, pose);
+
+      ros::WallDuration(3.0).sleep();
+      // visual_tools.trigger();
+      // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to open gripper");
+
+      // open gripper
+      std_msgs::Bool gripper_command_msg;
+      gripper_command_msg.data = false;
+      gripper_command_publisher.publish(gripper_command_msg);
+
+      ros::WallDuration(3.0).sleep();
+      // visual_tools.trigger();
+      // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to grasp pose");
+
+      // grasps pose
+
+      pose.position.x = OBJECT_POSITION[0];
+      pose.position.y = OBJECT_POSITION[1] + 0.085;
+      pose.position.z = OBJECT_POSITION[2];
+
+      quat.setRPY(-M_PI / 2, -M_PI / 4, M_PI);
+
+      pose.orientation.x = quat.getX();
+      pose.orientation.y = quat.getY();
+      pose.orientation.z = quat.getZ();
+      pose.orientation.w = quat.getW();
+
+      move(move_group_arm, pose);
+
+      ros::WallDuration(3.0).sleep();
+      // visual_tools.trigger();
+      // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to close gripper");
+
+      // close gripper
+
+      gripper_command_msg.data = true;
+      gripper_command_publisher.publish(gripper_command_msg);
+
+      ros::WallDuration(3.0).sleep();
+      // visual_tools.trigger();
+      // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to lift");
+
+      // lift
+
+      // move_catesian(move_group_arm, pose, 0.0, 0.0, 0.05);
+      pose.position.x = OBJECT_POSITION[0];
+      pose.position.y = OBJECT_POSITION[1] + 0.085;
+      pose.position.z = OBJECT_POSITION[2] + 0.05;
+
+      quat.setRPY(-M_PI / 2, -M_PI / 4, M_PI);
+
+      pose.orientation.x = quat.getX();
+      pose.orientation.y = quat.getY();
+      pose.orientation.z = quat.getZ();
+      pose.orientation.w = quat.getW();
+
+      move(move_group_arm, pose);
+
+      ros::WallDuration(3.0).sleep();
+      // visual_tools.trigger();
+      // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to end");
     }
-
-    double **ORIENTATION;
-    ORIENTATION = (double **) malloc (number_of_repeat * sizeof(double));
-    for(int i = 0; i < number_of_repeat; i++){
-      ORIENTATION[i] = (double *) malloc (4 * sizeof(double));
-    }
-    ROS_INFO("shrimp shrimp");
-
-
-    //===========================================================================//
-    //use the roll pitch yaw algorithm
-    roll_pitch_yaw(POSITION, number_of_repeat, OBJ_POS);
-    ROS_INFO("ebi ebi");
-    compute_pregrasp(ORIENTATION, POSITION, number_of_repeat);
-    //add the grasp gen function of the OBJECT_POSITION in the pointer
-    //declare the pose function
-    ROS_INFO("FISHFISHFISH");
-    move(move_group_arm, "string", POSITION, ORIENTATION, number_of_repeat);
-    ROS_INFO("Dog Dog Dog");
-    //left the loop  when the loop is ended
-    //325426587360862563
-    //bool fish = check_whether_move(move_group_arm, pose0, "Check Grasp LOL");
-    //=============================================================================//
-    // if(){
-
-    // }
-    // if(){
-
-    // }
-    // if(){
-
-    // }
-    // if(){
-
-    // }
-    geometry_msgs::Pose pose;
-    pose.position.x = OBJECT_POSITION[0];
-    pose.position.y = OBJECT_POSITION[1] + 0.15;
-    pose.position.z = OBJECT_POSITION[2];
-
-    tf2::Quaternion quat;
-    quat.setRPY(-M_PI / 2, -M_PI / 4, -M_PI / 2);
-
-    pose.orientation.x = quat.getX();
-    pose.orientation.y = quat.getY();
-    pose.orientation.z = quat.getZ();
-    pose.orientation.w = quat.getW();
-
-    //move(move_group_arm, pose, PREGRASP,);
-
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to open gripper");
-
-    // open gripper
-    std_msgs::Bool gripper_command_msg;
-    gripper_command_msg.data = false;
-    gripper_command_publisher.publish(gripper_command_msg);
-
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to grasp pose");
-
-    // grasps pose
-
-    pose.position.x = OBJECT_POSITION[0];
-    pose.position.y = OBJECT_POSITION[1] + 0.04;
-    pose.position.z = OBJECT_POSITION[2];
-
-    quat.setRPY(-M_PI / 2, -M_PI / 4, -M_PI / 2);
-
-    pose.orientation.x = quat.getX();
-    pose.orientation.y = quat.getY();
-    pose.orientation.z = quat.getZ();
-    pose.orientation.w = quat.getW();
-
-    //move(move_group_arm, pose, PREGRASP, );
-
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to close gripper");
-
-    // close gripper
-
-    gripper_command_msg.data = true;
-    gripper_command_publisher.publish(gripper_command_msg);
-
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to lift");
-
-    // lift
-
-    // move_catesian(move_group_arm, pose, 0.0, 0.0, 0.05);
-    pose.position.x = OBJECT_POSITION[0];
-    pose.position.y = OBJECT_POSITION[1];
-    pose.position.z = OBJECT_POSITION[2]+0.05;
-
-    quat.setRPY(-M_PI / 2, -M_PI / 4, -M_PI / 2);
-
-    pose.orientation.x = quat.getX();
-    pose.orientation.y = quat.getY();
-    pose.orientation.z = quat.getZ();
-    pose.orientation.w = quat.getW();
-
-    //move(move_group_arm, pose);
-
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to end");
-
     ros::waitForShutdown();
 
     return 0;

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 from dobot_api import dobot_api_dashboard, dobot_api_feedback, MyType
 import _thread

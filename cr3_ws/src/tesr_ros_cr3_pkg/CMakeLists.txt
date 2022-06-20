@@ -58,11 +58,10 @@ add_message_files(
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  VisualServo.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -166,6 +165,8 @@ catkin_install_python(PROGRAMS
   src/cr3_controller.py
   src/simple_color_detection.py
   src/visual_servo.py
+  src/visual_servo_service.py
+  src/cr3_controller_w_visual_servo_service.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

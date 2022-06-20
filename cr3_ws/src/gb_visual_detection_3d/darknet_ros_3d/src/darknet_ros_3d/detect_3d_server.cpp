@@ -40,137 +40,121 @@
 #include <ros/ros.h>
 
 #include <visualization_msgs/MarkerArray.h>
-
+#include<sensor_msgs/PointCloud2.h>
 #include <pcl_ros/transforms.h>
 #include <pcl_conversions/pcl_conversions.h>
 
 #include <limits>
 #include <algorithm>
 
-
 namespace darknet_ros_3d
 {
-
-Darknet3D::Darknet3D():
-  nh_("~")
-{
-  initParams();
-  darknet3d_server = nh_.advertiseService("dn3d_service", &Darknet3D::detect_3d,this);
-  // last_detection_ts_ = ros::Time::now() - ros::Duration(60.0);
-  
-}
-
-void
-Darknet3D::initParams()
-{
-  working_frame_ = "camera_link";
-  mininum_detection_thereshold_ = 0.2f;
-  minimum_probability_ = 0.2f;
-
-
-  nh_.param("working_frame", working_frame_, working_frame_);
-  nh_.param("mininum_detection_thereshold", mininum_detection_thereshold_, mininum_detection_thereshold_);
-  nh_.param("minimum_probability", minimum_probability_, minimum_probability_);
-
-}
-
-bool Darknet3D::detect_3d(gb_visual_detection_3d_msgs::Detect3d::Request &req, gb_visual_detection_3d_msgs::Detect3d::Response &res)
-{
-  
-  sensor_msgs::PointCloud2 local_pointcloud;
-
-  try
+  Darknet3D::Darknet3D() : nh_("~")
   {
-    pcl_ros::transformPointCloud(working_frame_, req.point_cloud, local_pointcloud, tfListener_);
+    initParams();
+    darknet3d_server = nh_.advertiseService("dn3d_service", &Darknet3D::detect_3d, this);
+    testtt = nh_.advertise<sensor_msgs::PointCloud2>("dwadwdwdadawdadawda",1,this);
   }
-  catch(tf::TransformException& ex)
+
+  void
+  Darknet3D::initParams()
   {
-    ROS_ERROR_STREAM("Transform error of sensor data: " << ex.what() << ", quitting callback");
+    working_frame_ = "object_frame";
+    mininum_detection_thereshold_ = 0.2f;
+
+    // nh_.param("working_frame", working_frame_, working_frame_);
+    // nh_.param("mininum_detection_thereshold", mininum_detection_thereshold_, mininum_detection_thereshold_);
+  }
+
+  bool Darknet3D::detect_3d(gb_visual_detection_3d_msgs::Detect3d::Request &req, gb_visual_detection_3d_msgs::Detect3d::Response &res)
+  {
+    ROS_INFO("Reciving Service");
+    sensor_msgs::PointCloud2 local_pointcloud;
+
+    try
+    {
+      pcl_ros::transformPointCloud(working_frame_, req.point_cloud, local_pointcloud, tfListener_);
+      testtt.publish(local_pointcloud);
+    }
+    catch (tf::TransformException &ex)
+    {
+      ROS_ERROR_STREAM("Transform error of sensor data: " << ex.what() << ", quitting callback");
+      return true;
+    }
+
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcrgb(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::fromROSMsg(local_pointcloud, *pcrgb);
+
+    gb_visual_detection_3d_msgs::BoundingBox3d bounding_box_3d;
+    bool success = calculate_boxes(local_pointcloud, pcrgb, req.bounding_box, bounding_box_3d);
+
+    res.success = success;
+    res.bounding_box_3d = bounding_box_3d;
     return true;
   }
 
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcrgb(new pcl::PointCloud<pcl::PointXYZRGB>);
-  pcl::fromROSMsg(local_pointcloud, *pcrgb);
+  bool Darknet3D::calculate_boxes(const sensor_msgs::PointCloud2 &cloud_pc2,
+                                  const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_pcl,
+                                  darknet_ros_msgs::BoundingBox bbx,
+                                  gb_visual_detection_3d_msgs::BoundingBox3d &bounding_box_3d)
+  {
+    int center_x, center_y;
 
-  calculate_boxes(local_pointcloud, pcrgb, req.bounding_box, &res.bounding_box_3d);
-  return true;
+    center_x = (bbx.xmax + bbx.xmin) / 2;
+    center_y = (bbx.ymax + bbx.ymin) / 2;
 
-}
+    int pcl_index = (center_y * cloud_pc2.width) + center_x;
+    pcl::PointXYZRGB center_point = cloud_pcl->at(pcl_index);
 
+    // if (std::isnan(center_point.x))
+    //   return false;
 
-void
-Darknet3D::calculate_boxes(const sensor_msgs::PointCloud2& cloud_pc2,
-    const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_pcl,
-    darknet_ros_msgs::BoundingBox bbx,
-    gb_visual_detection_3d_msgs::BoundingBox3d* bounding_box_3d)
-{
-  bounding_box_3d->header.stamp = cloud_pc2.header.stamp;
-  bounding_box_3d->header.frame_id = working_frame_;
+    float maxx, minx, maxy, miny, maxz, minz;
 
-  int center_x, center_y;
+    maxx = maxy = maxz = -std::numeric_limits<float>::max();
+    minx = miny = minz = std::numeric_limits<float>::max();
 
-  center_x = (bbx.xmax + bbx.xmin) / 2;
-  center_y = (bbx.ymax + bbx.ymin) / 2;
+    for (int i = bbx.xmin; i < bbx.xmax; i++)
+      for (int j = bbx.ymin; j < bbx.ymax; j++)
+      {
+        pcl_index = (j * cloud_pc2.width) + i;
+        pcl::PointXYZRGB point = cloud_pcl->at(pcl_index);
 
-  int pcl_index = (center_y* cloud_pc2.width) + center_x;
-  pcl::PointXYZRGB center_point =  cloud_pcl->at(pcl_index);
+        if (std::isnan(point.x))
+          continue;
 
-  if (std::isnan(center_point.x))
-    return;
+        if (fabs(point.x - center_point.x) > mininum_detection_thereshold_)
+          continue;
 
-  float maxx, minx, maxy, miny, maxz, minz;
+        maxx = std::max(point.x, maxx);
+        maxy = std::max(point.y, maxy);
+        maxz = std::max(point.z, maxz);
+        minx = std::min(point.x, minx);
+        miny = std::min(point.y, miny);
+        minz = std::min(point.z, minz);
+      }
 
-  maxx = maxy = maxz =  -std::numeric_limits<float>::max();
-  minx = miny = minz =  std::numeric_limits<float>::max();
+    bounding_box_3d.Class = bbx.Class;
+    bounding_box_3d.probability = bbx.probability;
+    bounding_box_3d.xmin = minx;
+    bounding_box_3d.xmax = maxx;
+    bounding_box_3d.ymin = miny;
+    bounding_box_3d.ymax = maxy;
+    bounding_box_3d.zmin = minz;
+    bounding_box_3d.zmax = maxz;
 
-  for (int i = bbx.xmin; i < bbx.xmax; i++)
-    for (int j = bbx.ymin; j < bbx.ymax; j++)
-    {
-      pcl_index = (j* cloud_pc2.width) + i;
-      pcl::PointXYZRGB point =  cloud_pcl->at(pcl_index);
+    return true;
+  }
 
-      if (std::isnan(point.x))
-        continue;
-
-      if (fabs(point.x - center_point.x) > mininum_detection_thereshold_)
-        continue;
-
-      maxx = std::max(point.x, maxx);
-      maxy = std::max(point.y, maxy);
-      maxz = std::max(point.z, maxz);
-      minx = std::min(point.x, minx);
-      miny = std::min(point.y, miny);
-      minz = std::min(point.z, minz);
-    }
-
-
-  gb_visual_detection_3d_msgs::BoundingBox3d bbx_msg;
-  bbx_msg.Class = bbx.Class;
-  bbx_msg.probability = bbx.probability;
-  bbx_msg.xmin = minx;
-  bbx_msg.xmax = maxx;
-  bbx_msg.ymin = miny;
-  bbx_msg.ymax = maxy;
-  bbx_msg.zmin = minz;
-  bbx_msg.zmax = maxz;
-
-  // boxes->bounding_boxes.push_back(bbx_msg);
-  bounding_box_3d = &bbx_msg;
-}
-
-  
-};  // namespace darknet_ros_3d
+};
 
 int main(int argc, char **argv)
 {
-  
-
-  ros::init(argc, argv, "add_two_ints_server");
+  ros::init(argc, argv, "GGEZ");
   darknet_ros_3d::Darknet3D darknet3d;
   ros::Rate loop_rate(10);
   darknet3d.update();
   ros::spin();
-  // loop_rate.sleep();
 
   return 0;
 }

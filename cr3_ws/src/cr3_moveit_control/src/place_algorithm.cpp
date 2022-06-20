@@ -4,13 +4,14 @@
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit_visual_tools/moveit_visual_tools.h>
-#include <ros/ros.h>
 
+#include <ros/ros.h>
 #include <moveit_msgs/DisplayRobotState.h>
 #include <moveit_msgs/DisplayTrajectory.h>
 
 #include <geometry_msgs/Pose.h>
 #include <moveit_visual_tools/moveit_visual_tools.h>
+
 #include <std_msgs/Bool.h>
 #include <std_msgs/String.h>
 
@@ -20,41 +21,37 @@
 static const std::string PLANNING_GROUP_ARM = "arm";
 static const std::string APP_DIRECTORY_NAME = ".cr3_simulation";
 
-////////////////////////////////////////////////////////////
-
-static const std::vector<double> OBJECT_POSITION = {0.5, 0.0, 0.5}; // default {0.5, 0.0, 0.5}
-
-////////////////////////////////////////////////////////////
+static const std::vector<double> OBJECT_POSITION = {0.5, 0, 0.5};
+const double tau = 2 * M_PI;
 
 moveit_msgs::CollisionObject extractObstacleFromJson(Json::Value &root, std::string name) {
   moveit_msgs::CollisionObject collision_object;
+
   collision_object.header.frame_id = "world";
   collision_object.id = name;
 
   const Json::Value dimensions = root["dimensions"];
   ROS_INFO_STREAM("Extracted dimensions: " << dimensions);
-  // Define a box to add to the world.
+  //Defien a box to add to the world.
   shape_msgs::SolidPrimitive primitive;
   primitive.type = primitive.BOX;
   primitive.dimensions.resize(3);
   primitive.dimensions[0] = dimensions["x"].asDouble();
   primitive.dimensions[1] = dimensions["y"].asDouble();
-  primitive.dimensions[2] = dimensions["z"].asDouble();
+  primitive.dimensions[2] - dimensions["z"].asDouble();
 
   const Json::Value position = root["position"];
   ROS_INFO_STREAM("Extracted position: " << position);
 
   const Json::Value orientation = root["orientation"];
   ROS_INFO_STREAM("Extracted orientation: " << orientation);
-  // Define a pose for the box (specified relative to frame_id)
+
   geometry_msgs::Pose box_pose;
   box_pose.orientation.w = orientation["w"].asDouble();
   box_pose.orientation.x = orientation["x"].asDouble();
   box_pose.orientation.y = orientation["y"].asDouble();
   box_pose.orientation.z = orientation["z"].asDouble();
 
-  // MoveIt! planning scene expects the center of the object as position.
-  // We add half of its dimension to its position
   box_pose.position.x = position["x"].asDouble() + primitive.dimensions[0] / 2.0;
   box_pose.position.y = position["y"].asDouble() + primitive.dimensions[1] / 2.0;
   box_pose.position.z = position["z"].asDouble() + primitive.dimensions[2] / 2.0;
@@ -66,72 +63,54 @@ moveit_msgs::CollisionObject extractObstacleFromJson(Json::Value &root, std::str
   return std::move(collision_object);
 }
 
-void move(moveit::planning_interface::MoveGroupInterface &move_group_interface, geometry_msgs::Pose goal_pose) {
+void kan_place(moveit::planning_interface::MoveGroupInterface &move_group_interface, double* POSITION) {
   const moveit::core::JointModelGroup *joint_model_group =
-      move_group_interface.getCurrentState()->getJointModelGroup(PLANNING_GROUP_ARM);
+    move_group_interface.getCurrentState()->getJointModelGroup(PLANNING_GROUP_ARM);
 
   moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
   visual_tools.deleteAllMarkers();
-  // set target pose
   geometry_msgs::Pose target_pose1;
-  target_pose1.orientation.w = goal_pose.orientation.w;
-  target_pose1.orientation.x = goal_pose.orientation.x;
-  target_pose1.orientation.y = goal_pose.orientation.y;
-  target_pose1.orientation.z = goal_pose.orientation.z;
-  target_pose1.position.x = goal_pose.position.x;
-  target_pose1.position.y = goal_pose.position.y;
-  target_pose1.position.z = goal_pose.position.z;
+  //Step1 Execute along X-Y coordinate
+  bool success = false;
+  ROS_INFO("INIITIATED STEP1");
 
+  //construct quaternion angle
+  tf2::Quaternion quat;
+  quat.setRPY(-M_PI / 2, -M_PI / 4, -M_PI / 2);
+  target_pose1.orientation.w = quat.getW();
+  target_pose1.orientation.x = quat.getX();
+  target_pose1.orientation.y = quat.getY();
+  target_pose1.orientation.z = quat.getZ();
+  target_pose1.position.x = POSITION[0];
+  target_pose1.position.y = POSITION[1];
+  target_pose1.position.z = POSITION[2]+0.3;
   move_group_interface.setPoseTarget(target_pose1);
-  ROS_INFO("target set");
-
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-
-  ROS_INFO("target set1");
-  bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  ROS_INFO("target set2");
+  success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
   ROS_INFO("Plan %s", success ? "success" : "failure");
-
-  // visualize plan
   visual_tools.publishAxisLabeled(target_pose1, "pose 1");
   visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
   visual_tools.trigger();
+  //Step2 Execute along Z coordinate
 
-  bool success_execute =
-      (move_group_interface.execute(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  ROS_INFO("Plan %s", success_execute ? "success" : "failure");
-  ROS_INFO("Successfully executed!");
+  ROS_INFO("INITIATED STEP2");
+  geometry_msgs::Pose target_pose2;
+  target_pose2.orientation.w = quat.getW();
+  target_pose2.orientation.x = quat.getX();
+  target_pose2.orientation.y = quat.getY();
+  target_pose2.orientation.z = quat.getZ();
+  target_pose2.position.x = POSITION[0];
+  target_pose2.position.y = POSITION[1];
+  target_pose2.position.z = POSITION[2]+0.05; //Prevent the collision
+  move_group_interface.setPoseTarget(target_pose2);  
+  success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  ROS_INFO("Plan %s", success ? "success" : "failure");
+
+  visual_tools.publishAxisLabeled(target_pose2, "pose2");
+  visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+  visual_tools.trigger();
 }
 
-void move_catesian(moveit::planning_interface::MoveGroupInterface &move_group_interface,
-                   geometry_msgs::Pose current_pose, float x, float y, float z) {
-  namespace rvt = rviz_visual_tools;
-  moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
-  visual_tools.deleteAllMarkers();
-
-  std::vector<geometry_msgs::Pose> waypoints;
-  waypoints.push_back(current_pose);
-
-  geometry_msgs::Pose target_pose = current_pose;
-  target_pose.position.x += x;
-  target_pose.position.y += y;
-  target_pose.position.z += z;
-  waypoints.push_back(target_pose);
-
-  moveit_msgs::RobotTrajectory trajectory;
-  const double jump_threshold = 0.0;
-  const double eef_step = 0.01;
-  double fraction = move_group_interface.computeCartesianPath(waypoints, eef_step, jump_threshold, trajectory);
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 4 (Cartesian path) (%.2f%% achieved)", fraction * 100.0);
-
-  // visualize plan
-  visual_tools.deleteAllMarkers();
-  visual_tools.publishPath(waypoints, rvt::LIME_GREEN, rvt::SMALL);
-  for (std::size_t i = 0; i < waypoints.size(); ++i)
-    visual_tools.publishAxisLabeled(waypoints[i], "pt" + std::to_string(i), rvt::SMALL);
-
-  move_group_interface.execute(trajectory);
-}
 void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface &planning_scene_interface) {
   // create vector to hold 3 object
   std::vector<moveit_msgs::CollisionObject> collision_objects;
@@ -178,24 +157,24 @@ void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface &pla
   planning_scene_interface.applyCollisionObjects(collision_objects);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv){
   namespace fs = boost::filesystem;
   ROS_INFO("RUNNING robot_control_node");
 
-  ros::init(argc, argv, "robot_control_node");
-
+  ros::init(argc, argv, "robot_placing_node");
+  ROS_INFO("dahvfbvskjvbkfvbhk");
   ros::NodeHandle nh;
   ros::Publisher gripper_command_publisher = nh.advertise<std_msgs::Bool>("/gripper_command", 10);
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
-
   // declare interface for moveit
+  ROS_INFO("This is the trap");
   moveit::planning_interface::MoveGroupInterface move_group_arm(PLANNING_GROUP_ARM);
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-
+  ROS_INFO("This is the trap2");
   ros::Publisher planning_scene_diff_publisher = nh.advertise<moveit_msgs::PlanningScene>("planning_scene", 1);
-
+  ROS_INFO("Fishfishfishfishfish");
   // rviz visual and moveit visual
   moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
   visual_tools.deleteAllMarkers();
@@ -259,12 +238,12 @@ int main(int argc, char **argv) {
 
     ROS_INFO("robot_control_node is ready");
 
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add collision object");
+    // visual_tools.trigger();
+    // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to add collision object");
 
     /////////////// planning scene interface /////////////
 
-    addCollisionObjects(planning_scene_interface);
+    // addCollisionObjects(planning_scene_interface);
 
     visual_tools.trigger();
     visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to pregrasp");
@@ -276,77 +255,18 @@ int main(int argc, char **argv) {
     // pregrasp
     // the position for panda_link8 = object pose - (length of cube/2 - distance b/w panda_link8 and palm of eef (0.058)
     // - some extra padding) - (desired offset for pregasp)
-    geometry_msgs::Pose pose;
-    pose.position.x = OBJECT_POSITION[0] - 0.085 - 0.115;
-    pose.position.y = OBJECT_POSITION[1];
-    pose.position.z = OBJECT_POSITION[2];
+    // add the pointer for the convinience for calculation
 
-    tf2::Quaternion quat;
-    quat.setRPY(-M_PI / 2, -M_PI / 4, -M_PI / 2);
+    double* OBJ_POS;
+    OBJ_POS = (double *) malloc (3 * sizeof(double));
+    //Modify at here
+    OBJ_POS[0] = 0.2;
+    OBJ_POS[1] = -0.4;
+    OBJ_POS[2] = 0.3;
 
-    pose.orientation.x = quat.getX();
-    pose.orientation.y = quat.getY();
-    pose.orientation.z = quat.getZ();
-    pose.orientation.w = quat.getW();
-
-    move(move_group_arm, pose);
-
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to open gripper");
-
-    // open gripper
-    std_msgs::Bool gripper_command_msg;
-    gripper_command_msg.data = false;
-    gripper_command_publisher.publish(gripper_command_msg);
-
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to grasp pose");
-
-    // grasps pose
-
-    pose.position.x = OBJECT_POSITION[0] - 0.085;
-    pose.position.y = OBJECT_POSITION[1];
-    pose.position.z = OBJECT_POSITION[2];
-
-    quat.setRPY(-M_PI / 2, -M_PI / 4, -M_PI / 2);
-
-    pose.orientation.x = quat.getX();
-    pose.orientation.y = quat.getY();
-    pose.orientation.z = quat.getZ();
-    pose.orientation.w = quat.getW();
-
-    move(move_group_arm, pose);
-
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to close gripper");
-
-    // close gripper
-
-    gripper_command_msg.data = true;
-    gripper_command_publisher.publish(gripper_command_msg);
-
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to lift");
-
-    // lift
-
-    move_catesian(move_group_arm, pose, 0.0, 0.0, 0.05);
-    pose.position.x = OBJECT_POSITION[0] - 0.085;
-    pose.position.y = OBJECT_POSITION[1];
-    pose.position.z = OBJECT_POSITION[2] + 0.2;
-
-    quat.setRPY(-M_PI / 2, -M_PI / 4, -M_PI / 2);
-
-    pose.orientation.x = quat.getX();
-    pose.orientation.y = quat.getY();
-    pose.orientation.z = quat.getZ();
-    pose.orientation.w = quat.getW();
-
-    move(move_group_arm, pose);
-
-    visual_tools.trigger();
-    visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to end");
-
+    kan_place(move_group_arm, OBJ_POS);
+    ROS_INFO("Dog Dog Dog");
+    //left the loop  when the loop is ended
     ros::waitForShutdown();
 
     return 0;
