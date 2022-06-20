@@ -169,9 +169,9 @@ class GetObjectPose():
                         t.header.frame_id = "/camera_link"
                         t.header.stamp = rospy.Time.now()
                         t.child_frame_id = "/object_frame"
-                        t.transform.translation.x = x_coord
-                        t.transform.translation.y = z_coord
-                        t.transform.translation.z = y_coord
+                        t.transform.translation.x = z_coord
+                        t.transform.translation.y = -x_coord
+                        t.transform.translation.z = -y_coord
 
                         quat = tf.transformations.quaternion_from_euler(float(0),float(0),float(0))
 
@@ -184,9 +184,9 @@ class GetObjectPose():
                         self.tfm = tf2_msgs.msg.TFMessage([t])
 
                         # set object pose
-                        self.object_pose.position.x = x_coord
-                        self.object_pose.position.y = y_coord
-                        self.object_pose.position.z = z_coord
+                        self.object_pose.position.x = z_coord
+                        self.object_pose.position.y = -x_coord
+                        self.object_pose.position.z = -y_coord
                         self.object_pose.orientation.x = 0
                         self.object_pose.orientation.y = 0
                         self.object_pose.orientation.z = 0
@@ -218,7 +218,7 @@ class GetObjectPose():
             # send frame to server and recieve the result      
             # result = self.c.req(self.frame)
 
-            self.frame, x, y, w, h = simple_detect_bbox(self.frame)
+            self.frame, x, y, w, h = simple_detect_bbox(self.frame, "blue")
             self.x_pixel = x
             self.y_pixel = y
             
