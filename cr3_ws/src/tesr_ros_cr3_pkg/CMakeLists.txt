@@ -166,6 +166,7 @@ catkin_install_python(PROGRAMS
   src/simple_color_detection.py
   src/visual_servo.py
   src/visual_servo_service.py
+  src/cr3_controller_w_visual_servo_service.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
