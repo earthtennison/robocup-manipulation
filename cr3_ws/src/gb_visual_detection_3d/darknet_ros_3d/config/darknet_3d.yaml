@@ -1,4 +1,4 @@
-darknet_ros_topic: /cloud_pcd
+darknet_ros_topic: /camera/depth_registered/points
 output_bbx3d_topic: /darknet_ros_3d/bounding_boxes
 point_cloud_topic: /camera/depth_registered/points
 working_frame: camera_link

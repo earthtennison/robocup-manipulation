@@ -40,7 +40,7 @@
 #include <ros/ros.h>
 
 #include <visualization_msgs/MarkerArray.h>
-
+#include<sensor_msgs/PointCloud2.h>
 #include <pcl_ros/transforms.h>
 #include <pcl_conversions/pcl_conversions.h>
 
@@ -49,21 +49,21 @@
 
 namespace darknet_ros_3d
 {
-
   Darknet3D::Darknet3D() : nh_("~")
   {
     initParams();
     darknet3d_server = nh_.advertiseService("dn3d_service", &Darknet3D::detect_3d, this);
+    testtt = nh_.advertise<sensor_msgs::PointCloud2>("dwadwdwdadawdadawda",1,this);
   }
 
   void
   Darknet3D::initParams()
   {
-    working_frame_ = "camera_link";
+    working_frame_ = "object_frame";
     mininum_detection_thereshold_ = 0.2f;
 
-    nh_.param("working_frame", working_frame_, working_frame_);
-    nh_.param("mininum_detection_thereshold", mininum_detection_thereshold_, mininum_detection_thereshold_);
+    // nh_.param("working_frame", working_frame_, working_frame_);
+    // nh_.param("mininum_detection_thereshold", mininum_detection_thereshold_, mininum_detection_thereshold_);
   }
 
   bool Darknet3D::detect_3d(gb_visual_detection_3d_msgs::Detect3d::Request &req, gb_visual_detection_3d_msgs::Detect3d::Response &res)
@@ -74,6 +74,7 @@ namespace darknet_ros_3d
     try
     {
       pcl_ros::transformPointCloud(working_frame_, req.point_cloud, local_pointcloud, tfListener_);
+      testtt.publish(local_pointcloud);
     }
     catch (tf::TransformException &ex)
     {
