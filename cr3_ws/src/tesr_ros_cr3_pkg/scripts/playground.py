@@ -12,6 +12,6 @@ client_feedback = dobot_api_feedback('192.168.5.6', 30003)
 
 client_dashboard.AccL(10)
 client_dashboard.SpeedL(10)
-client_feedback.RelMovL(-150, 0, 0)
+client_feedback.RelMovL(+100, 0, 0)
 time.sleep(5)
 

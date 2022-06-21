@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 """
-visual servo of cr3 arm
-
 Gets the position of the blob and it commands to steer the wheels
 
 Subscribes to 
+    /cr3_arm_command
+    /cr3_gripper_command
     /blob/point_blob
     
-Publishes commands to 
-    /dkcar/control/cmd_vel    
+Publish to
+    /joint_states
+
+Sevice client of
+    /visual_servo_service
 
 """
 import math
@@ -21,11 +24,44 @@ import copy
 import rospy
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import JointState
+from std_msgs.msg import Bool
+from tesr_ros_cr3_pkg.msg import JointCommand
 
 # cr3 library
 from dobot_api import dobot_api_dashboard, dobot_api_feedback, MyType
 
+# service
+from tesr_ros_cr3_pkg.srv import VisualServoResponse, VisualServo
+
 Kp = 0.05
+
+def rad_to_deg(angle):
+    return angle * 180/ math.pi
+
+def arm_cb(data):
+    global client_feedback
+    rospy.loginfo("moving arm")
+    com = [rad_to_deg(j) for j in list(data.joint_commands)]
+    client_feedback.ServoJ(com[0], com[1], com[2], com[3], com[4], com[5])
+    time.sleep(0.01) 
+
+def gripper_cb(data):
+    global client_feedback, cr3_joint8, cr3_joint9
+    is_close = data.data
+    # True is closing gripper
+    if is_close:
+        #close gripper
+        client_dashboard.DO(2,0)
+        client_dashboard.DO(1,1)
+        cr3_joint8, cr3_joint9 = 0,0
+        time.sleep(0.5)
+    else:
+        #open gripper 
+        client_dashboard.DO(2,1)
+        client_dashboard.DO(1,0)
+        cr3_joint8, cr3_joint9 = math.pi/2, math.pi/2
+        time.sleep(0.5)
+
 
 def on_shutdown():
     global client_feedback, client_dashboard
@@ -48,7 +84,7 @@ def cr3_feedback():
                 print("============== Feed Back ===============")
                 cr3_endpoint =  np.around(a['tool_vector_actual'], decimals=4)[0]
                 print("cr3_endpoint: [x:{0}] , [y:{1}] , [z:{2}] , [rx:{3}] , [ry:{4}] , [rz:{5}]".format(cr3_endpoint[0],cr3_endpoint[1],cr3_endpoint[2],cr3_endpoint[3],cr3_endpoint[4],cr3_endpoint[5]))                            
-                cr3_joint = np.around(a['q_actual'], decimals=4)[0]
+                cr3_joint[:6] = np.around(a['q_actual'], decimals=4)[0]
                 print("cr3_joint: [j1:{0}] , [j2:{1}] , [j3:{2}] , [j4:{3}] , [j5:{4}] , [j6:{5}]".format(cr3_joint[0],cr3_joint[1],cr3_joint[2],cr3_joint[3],cr3_joint[4],cr3_joint[5]))
                 print("robot_mode: {}\n safety_mode: {}\nprogram_state: {}\n safety_status: {}".format(a['robot_mode'],a['safety_mode'], a['program_state'], a['safety_status']))
                 print("========================================")
@@ -68,7 +104,28 @@ def cr3_feedback():
         except Exception as e:
             rospy.logerr(e)
 
-class VisualServo():
+def handle_visual_servo(req):
+    robot = VisualServoServer()
+    robot.is_operating = req.trigger
+    rospy.loginfo("is_operating : {}".format(robot.is_operating))
+
+    start_time = time.time()
+
+    # timeout of 10 seconds
+    while robot.is_operating and time.time() -  start_time < 10:
+        try:
+            robot.arm_command()
+            # Delay execution to match rate
+
+        except KeyboardInterrupt:
+            dobot_enable = False
+            break
+        # using 20 hz
+        time.sleep(0.05)
+
+    return VisualServoResponse(not robot.is_operating)
+
+class VisualServoServer():
     def __init__(self):
         global cr3_endpoint, cr3_joint
         self.blob_x         = 0.0
@@ -82,7 +139,8 @@ class VisualServo():
         self._steer_sign_prev   = 0
         self.current_pose = copy.copy(cr3_endpoint)
         self.start_joint = copy.copy(cr3_joint)
-        
+
+        self.is_operating, self.is_x_stop, self.is_y_stop = False, False, False
     @property
     def is_detected(self): return(time.time() - self._time_detected < 1.0)
         
@@ -91,6 +149,7 @@ class VisualServo():
         self.blob_y = message.y
         self._time_detected = time.time()
         # rospy.loginfo("Ball detected: %.1f  %.1f "%(self.blob_x, self.blob_y))
+
 
     def arm_command(self):
         """
@@ -108,6 +167,7 @@ class VisualServo():
         # rospy.loginfo("commanding for x,y = {},{}".format(self.blob_x, self.blob_y))
         x_tolerance = 10
         y_tolerance = 10
+
         if self.is_detected:
 
             # safty check the endpoint coordinates
@@ -133,6 +193,7 @@ class VisualServo():
                     y_eef -= 0.5
                 else:
                     rospy.loginfo("stop x")
+                    self.is_x_stop = True
 
                 if self.blob_y > y_tolerance:
                     # rospy.loginfo("moving +z power {}".format(self.blob_y * Kp))
@@ -146,6 +207,7 @@ class VisualServo():
                     z_eef -= 0.5
                 else:
                     rospy.loginfo("stop y")
+                    self.is_y_stop = True
 
                 client_feedback.ServoP(x_eef, y_eef, z_eef, roll_eef, pitch_eef, yaw_eef)
                 # update current_pose
@@ -153,10 +215,17 @@ class VisualServo():
         else:
             rospy.loginfo("stop")
 
+        # check are x and y axis stop, set is_operating to false
+        self.is_operating = not (self.is_x_stop and self.is_y_stop)
+        
+
             
 if __name__ == "__main__":
 
-    rospy.init_node('visual_servo', anonymous=True)
+    rospy.init_node('visual_servo_service', anonymous=True)
+    rospy.Subscriber("/cr3_arm_command", JointCommand, arm_cb)
+    rospy.Subscriber("/cr3_gripper_command", Bool, gripper_cb)
+    s = rospy.Service("visual_servo_service", VisualServo, handle_visual_servo)
     pub = rospy.Publisher("/joint_states", JointState, queue_size=10)
     rate = rospy.Rate(20)
     rospy.on_shutdown(on_shutdown)
@@ -165,7 +234,7 @@ if __name__ == "__main__":
     client_dashboard = dobot_api_dashboard('192.168.5.6', 29999)
     client_feedback = dobot_api_feedback('192.168.5.6', 30003)
 
-
+    
     client_dashboard.DisableRobot()
     time.sleep(1)
 
@@ -182,7 +251,7 @@ if __name__ == "__main__":
 
     # initiate variable
 
-    cr3_joint = [0,0,0,0,0,0]
+    cr3_joint = [0,0,0,0,0,0,0,0]
     cr3_endpoint = [0,0,0,0,0,0]
 
     msg = JointState()
@@ -196,9 +265,7 @@ if __name__ == "__main__":
     t1.start()
     time.sleep(1)
     
-    # rospy.loginfo("start node")
-    robot = VisualServo()
-    # rospy.loginfo("start")
+    # publish joint state
     while not rospy.is_shutdown():
         try:
             # Initialize the time of publishing
@@ -210,8 +277,6 @@ if __name__ == "__main__":
             # Increase sequence
             msg.header.seq += 1
             # Change angle value
-
-            robot.arm_command()
             # Delay execution to match rate
             rate.sleep()
 

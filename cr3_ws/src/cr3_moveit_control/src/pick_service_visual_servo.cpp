@@ -19,13 +19,17 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <vector>
+
+// visual servo service
+#include "tesr_ros_cr3_pkg/VisualServo.h"
 //===============================================================
 static const std::string PLANNING_GROUP_ARM = "arm";
 bool success = false;
-bool has_trial = true;
+bool has_trial = false;
 int number_of_trial = 7;
 
 ros::Publisher gripper_command_publisher;
+ros::ServiceClient visual_servo_client;
 //===============================================================
 
 // Generate Angle of Grasp Pose
@@ -138,7 +142,8 @@ void move(geometry_msgs::Pose goal_pose) {
   success = success && success_execute;
 }
 
-void move_cartesian(geometry_msgs::Pose current_pose, float x, float y, float z) {
+
+void move_cartesian(geometry_msgs::Pose &current_pose, float x, float y, float z) {
   namespace rvt = rviz_visual_tools;
   moveit::planning_interface::MoveGroupInterface move_group_interface(PLANNING_GROUP_ARM);
   moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
@@ -167,6 +172,8 @@ void move_cartesian(geometry_msgs::Pose current_pose, float x, float y, float z)
   bool success_execute = (move_group_interface.execute(trajectory) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
   ROS_INFO("Execute %s", success_execute ? "success" : "failure");
   success = success_execute;
+
+  current_pose = target_pose;
 }
 
 void set_home_walkie2(void)
@@ -205,11 +212,9 @@ void set_home_walkie2(void)
   ROS_INFO("Execute %s", success_execute ? "success" : "failure");
   success = success && success_execute;
 }
-
 bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
                       cr3_moveit_control::cr3_pick::Response &res)
 {
-
   double pos_x, pos_y, pos_z, ori_x, ori_y, ori_z, ori_w;
   pos_x = req.geo_req.position.x;
   pos_y = req.geo_req.position.y;
@@ -223,7 +228,7 @@ bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
   // pregrasp
   geometry_msgs::Pose pose;
   if (has_trial){
-    //============= Declare Advanced Pointer for Calculation =====================
+    //============= Declare Advanced Pointer for Calculation=====================
     pose.position.x = pos_x + 0.1; 
     pose.position.y = pos_y;
     pose.position.z = pos_z;
@@ -239,6 +244,9 @@ bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
     ////////////// move group interface /////////////////
     move_with_trial(pose_array, number_of_trial);
   } else{
+    // home
+    set_home_walkie2();
+
     pose.position.x = pos_x + 0.1; // plus with some offset
     pose.position.y = pos_y;
     pose.position.z = pos_z;
@@ -258,6 +266,29 @@ bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
   gripper_command_msg.data = false;
   gripper_command_publisher.publish(gripper_command_msg);
 
+  tesr_ros_cr3_pkg::VisualServo srv;
+
+  srv.request.trigger = true;
+  if (visual_servo_client.call(srv))
+  {
+    ROS_INFO("Running visual servo");
+    success = srv.response.success;
+  }
+  else
+  {
+    ROS_ERROR("Failed to call service add_two_ints");
+    return 1;
+  }
+  if (!success){
+    return false;
+  }
+
+  // adjust pose up
+  move_cartesian(pose, 0, 0, +0.05);
+  if (!success){
+    return false;
+  }
+
   // grasps pose
   move_cartesian(pose, -0.1, 0, 0);
   if (!success){
@@ -269,7 +300,6 @@ bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
   gripper_command_publisher.publish(gripper_command_msg);
 
   // lift
-  pose.position.x = pos_x;
 
   move_cartesian(pose, 0, 0, 0.1);
   if (!success){
@@ -277,7 +307,6 @@ bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
   }
 
   // home
-  //TODO ice#elec
   set_home_walkie2();
 
   // check whether it is true then return "success value"
@@ -285,6 +314,7 @@ bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
   ROS_INFO(res.success_grasp ? "true" : "false");
   return true;
 }
+
 
 int main(int argc, char **argv)
 {
@@ -295,6 +325,8 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   gripper_command_publisher = nh.advertise<std_msgs::Bool>("/cr3_gripper_command", 10);
   ros::ServiceServer service = nh.advertiseService("cr3_pick", pick_server);
+  // visual servo
+  visual_servo_client = nh.serviceClient<tesr_ros_cr3_pkg::VisualServo>("visual_servo_service");
 
   ros::waitForShutdown();
   return 0;

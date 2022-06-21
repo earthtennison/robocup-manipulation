@@ -77,6 +77,8 @@ namespace darknet_ros_3d
     ros::ServiceServer darknet3d_server;
     float mininum_detection_thereshold_;
     std::string working_frame_;
+
+    ros::Publisher testtt;
   };
 
 }; // namespace darknet_ros_3d
