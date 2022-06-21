@@ -138,7 +138,6 @@ void move(geometry_msgs::Pose goal_pose) {
   success = success && success_execute;
 }
 
-
 void move_cartesian(geometry_msgs::Pose current_pose, float x, float y, float z) {
   namespace rvt = rviz_visual_tools;
   moveit::planning_interface::MoveGroupInterface move_group_interface(PLANNING_GROUP_ARM);
@@ -206,9 +205,11 @@ void set_home_walkie2(void)
   ROS_INFO("Execute %s", success_execute ? "success" : "failure");
   success = success && success_execute;
 }
+
 bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
                       cr3_moveit_control::cr3_pick::Response &res)
 {
+
   double pos_x, pos_y, pos_z, ori_x, ori_y, ori_z, ori_w;
   pos_x = req.geo_req.position.x;
   pos_y = req.geo_req.position.y;
@@ -222,7 +223,7 @@ bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
   // pregrasp
   geometry_msgs::Pose pose;
   if (has_trial){
-    //============= Declare Advanced Pointer for Calculation=====================
+    //============= Declare Advanced Pointer for Calculation =====================
     pose.position.x = pos_x + 0.1; 
     pose.position.y = pos_y;
     pose.position.z = pos_z;
@@ -284,7 +285,6 @@ bool pick_server(cr3_moveit_control::cr3_pick::Request &req,
   ROS_INFO(res.success_grasp ? "true" : "false");
   return true;
 }
-
 
 int main(int argc, char **argv)
 {

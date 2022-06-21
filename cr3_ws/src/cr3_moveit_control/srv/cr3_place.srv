@@ -1,0 +1,7 @@
+geometry_msgs/Point corner11
+geometry_msgs/Point corner12
+geometry_msgs/Point corner21
+geometry_msgs/Point corner22
+geometry_msgs/Point high
+---
+bool success_place

@@ -1,42 +1,56 @@
 #!/usr/bin/env python
 import rospy
-from geometry_msgs.msg import Pose
-from tf.transformations import quaternion_from_euler
-import math
+from geometry_msgs.msg import Point
 from cr3_moveit_control.srv import *
+import random
 
-def to_rad(deg):
-    return deg * math.pi / 180.0
-
-def pick_service(goal_pose):
-    rospy.wait_for_service('place_success')
+def place_service(corner11, corner12, corner21, corner22, high):
+    rospy.wait_for_service('cr3_place')
     try:
-        pick = rospy.ServiceProxy('place_success', kan_place)
-        res = pick(goal_pose)
+        place = rospy.ServiceProxy('cr3_place', cr3_place)
+        res = place(corner11, corner12, corner21, corner22, high)
         return res.success_place
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
 
 if __name__ == "__main__":
     while not rospy.is_shutdown():
-        x = input("X ")
-        y = input("y ")
-        z = input("z ")
-        row = to_rad(input("row "))
-        pitch = to_rad(input("pitch "))
-        yaw = to_rad(input("yaw "))
-        q = quaternion_from_euler(row, pitch, yaw)
+        raw_input("Press enter")
+        # x = input("X ")
+        # y = input("y ")
+        # z = input("z ")
+        # -M_PI / 2, -M_PI / 4, +M_PI / 2
+        # row = -1*math.pi/2
+        # pitch = -1*math.pi/4
+        # yaw = math.pi/2
 
-        pose_goal = Pose()
-        pose_goal.orientation.x = q[0]
-        pose_goal.orientation.y = q[1]
-        pose_goal.orientation.z = q[2]
-        pose_goal.orientation.w = q[3]
+        # geometry_msgs/Point corner11
+        # geometry_msgs/Point corner12
+        # geometry_msgs/Point corner21
+        # geometry_msgs/Point corner22
+        # geometry_msgs/Point high
+        # ---
+        # bool success_place
 
-        pose_goal.position.x = x
-        pose_goal.position.y = y
-        pose_goal.position.z = z
+        point_goal11 = Point()
+        point_goal12 = Point()
+        point_goal21 = Point()
+        point_goal22 = Point()
 
-        rospy.loginfo(pose_goal)
-        success = pick_service(pose_goal)
+        point_goal11.x = -1.4
+        point_goal12.x = -1.4
+        point_goal21.x = -0.4
+        point_goal22.x = -0.4
+
+        point_goal11.y = -1.0
+        point_goal12.y = 1.0
+        point_goal21.y = -1.0
+        point_goal22.y = 1.0
+
+        # high = abs(table - base_link)
+        high = Point()
+        high.z = 0.01
+
+        rospy.loginfo(point_goal11, point_goal12, point_goal21, point_goal22, high)
+        success = place_service(point_goal11, point_goal12, point_goal21, point_goal22, high)
         print(success)

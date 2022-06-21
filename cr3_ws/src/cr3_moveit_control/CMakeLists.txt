@@ -46,6 +46,7 @@ message(${JSONCPP_LIBRARIES})
 # ################################################################################################################################
 # catkin specific configuration ##
 add_service_files(FILES cr3_pick.srv)
+add_service_files(FILES cr3_place.srv)
 
 generate_messages(DEPENDENCIES std_msgs
   geometry_msgs)
@@ -70,6 +71,7 @@ catkin_package(CATKIN_DEPENDS
 catkin_install_python(PROGRAMS src/pick_client_python.py
                               src/place_client_python.py
                               src/pick_client_2_python.py
+                              src/furniture_marker.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 include_directories(${catkin_INCLUDE_DIRS})
@@ -95,6 +97,10 @@ target_link_libraries(visual_servo ${catkin_LIBRARIES} boost_filesystem ${JSONCP
 add_executable(pick_service src/pick_service.cpp)
 target_link_libraries(pick_service ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
 add_dependencies(pick_service cr3_moveit_control)
+
+add_executable(place_algorithm_demo src/place_algorithm_demo.cpp)
+target_link_libraries(place_algorithm_demo ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+add_dependencies(place_algorithm_demo cr3_moveit_control)
 
 add_executable(pick_client src/pick_client.cpp)
 target_link_libraries(pick_client ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
