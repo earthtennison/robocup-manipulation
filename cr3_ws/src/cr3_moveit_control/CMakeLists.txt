@@ -46,6 +46,7 @@ message(${JSONCPP_LIBRARIES})
 # ################################################################################################################################
 # catkin specific configuration ##
 add_service_files(FILES cr3_pick.srv
+                        cr3_place.srv
                         PickWithSide.srv
                         )
 
@@ -73,6 +74,7 @@ catkin_install_python(PROGRAMS
                       src/pick_client_python.py
                       src/pick_client_select_side.py
                       src/place_client_python.py
+                      src/furniture_marker.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 include_directories(${catkin_INCLUDE_DIRS})
@@ -103,6 +105,10 @@ target_link_libraries(pick_service_adjust_yaw ${catkin_LIBRARIES})
 
 add_executable(pick_service_visual_servo src/pick_service_visual_servo.cpp)
 target_link_libraries(pick_service_visual_servo ${catkin_LIBRARIES})
+
+add_executable(place_algorithm_demo src/place_algorithm_demo.cpp)
+target_link_libraries(place_algorithm_demo ${catkin_LIBRARIES} boost_filesystem ${JSONCPP_LIBRARIES})
+add_dependencies(place_algorithm_demo cr3_moveit_control)
 
 add_executable(pick_client src/pick_client.cpp)
 target_link_libraries(pick_client ${catkin_LIBRARIES})

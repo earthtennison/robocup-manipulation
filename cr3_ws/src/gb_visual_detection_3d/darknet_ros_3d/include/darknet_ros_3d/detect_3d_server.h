@@ -75,8 +75,10 @@ namespace darknet_ros_3d
     ros::NodeHandle nh_;
     tf::TransformListener tfListener_;
     ros::ServiceServer darknet3d_server;
-    float mininum_detection_thereshold_;
+    float mininum_detection_thereshold_,min_depth_thereshold;
     std::string working_frame_;
+    bool init_z;
+
   };
 
 }; // namespace darknet_ros_3d

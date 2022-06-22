@@ -13,9 +13,10 @@ rospy
 sensor_msgs
 geometry_msgs
 message_generation
-actionlib_msgs
 pcl_ros
 pcl_conversions
+visualization_msgs
+
 )
 
 ## System dependencies are found with CMake's conventions
@@ -75,8 +76,6 @@ pcl_conversions
 generate_messages(
 DEPENDENCIES
 std_msgs
-geometry_msgs
-actionlib_msgs
 )
 
 ################################################
