@@ -138,12 +138,8 @@ void move(geometry_msgs::Pose goal_pose) {
   success = success && success_execute;
 }
 
-<<<<<<< HEAD:cr3_ws/src/cr3_moveit_control/src/pick_service.cpp
-void move_cartesian(geometry_msgs::Pose current_pose, float x, float y, float z) {
-=======
 
 void move_cartesian(geometry_msgs::Pose &current_pose, float x, float y, float z) {
->>>>>>> c17361d40d2039e902df95c74ca629945339eda0:cr3_ws/src/cr3_moveit_control/src/pick_service_adjust_yaw.cpp
   namespace rvt = rviz_visual_tools;
   moveit::planning_interface::MoveGroupInterface move_group_interface(PLANNING_GROUP_ARM);
   moveit_visual_tools::MoveItVisualTools visual_tools("base_link");

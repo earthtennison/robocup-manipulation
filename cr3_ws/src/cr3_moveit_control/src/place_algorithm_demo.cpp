@@ -282,25 +282,25 @@ bool place_server(cr3_moveit_control::cr3_place::Request &req,
   //                     v
   //                     x
 
-  float creat_collision_table11_x, creat_collision_table12_x, creat_collision_table21_x, creat_collision_table22_x;
-  float creat_collision_table11_y, creat_collision_table12_y, creat_collision_table21_y, creat_collision_table22_y;
+  double creat_collision_table11_x, creat_collision_table12_x, creat_collision_table21_x, creat_collision_table22_x;
+  double creat_collision_table11_y, creat_collision_table12_y, creat_collision_table21_y, creat_collision_table22_y;
 
-  float place_within11_x, place_within12_x, place_within21_x, place_within22_x;
-  float place_within11_y, place_within12_y, place_within21_y, place_within22_y;
+  double place_within11_x, place_within12_x, place_within21_x, place_within22_x;
+  double place_within11_y, place_within12_y, place_within21_y, place_within22_y;
 
-  calculate_collsion_table_x[] = {req.corner11.x, req.corner12.x, req.corner21.x, req.corner22.x}
-  sort(calculate_collsion_table_x, calculate_collsion_table_x + 4);
-  creat_collision_table11_x = sort[0];
-  creat_collision_table12_x = sort[1];
-  creat_collision_table21_x = sort[2];
-  creat_collision_table22_x = sort[3];
+  double calculate_collision_table_x[4] = {req.corner11.x, req.corner12.x, req.corner21.x, req.corner22.x};
+  // std::sort(calculate_collision_table_x, calculate_collision_table_x + 4);
+  // creat_collision_table11_x = std::sort[0];
+  // creat_collision_table12_x = std::sort[1];
+  // creat_collision_table21_x = std::sort[2];
+  // creat_collision_table22_x = std::sort[3];
 
   // calculate_collsion_table_y[] = {req.corner11.y, req.corner12.y, req.corner21.y, req.corner22.y}
-  // sort(calculate_collsion_table_y, calculate_collsion_table_y + 4);
-  // creat_collision_table11_y = sort[0];
-  // creat_collision_table12_y = sort[1];
-  // creat_collision_table21_y = sort[2];
-  // creat_collision_table22_y = sort[3];
+  // std::sort(calculate_collsion_table_y, calculate_collsion_table_y + 4);
+  // creat_collision_table11_y = std::sort[0];
+  // creat_collision_table12_y = std::sort[1];
+  // creat_collision_table21_y = std::sort[2];
+  // creat_collision_table22_y = std::sort[3];
 
   printf("%f\n", creat_collision_table11_x);
   printf("%f\n", creat_collision_table12_x);

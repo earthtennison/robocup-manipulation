@@ -45,14 +45,10 @@ message(${JSONCPP_LIBRARIES})
 
 # ################################################################################################################################
 # catkin specific configuration ##
-<<<<<<< HEAD
-add_service_files(FILES cr3_pick.srv)
-add_service_files(FILES cr3_place.srv)
-=======
 add_service_files(FILES cr3_pick.srv
+                        cr3_place.srv
                         PickWithSide.srv
                         )
->>>>>>> c17361d40d2039e902df95c74ca629945339eda0
 
 generate_messages(DEPENDENCIES std_msgs
   geometry_msgs)
@@ -74,17 +70,11 @@ catkin_package(CATKIN_DEPENDS
 # ################################################################################################################################
 
 # Specify additional locations of header files Your package locations should be listed before other locations
-<<<<<<< HEAD
-catkin_install_python(PROGRAMS src/pick_client_python.py
-                              src/place_client_python.py
-                              src/pick_client_2_python.py
-                              src/furniture_marker.py
-=======
 catkin_install_python(PROGRAMS 
                       src/pick_client_python.py
                       src/pick_client_select_side.py
                       src/place_client_python.py
->>>>>>> c17361d40d2039e902df95c74ca629945339eda0
+                      src/furniture_marker.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 include_directories(${catkin_INCLUDE_DIRS})
