@@ -17,9 +17,9 @@ find_package(catkin REQUIRED
                         joint_trajectory_controller
                         robot_state_publisher
                         roscpp
-			rospy
-			std_msgs
-			message_generation
+			                  rospy
+			                  std_msgs
+			                  message_generation  
                         tf
                         xacro
                         moveit_core

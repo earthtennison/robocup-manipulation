@@ -9,7 +9,7 @@
 #include <moveit/move_group_interface/move_group_interface.h>
 
 static const std::string PLANNING_GROUP_ARM = "arm";
-static const std::string APP_DIRECTORY_NAME = "robocup-manipulation/cr3_ws/src/cr3_moveit_control/config/constraints";
+static const std::string APP_DIRECTORY_NAME = "ros/robocup-manipulation/cr3_ws/src/cr3_moveit_control/config/constraints";
 
 moveit_msgs::CollisionObject extractObstacleFromJson(Json::Value &root, std::string name)
 {

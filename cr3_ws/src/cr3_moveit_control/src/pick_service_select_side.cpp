@@ -26,10 +26,11 @@ bool success = false;
 const double PREGRASP_OFFSET = 0.20; // cr3 link6 to end of gripper offset
 const double GRASP_OFFSET = 0.08;
 ros::Publisher gripper_command_publisher;
-const double FRONT_ORIENT[3] = {-M_PI/2, M_PI/4, M_PI/2};
+const double FRONT_ORIENT[3] = {0, -M_PI/2, 0};
 const double TOP_ORIENT[3] = {0, -M_PI, -M_PI/4};
 const double LEFT_ORIENT[3] = {0, -M_PI / 2.0, -M_PI / 2.0};
 const double RIGHT_ORIENT[3] = {0, -M_PI / 2.0, M_PI / 2.0};
+const double GRIPPER_ORIENT = -M_PI / 4.0; // Please use -M_PI / 4.0
 //===========================================================================================
 
 // Move the arm
@@ -154,7 +155,7 @@ bool pick_server(cr3_moveit_control::PickWithSide::Request &req,
   ROS_INFO("request: x=%lf, y=%lf, z=%lf, ox=%lf, oy=%lf, oz=%lf, ow=%lf", pos_x, pos_y, pos_z, ori_x, ori_y, ori_z, ori_w);
   ROS_INFO("the side to pick up: side=%s", side);
   // initialize the quaternion angle
-  tf2::Quaternion q_orig, q_rot, q_new;
+  tf2::Quaternion q_orig, q_rot, q_new, q_gripper_rot;
   tf2::convert(req.geo_req.orientation, q_orig); // calcultate the q_orig from the requested geo_request orientation.
 
   // home
@@ -173,7 +174,8 @@ bool pick_server(cr3_moveit_control::PickWithSide::Request &req,
     pose.position.z = pos_z;
     // Calculate angle
     q_rot.setRPY(FRONT_ORIENT[0], FRONT_ORIENT[1], FRONT_ORIENT[2]); // front in walkie2
-    q_new = q_rot * q_orig;
+    q_gripper_rot.setEuler(0, GRIPPER_ORIENT, 0);
+    q_new = q_gripper_rot * q_rot * q_orig;
     q_new.normalize();
     geometry_msgs::Pose new_pose = pose;
     tf2::convert(q_new, new_pose.orientation);
