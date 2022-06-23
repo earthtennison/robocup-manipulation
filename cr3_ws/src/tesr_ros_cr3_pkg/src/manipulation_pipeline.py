@@ -104,17 +104,20 @@ class GetObjectPose():
 
         self.time_now = rospy.Time.now()
 
+        # subcriber image delay problem
+        #https://stackoverflow.com/questions/26415699/ros-subscriber-not-up-to-date
+
         rospy.loginfo('Initialize state GetObjectPose')
-        image_sub = rospy.Subscriber(
-            "/camera/color/image_raw", Image, self.yolo_callback)
-        depth_sub = rospy.Subscriber(
-            "/camera/aligned_depth_to_color/image_raw", Image, self.depth_callback)
         depth_info_sub = rospy.Subscriber(
             "/camera/aligned_depth_to_color/camera_info", CameraInfo, self.info_callback)
         self.image_pub = rospy.Publisher(
             "/blob/image_blob", Image, queue_size=1)
         self.pub_tf = rospy.Publisher(
             "/tf", tf2_msgs.msg.TFMessage, queue_size=1)
+        self.image_sub = rospy.Subscriber(
+            "/camera/color/image_raw", Image, self.yolo_callback, queue_size=1, buff_size=52428800)
+        self.depth_sub = rospy.Subscriber(
+            "/camera/aligned_depth_to_color/image_raw", Image, self.depth_callback, queue_size=1, buff_size=52428800)
 
     def run_once(self):
         while self.intrinsics is None:
@@ -122,10 +125,23 @@ class GetObjectPose():
         self.c.req(np.random.randint(255, size=(
             self.intrinsics.height, self.intrinsics.width, 3), dtype=np.uint8))
 
+    def reset(self):
+        self.x_pixel = None
+        self.y_pixel = None
+        self.frame = None
+        self.is_done = False
+        rospy.sleep(0.1)
+        self.image_sub = rospy.Subscriber(
+            "/camera/color/image_raw", Image, self.yolo_callback, queue_size=1, buff_size=52428800)
+        self.depth_sub = rospy.Subscriber(
+            "/camera/aligned_depth_to_color/image_raw", Image, self.depth_callback, queue_size=1, buff_size=52428800)
+
     def detect(self):
         self.is_trigger = True
         while not self.is_done:
-            time.sleep(0.1)
+            rospy.sleep(0.1)
+        self.image_sub.unregister()
+        self.depth_sub.unregister()
         self.is_trigger = False
         self.is_done = False
         return self.object_pose
@@ -239,7 +255,7 @@ class GetObjectPose():
             except CvBridgeError as e:
                 print(e)
             return
-        else:
+        elif (self.x_pixel is None) and (self.y_pixel is None):
             # change subscribed data to numpy.array and save it as "frame"
             self.frame = self.bridge.imgmsg_to_cv2(data, 'bgr8')
             self.frame = self.check_image_size(self.frame)
@@ -277,7 +293,9 @@ if __name__ == "__main__":
         command = raw_input("Press Enter: ")
         if command == "q":
             break
+
         print("running 3d detection")
+        detector.reset()
         object_pose = detector.detect()
 
         ##################

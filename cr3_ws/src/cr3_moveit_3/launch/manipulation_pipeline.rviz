@@ -6,12 +6,10 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /MotionPlanning1
         - /MotionPlanning1/Planning Request1
         - /MotionPlanning1/Planning Metrics1
         - /MotionPlanning1/Planned Path1
         - /Image1
-        - /TF1
         - /TF1/Frames1
       Splitter Ratio: 0.456845223903656
     Tree Height: 603
@@ -332,7 +330,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /camera/color/image_raw
+      Image Topic: /blob/image_blob
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -379,6 +377,8 @@ Visualization Manager:
           Value: false
         hand:
           Value: false
+        object_frame:
+          Value: true
         sensor_d435_bottom_screw_frame:
           Value: false
         sensor_d435_color_frame:
@@ -443,6 +443,8 @@ Visualization Manager:
               camera_depth_frame:
                 camera_depth_optical_frame:
                   {}
+              object_frame:
+                {}
       Update Interval: 0
       Value: true
   Enabled: true
@@ -468,18 +470,18 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.6430507898330688
-        Y: 0.6828814148902893
-        Z: 4.6193656544346595e-7
+        X: -1.0047378540039062
+        Y: 0.7095182538032532
+        Z: 7.003551445450285e-7
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.699797511100769
+      Pitch: 0.7147974967956543
       Target Frame: dummy_link
       Value: XYOrbit (rviz)
-      Yaw: 1.721743106842041
+      Yaw: 1.3817434310913086
     Saved: ~
 Window Geometry:
   Displays:
