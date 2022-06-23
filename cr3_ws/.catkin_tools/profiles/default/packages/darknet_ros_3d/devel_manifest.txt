@@ -1,0 +1,10 @@
+gb_visual_detection_3d/darknet_ros_3d
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/darknet_ros_3d/cmake.lock /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/./cmake.lock
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/darknet_ros_3d/lib/libdarknet_ros_3d.so /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/lib/libdarknet_ros_3d.so
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/darknet_ros_3d/lib/pkgconfig/darknet_ros_3d.pc /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/lib/pkgconfig/darknet_ros_3d.pc
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/darknet_ros_3d/lib/darknet_ros_3d/darknet3d_listener_node /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/lib/darknet_ros_3d/darknet3d_listener_node
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/darknet_ros_3d/lib/darknet_ros_3d/detect_3d_server /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/lib/darknet_ros_3d/detect_3d_server
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/darknet_ros_3d/lib/darknet_ros_3d/tf_camera /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/lib/darknet_ros_3d/tf_camera
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/darknet_ros_3d/lib/darknet_ros_3d/darknet3d_node /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/lib/darknet_ros_3d/darknet3d_node
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/darknet_ros_3d/share/darknet_ros_3d/cmake/darknet_ros_3dConfig-version.cmake /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/share/darknet_ros_3d/cmake/darknet_ros_3dConfig-version.cmake
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/darknet_ros_3d/share/darknet_ros_3d/cmake/darknet_ros_3dConfig.cmake /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/share/darknet_ros_3d/cmake/darknet_ros_3dConfig.cmake
