@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 """
 run
@@ -86,9 +86,10 @@ class GetObjectPose():
 
         # connect to server
         # host = socket.gethostname()
-        # port = 11000
-        # self.c = CustomSocket(host,port)
-        # self.c.clientConnect()
+        host = "https://e0cf-182-232-62-93.ap.ngrok.io"
+        port = 10001
+        self.c = CustomSocket(host,port)
+        self.c.clientConnect()
 
         self.x_pixel = None
         self.y_pixel = None  
@@ -213,14 +214,15 @@ class GetObjectPose():
             # change subscribed data to numpy.array and save it as "frame"
             self.frame = self.bridge.imgmsg_to_cv2(data,'bgr8')
 
-            # self.frame = cv2.resize(self.frame, (640,480))
+            self.frame = cv2.resize(self.frame, (720, 1080))
             # 2d object detection
             # send frame to server and recieve the result      
-            # result = self.c.req(self.frame)
+            result = self.c.req(self.frame)
+            print(result)
 
-            self.frame, x, y, w, h = simple_detect_bbox(self.frame, "blue")
-            self.x_pixel = x
-            self.y_pixel = y
+            # self.frame, x, y, w, h = simple_detect_bbox(self.frame, "blue")
+            # self.x_pixel = x
+            # self.y_pixel = y
             
 
 
