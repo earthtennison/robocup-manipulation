@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>cr3_gripper_pkg</name>
+  <version>0.0.0</version>
+  <description>control gripper</description>
+  <author email="thanachot.spk@gmail.com">Thanachot Sappakit</author>
+  <maintainer email="thanachot.spk@gmail.com">Thanachot Sappakit</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>control_msgs</build_depend>
+  <build_depend>trajectory_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <exec_depend>actionlib</exec_depend>
+  <exec_depend>control_msgs</exec_depend>
+  <exec_depend>trajectory_msgs</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+</package>

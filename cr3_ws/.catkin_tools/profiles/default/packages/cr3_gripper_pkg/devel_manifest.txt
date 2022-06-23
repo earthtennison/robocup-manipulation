@@ -1,0 +1,6 @@
+cr3_gripper_pkg
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/cr3_gripper_pkg/cmake.lock /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/./cmake.lock
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/cr3_gripper_pkg/lib/pkgconfig/cr3_gripper_pkg.pc /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/lib/pkgconfig/cr3_gripper_pkg.pc
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/cr3_gripper_pkg/lib/cr3_gripper_pkg/simple_gripper_control /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/lib/cr3_gripper_pkg/simple_gripper_control
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/cr3_gripper_pkg/share/cr3_gripper_pkg/cmake/cr3_gripper_pkgConfig.cmake /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/share/cr3_gripper_pkg/cmake/cr3_gripper_pkgConfig.cmake
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/cr3_gripper_pkg/share/cr3_gripper_pkg/cmake/cr3_gripper_pkgConfig-version.cmake /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/share/cr3_gripper_pkg/cmake/cr3_gripper_pkgConfig-version.cmake

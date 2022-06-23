@@ -9,7 +9,7 @@
 #include <moveit/move_group_interface/move_group_interface.h>
 
 static const std::string PLANNING_GROUP_ARM = "arm";
-static const std::string APP_DIRECTORY_NAME = "robocup-manipulation/cr3_ws/src/cr3_moveit_control/config/constraints";
+std::string APP_DIRECTORY_DEFAULT = "ros/robocup-manipulation/cr3_ws/src/cr3_moveit_control/config/constraints"; //default
 
 moveit_msgs::CollisionObject extractObstacleFromJson(Json::Value &root, std::string name)
 {
@@ -57,9 +57,9 @@ int main(int argc, char **argv)
     namespace fs = boost::filesystem;
     ROS_INFO("RUNNING constraint publisher");
 
-    ros::init(argc, argv, "constraint publisher");
+    ros::init(argc, argv, "constraint_publisher");
 
-    ros::NodeHandle nh;
+    ros::NodeHandle nh("~");
 
     ros::AsyncSpinner spinner(1);
     spinner.start();
@@ -80,9 +80,16 @@ int main(int argc, char **argv)
     moveit_msgs::PlanningScene planning_scene;
 
     // read JSON files from ~/.cr3_simulation
-    fs::path home(getenv("HOME"));
-    fs::path app_directory(home);
-    app_directory /= APP_DIRECTORY_NAME;
+    // fs::path home(getenv("HOME"));
+    // fs::path app_directory(home);
+
+    std::string app_directory;
+    // nh.param<std::string>("constraints_dir", constraints_dir, APP_DIRECTORY_DEFAULT);
+    nh.getParam("constraints_dir", app_directory);
+    // ROS_INFO_STREAM(app_directory);
+    // ROS_INFO_STREAM(constraints_dir);
+    // app_directory = constraints_dir;
+
 
     if (!fs::exists(app_directory) && !fs::is_directory(app_directory))
     {
@@ -124,4 +131,5 @@ int main(int argc, char **argv)
 
     visual_tools.trigger();
 
+    return 0;
 }

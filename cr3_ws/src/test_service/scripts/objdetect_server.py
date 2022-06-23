@@ -18,37 +18,36 @@ class obj_server:
     def pointCB(self,pcl):
         new_pcl = sensor_msgs.msg.PointCloud2()
         
-        k = raw_input()
-        if k == "a":
-            print("Sending Service")
-            new_pcl = pcl
-            new_pcl.header.stamp = pcl.header.stamp
-            new_pcl.header.frame_id = "/object_frame"
+        raw_input()
+        print("Sending Service")
+        new_pcl = pcl
+        new_pcl.header.stamp = pcl.header.stamp
+        new_pcl.header.frame_id = "/object_frame"
 
-            self.test.publish(new_pcl)
-
+        self.test.publish(new_pcl)
 
 
-            xmin = 444
-            ymin = 175
-            xmax = 508
-            ymax = 356
 
-            a = BoundingBox(0.9,xmin,ymin,xmax,ymax,39,'bottle')
-            res = self.srv(point_cloud= new_pcl,bounding_box= a)
-            # while(True):
-            #     a = BoundingBox(0.9,xmin,ymin,xmax,ymax,39,'laptop')
-            #     res = self.srv(point_cloud= new_pcl,bounding_box= a)
-            #     if res.success == False:
-            #         xmax +=1 
-            #     else:
-            #         break
+        xmin = 286
+        ymin = 0
+        xmax = 312
+        ymax = 130
 
-            
-            BBX = self.obj2pose(res.bounding_box_3d)
-            print(BBX[0])
-            print(BBX[1])
-            self.maarker(BBX[0],BBX[1])
+        a = BoundingBox(0.9,xmin,ymin,xmax,ymax,39,'bottle')
+        res = self.srv(point_cloud= new_pcl,bounding_box= a)
+        # while(True):
+        #     a = BoundingBox(0.9,xmin,ymin,xmax,ymax,39,'laptop')
+        #     res = self.srv(point_cloud= new_pcl,bounding_box= a)
+        #     if res.success == False:
+        #         xmax +=1 
+        #     else:
+        #         break
+
+        
+        BBX = self.obj2pose(res.bounding_box_3d)
+        print(BBX[0])
+        print(BBX[1])
+        self.maarker(BBX[0],BBX[1])
             
 
     def obj2pose(self,bbx):
