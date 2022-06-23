@@ -121,7 +121,8 @@ void set_home_walkie2(void)
   joint_group_positions[1] = 0.0;  // radians
   joint_group_positions[2] = 2.267;  // radians
   joint_group_positions[3] = 0.875;  // radians
-  joint_group_positions[4] = 1.507;  // radians
+  // joint_group_positions[4] = 1.507;  // radians
+  joint_group_positions[4] = 0.0;  // radians
   joint_group_positions[5] = 2.355;  // radians
 
   move_group_interface.setJointValueTarget(joint_group_positions);
@@ -273,6 +274,8 @@ bool place_server(cr3_moveit_control::cr3_place::Request &req,
   pose.orientation.y = myQuaternion.getY();
   pose.orientation.z = myQuaternion.getZ();
   pose.orientation.w = myQuaternion.getW();
+  
+  ROS_INFO_STREAM(pose);
   
   //move to preplace pose
   move(pose);

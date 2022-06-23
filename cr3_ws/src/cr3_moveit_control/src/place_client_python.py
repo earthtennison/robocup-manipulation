@@ -77,47 +77,49 @@ if __name__ == "__main__":
         point_goal21 = Point()
         point_goal22 = Point()
 
-        point_goal11.x = -1.4
-        point_goal12.x = -1.4
-        point_goal21.x = -0.4
-        point_goal22.x = -0.4
+        point_goal11.x = -0.99
+        point_goal12.x = -0.99
+        # point_goal21.x = -0.61
+        # point_goal22.x = -0.61
+        point_goal21.x = -0.35
+        point_goal22.x = -0.35
 
-        point_goal11.y = -1.0
-        point_goal12.y = 1.0
-        point_goal21.y = -1.0
-        point_goal22.y = 1.0
+        point_goal11.y = -0.45
+        point_goal12.y = 0.42
+        point_goal21.y = -0.45
+        point_goal22.y = 0.42
 
         # high = abs(table - base_link)
         high = Point()
-        high.z = 0.2
+        high.z = 0.15
 
         ########################################
         #
         # Test Case
-        rospy.init_node("transform_test")
+        # rospy.init_node("transform_test")
 
-        my_pose = Pose()
-        my_pose.position.x = -1.0
-        my_pose.position.y = 0.0
-        my_pose.position.z = 0.5
-        row = to_rad(0)
-        pitch = to_rad(0)
-        yaw = to_rad(0)
+        # my_pose = Pose()
+        # my_pose.position.x = -1.0
+        # my_pose.position.y = 0.0
+        # my_pose.position.z = 0.5
+        # row = to_rad(0)
+        # pitch = to_rad(0)
+        # yaw = to_rad(0)
 
-        quaternion = quaternion_from_euler(row, pitch, yaw)
+        # quaternion = quaternion_from_euler(row, pitch, yaw)
 
-        my_pose.orientation.x = quaternion[0]
-        my_pose.orientation.y = quaternion[1]
-        my_pose.orientation.z = quaternion[2]
-        my_pose.orientation.w = quaternion[3]
+        # my_pose.orientation.x = quaternion[0]
+        # my_pose.orientation.y = quaternion[1]
+        # my_pose.orientation.z = quaternion[2]
+        # my_pose.orientation.w = quaternion[3]
         
-        # transformed_pose = transform_pose(my_pose, "fixture", "world")
-        transformed_pose = transform_pose(my_pose, "base_link", "real_sense")
-        print(transformed_pose)
+        # # transformed_pose = transform_pose(my_pose, "fixture", "world")
+        # transformed_pose = transform_pose(my_pose, "base_link", "real_sense")
+        # print(transformed_pose)
 
         #
         ########################################
 
-        # rospy.loginfo(point_goal11, point_goal12, point_goal21, point_goal22, high)
-        # success = place_service(point_goal11, point_goal12, point_goal21, point_goal22, high)
-        # print(success)
+        rospy.loginfo(point_goal11, point_goal12, point_goal21, point_goal22, high)
+        success = place_service(point_goal11, point_goal12, point_goal21, point_goal22, high)
+        print(success)
