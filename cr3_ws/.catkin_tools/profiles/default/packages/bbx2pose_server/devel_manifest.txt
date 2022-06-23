@@ -1,0 +1,5 @@
+bbx2pose_server
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/bbx2pose_server/cmake.lock /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/./cmake.lock
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/bbx2pose_server/lib/pkgconfig/bbx2pose_server.pc /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/lib/pkgconfig/bbx2pose_server.pc
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/bbx2pose_server/share/bbx2pose_server/cmake/bbx2pose_serverConfig.cmake /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/share/bbx2pose_server/cmake/bbx2pose_serverConfig.cmake
+/home/chayaasa/github/robocup-manipulation/cr3_ws/devel/.private/bbx2pose_server/share/bbx2pose_server/cmake/bbx2pose_serverConfig-version.cmake /home/chayaasa/github/robocup-manipulation/cr3_ws/devel/share/bbx2pose_server/cmake/bbx2pose_serverConfig-version.cmake

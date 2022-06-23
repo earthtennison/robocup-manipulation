@@ -49,6 +49,7 @@ namespace darknet_ros_3d
                                   gb_visual_detection_3d_msgs::BoundingBox3d &bounding_box_3d)
   {
     init_z = false;
+    ROS_INFO_STREAM(init_z);
     int center_x, center_y;
     center_x = (bbx.xmax + bbx.xmin) / 2;
     center_y = (bbx.ymax + bbx.ymin) / 2;
@@ -81,11 +82,11 @@ namespace darknet_ros_3d
           continue;
         // if (fabs(point.x - center_point.x) > mininum_detection_thereshold_)
         //   continue;
-        if (init_z = true){
-          if ((minz-point.z > min_depth_thereshold) || (point.z - maxz > min_depth_thereshold)){
-            continue;
-          }
-        }
+        // if (init_z = true){
+        //   if ((minz-point.z > min_depth_thereshold) || (point.z - maxz > min_depth_thereshold)){
+        //     continue;
+        //   }
+        // }
         
         maxx = std::max(point.x, maxx);
         maxy = std::max(point.y, maxy);
@@ -96,7 +97,9 @@ namespace darknet_ros_3d
         
         if (init_z = false){
         if ((maxz > -std::numeric_limits<float>::max())){
+          ROS_INFO_STREAM(init_z);
           init_z = true;
+          ROS_INFO_STREAM(init_z);
         }}
       }
     bounding_box_3d.Class = bbx.Class;
