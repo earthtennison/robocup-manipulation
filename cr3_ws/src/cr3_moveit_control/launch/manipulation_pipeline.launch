@@ -44,7 +44,10 @@
     <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_to_base_link_tf" args="0.36 0 0.62 3.14 0 0 base_link camera_link"/>
 
     <!-- publish constraint collision object -->
-    <node pkg="cr3_moveit_control" type="constraint_publisher" name="constraint_publisher" output="screen" />
+    <node pkg="cr3_moveit_control" type="constraint_publisher" name="constraint_publisher" output="screen">
+        <param name="constraints_dir" type="str" value="$(find cr3_moveit_control)/config/constraints"/>
+        <remap from="/constraint_publisher/planning_scene" to="/planning_scene"/>
+    </node>
 
     <!-- launch robot control node for moveit motion planning -->
     <node pkg="cr3_moveit_control" type="pick_service_select_side" name="pick_service_select_side" output="screen" />
