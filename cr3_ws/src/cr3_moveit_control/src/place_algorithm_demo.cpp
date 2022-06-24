@@ -35,7 +35,7 @@ float to_rad(float deg)
   return deg * M_PI / 180.0;
 }
 
-void move2place(geometry_msgs::Pose POSITION) {
+void move(geometry_msgs::Pose POSITION) {
   moveit::planning_interface::MoveGroupInterface move_group_interface(PLANNING_GROUP_ARM);
   const moveit::core::JointModelGroup *joint_model_group = move_group_interface.getCurrentState()->getJointModelGroup(PLANNING_GROUP_ARM);
 
@@ -57,14 +57,6 @@ void move2place(geometry_msgs::Pose POSITION) {
   target_pose1.position.y = POSITION.position.y;
   target_pose1.position.z = POSITION.position.z;
   
-  printf("%f\n", target_pose1.orientation.w);
-  printf("%f\n", target_pose1.orientation.x);
-  printf("%f\n", target_pose1.orientation.y);
-  printf("%f\n", target_pose1.orientation.z);
-  printf("%f\n", target_pose1.position.x);
-  printf("%f\n", target_pose1.position.y);
-  printf("%f\n", target_pose1.position.z);
-  
   move_group_interface.setPoseTarget(target_pose1);
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
   success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
@@ -73,64 +65,9 @@ void move2place(geometry_msgs::Pose POSITION) {
   visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
   visual_tools.trigger();
 
-  bool success_execute =
-      (move_group_interface.execute(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  bool success_execute = (move_group_interface.execute(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
   ROS_INFO("Execute %s", success_execute ? "success" : "failure");
   success = success && success_execute;
-  
-  // //Step2 Execute along Z coordinate
-  // ROS_INFO("INITIATED STEP2");
-  // geometry_msgs::Pose target_pose2;
-  // target_pose2.orientation.w = quat.getW();
-  // target_pose2.orientation.x = quat.getX();
-  // target_pose2.orientation.y = quat.getY();
-  // target_pose2.orientation.z = quat.getZ();
-  // target_pose2.position.x = POSITION.position.x;
-  // target_pose2.position.y = POSITION.position.y;
-  // target_pose2.position.z = POSITION.position.z+0.05; //Prevent the collision
-  // move_group_interface.setPoseTarget(target_pose2);  
-  // success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  // ROS_INFO("Plan %s", success ? "success" : "failure");
-
-  // visual_tools.publishAxisLabeled(target_pose2, "pose2");
-  // visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
-  // visual_tools.trigger();
-
-  // success_execute =
-  //     (move_group_interface.execute(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  // ROS_INFO("Execute %s", success_execute ? "success" : "failure");
-  // success = success && success_execute;
-}
-
-void addCollisionTable( float dimension_x, float dimension_y, float dimension_z,
-                        float position_x, float position_y, float position_z )
-{
-  moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-  // create vector to hold 3 object
-  std::vector<moveit_msgs::CollisionObject> collision_objects;
-  collision_objects.resize(1);
-
-  // collision_table
-  collision_objects[0].id = "collision_table";
-  collision_objects[0].header.frame_id = "base_link";
-
-  // collsion_table dimension
-  collision_objects[0].primitives.resize(1);
-  collision_objects[0].primitives[0].type = collision_objects[0].primitives[0].BOX;
-  collision_objects[0].primitives[0].dimensions.resize(3);
-  collision_objects[0].primitives[0].dimensions[0] = dimension_x;
-  collision_objects[0].primitives[0].dimensions[1] = dimension_y;
-  collision_objects[0].primitives[0].dimensions[2] = dimension_z;
-
-  // collsion_table poses
-  collision_objects[0].primitive_poses.resize(1);
-  collision_objects[0].primitive_poses[0].position.x = position_x;
-  collision_objects[0].primitive_poses[0].position.y = position_y;
-  collision_objects[0].primitive_poses[0].position.z = position_z;
-
-  collision_objects[0].operation = collision_objects[0].ADD;
-
-  planning_scene_interface.applyCollisionObjects(collision_objects);
 }
 
 void move_cartesian(geometry_msgs::Pose current_pose, float x, float y, float z) {
@@ -146,13 +83,6 @@ void move_cartesian(geometry_msgs::Pose current_pose, float x, float y, float z)
   target_pose.position.x += x;
   target_pose.position.y += y;
   target_pose.position.z += z;
-
-  printf("%f\n", target_pose.position.x);
-  printf("%f\n", target_pose.position.y);
-  printf("%f\n", target_pose.position.z);
-  printf("%f\n", target_pose.orientation.x);
-  printf("%f\n", target_pose.orientation.y);
-  printf("%f\n", target_pose.orientation.z);
 
   waypoints.push_back(target_pose);
 
@@ -191,7 +121,8 @@ void set_home_walkie2(void)
   joint_group_positions[1] = 0.0;  // radians
   joint_group_positions[2] = 2.267;  // radians
   joint_group_positions[3] = 0.875;  // radians
-  joint_group_positions[4] = 1.507;  // radians
+  // joint_group_positions[4] = 1.507;  // radians
+  joint_group_positions[4] = 0.0;  // radians
   joint_group_positions[5] = 2.355;  // radians
 
   move_group_interface.setJointValueTarget(joint_group_positions);
@@ -210,109 +141,132 @@ void set_home_walkie2(void)
   success = success && success_execute;
 }
 
+void addCollisionTable( float dimension_x, float dimension_y, float dimension_z,
+                        float position_x, float position_y, float position_z )
+{
+  moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+  // create vector to hold 3 object
+  std::vector<moveit_msgs::CollisionObject> collision_objects;
+  collision_objects.resize(1);
+
+  // collision_table
+  collision_objects[0].id = "collision_table";
+  collision_objects[0].header.frame_id = "base_link";
+
+  // collsion_table dimension
+  collision_objects[0].primitives.resize(1);
+  collision_objects[0].primitives[0].type = collision_objects[0].primitives[0].BOX;
+  collision_objects[0].primitives[0].dimensions.resize(3);
+  collision_objects[0].primitives[0].dimensions[0] = dimension_x;
+  collision_objects[0].primitives[0].dimensions[1] = dimension_y;
+  collision_objects[0].primitives[0].dimensions[2] = dimension_z;
+
+  // collsion_table poses
+  collision_objects[0].primitive_poses.resize(1);
+  collision_objects[0].primitive_poses[0].position.x = position_x;
+  collision_objects[0].primitive_poses[0].position.y = position_y;
+  collision_objects[0].primitive_poses[0].position.z = position_z;
+
+  collision_objects[0].operation = collision_objects[0].ADD;
+
+  planning_scene_interface.applyCollisionObjects(collision_objects);
+}
+
 bool place_server(cr3_moveit_control::cr3_place::Request &req,
                       cr3_moveit_control::cr3_place::Response &res)
 {
   set_home_walkie2();
 
-  /////////////// add collsion table /////////////
-  // corner11(x, y)----------------corner12(x, y)
+  // calculate collision table and space to place
+  // *table11-----------------------------table12
   // |                                          |
   // |                                          |
+  // |   place11----------------------*place12  |
+  // |   |                                  |   |
+  // |   |                                  |   |
+  // |   |                                  |   |
+  // |   |                                  |   |
+  // |   *place12----------------------place22  |
   // |                                          |
   // |                                          |
-  // |                                          |
-  // |                                          |
-  // |                                          |
-  // |                                          |
-  // |                                          |
-  // |                                          |
-  // corner21(x, y)----------------corner22(x, y)
+  // table21-----------------------------*table22
   //
   //                     z ---> y
   //                     | 
   //                     v
   //                     x
+    //x axis
+    //condition --> corner.x are in -x axis 
+  double creat_collision_table11_x, creat_collision_table12_x, creat_collision_table21_x, creat_collision_table22_x;
+  double place_within11_x, place_within12_x, place_within21_x, place_within22_x;
 
-  float corner11_x, corner12_x, corner21_x, corner22_x,
-        corner11_y, corner12_y, corner21_y, corner22_y,
-        high,
-        dimension_x, dimension_y, dimension_z,
-        position_x, position_y, position_z;
+  double calculate_collision_table_x[4] = {req.corner11.x, req.corner12.x, req.corner21.x, req.corner22.x};
+  std::sort(calculate_collision_table_x, calculate_collision_table_x + 4);
+  creat_collision_table11_x = calculate_collision_table_x[0];
+  creat_collision_table12_x = calculate_collision_table_x[0];
+  creat_collision_table21_x = calculate_collision_table_x[3];
+  creat_collision_table22_x = calculate_collision_table_x[3];
 
-  corner11_x = req.corner11.x;
-  corner12_x = req.corner12.x;
-  corner21_x = req.corner21.x;
-  corner22_x = req.corner22.x;
+  place_within11_x = calculate_collision_table_x[1];
+  place_within12_x = calculate_collision_table_x[1];
+  place_within21_x = calculate_collision_table_x[2];
+  place_within22_x = calculate_collision_table_x[2];
 
-  corner11_y = req.corner11.y;
-  corner12_y = req.corner12.y;
-  corner21_y = req.corner21.y;
-  corner22_y = req.corner22.y;
+    //y axis
+  double creat_collision_table11_y, creat_collision_table12_y, creat_collision_table21_y, creat_collision_table22_y;
+  double place_within11_y, place_within12_y, place_within21_y, place_within22_y;
 
-  high = req.high.z;
+  double calculate_collision_table_y[4] = {req.corner11.y, req.corner12.y, req.corner21.y, req.corner22.y};
+  std::sort(calculate_collision_table_y, calculate_collision_table_y + 4);
+  creat_collision_table11_y = calculate_collision_table_y[0];
+  creat_collision_table12_y = calculate_collision_table_y[3];
+  creat_collision_table21_y = calculate_collision_table_y[0];
+  creat_collision_table22_y = calculate_collision_table_y[3];
 
-  dimension_x = abs(corner11_x - corner21_x);
-  dimension_y = abs(corner21_y - corner22_y);
+  place_within11_y = calculate_collision_table_y[1];
+  place_within12_y = calculate_collision_table_y[2];
+  place_within21_y = calculate_collision_table_y[1];
+  place_within22_y = calculate_collision_table_y[2];
+
+  // printf("x axis\n");
+  // printf("%f          %f\n",creat_collision_table11_x, creat_collision_table12_x);
+  // printf("%f          %f\n",creat_collision_table21_x, creat_collision_table22_x);
+  
+  // printf("%f          %f\n",place_within11_x, place_within12_x);
+  // printf("%f          %f\n\n\n",place_within21_x, place_within22_x);
+
+  // printf("y axis\n");
+  // printf("%f          %f\n",creat_collision_table11_y, creat_collision_table12_y);
+  // printf("%f          %f\n",creat_collision_table21_y, creat_collision_table22_y);
+  
+  // printf("%f          %f\n",place_within11_y, place_within12_y);
+  // printf("%f          %f\n\n\n",place_within21_y, place_within22_y);
+
+    //z axis
+    double high;
+    high = req.high.z;
+
+  /////////////// add collsion table /////////////
+  double dimension_x, dimension_y, dimension_z;
+  double position_x, position_y, position_z;
+
+  dimension_x = abs(creat_collision_table11_x - creat_collision_table21_x);
+  dimension_y = abs(creat_collision_table11_y - creat_collision_table12_y);
   dimension_z = high;
 
-  position_x = (corner11_x + corner21_x) / 2;
-  position_y = (corner21_y + corner22_y) / 2;
+  position_x = (creat_collision_table11_x + creat_collision_table21_x) / 2;
+  position_y = (creat_collision_table21_y + creat_collision_table22_y) / 2;
   position_z = dimension_z / 2;
 
   addCollisionTable(dimension_x, dimension_y, dimension_z
                   , position_x, position_y, position_z );
 
-  /////////////// add collsion table /////////////
-  // corner11(x, y)----------------corner12(x, y)
-  // |                                          |
-  // |                                          |
-  // |                                          |
-  // |                                          |
-  // |                                          |
-  // |                                          |
-  // |                                          |
-  // |                                          |
-  // |                                          |
-  // |                                          |
-  // corner21(x, y)----------------corner22(x, y)
-  //
-  //                     z ---> y
-  //                     | 
-  //                     v
-  //                     x
-
-  double creat_collision_table11_x, creat_collision_table12_x, creat_collision_table21_x, creat_collision_table22_x;
-  double creat_collision_table11_y, creat_collision_table12_y, creat_collision_table21_y, creat_collision_table22_y;
-
-  double place_within11_x, place_within12_x, place_within21_x, place_within22_x;
-  double place_within11_y, place_within12_y, place_within21_y, place_within22_y;
-
-  double calculate_collision_table_x[4] = {req.corner11.x, req.corner12.x, req.corner21.x, req.corner22.x};
-  // std::sort(calculate_collision_table_x, calculate_collision_table_x + 4);
-  // creat_collision_table11_x = std::sort[0];
-  // creat_collision_table12_x = std::sort[1];
-  // creat_collision_table21_x = std::sort[2];
-  // creat_collision_table22_x = std::sort[3];
-
-  // calculate_collsion_table_y[] = {req.corner11.y, req.corner12.y, req.corner21.y, req.corner22.y}
-  // std::sort(calculate_collsion_table_y, calculate_collsion_table_y + 4);
-  // creat_collision_table11_y = std::sort[0];
-  // creat_collision_table12_y = std::sort[1];
-  // creat_collision_table21_y = std::sort[2];
-  // creat_collision_table22_y = std::sort[3];
-
-  printf("%f\n", creat_collision_table11_x);
-  printf("%f\n", creat_collision_table12_x);
-  printf("%f\n", creat_collision_table21_x);
-  printf("%f\n", creat_collision_table22_x);
-
-  //find pose to place
+  //find pose to preplace
   geometry_msgs::Pose pose;
   tf2::Quaternion myQuaternion;
 
-  pose.position.x = -0.05 + (corner21_x + corner22_x) / 2;
-  pose.position.y = (corner21_y + corner22_y) / 2;
+  pose.position.x = place_within21_x - 0.1;
+  pose.position.y = (place_within21_y + place_within22_y) / 2;
   pose.position.z = high + 0.15;
 
   myQuaternion.setRPY( -1 * M_PI / 2, -1 * M_PI / 4, M_PI / 2 );
@@ -320,9 +274,11 @@ bool place_server(cr3_moveit_control::cr3_place::Request &req,
   pose.orientation.y = myQuaternion.getY();
   pose.orientation.z = myQuaternion.getZ();
   pose.orientation.w = myQuaternion.getW();
-
-  //preplace
-  move2place(pose);
+  
+  ROS_INFO_STREAM(pose);
+  
+  //move to preplace pose
+  move(pose);
   if (!success){
     return false;
   }
@@ -372,8 +328,8 @@ int main(int argc, char** argv){
 
   // // place_client_python //////////////////////////
   
-  // moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
-  // visual_tools.deleteAllMarkers();
+  moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
+  visual_tools.deleteAllMarkers();
 
   // cr3_moveit_control::cr3_place::Request &req;
   // cr3_moveit_control::cr3_place::Response &res;

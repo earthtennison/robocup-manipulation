@@ -1,6 +1,6 @@
 -
   name: table1 #or table/bed
-  frame_id: map
+  frame_id: world
   shape: rectangle
   corner1:
     x: 3.2658033371
@@ -32,7 +32,7 @@
 
 -
   name: bed
-  frame_id: map
+  frame_id: world
   shape: rectangle
   corner1:
     x: 7.59784984589
@@ -63,7 +63,7 @@
   heights: [0.4]
 -
   name: lamp #or plant pot/chair
-  frame_id: map
+  frame_id: world
   shape: circle
   radius: 0.5
   position:
@@ -82,7 +82,7 @@
       w: -0.010986897825
 -
   name: plantpot
-  frame_id: map
+  frame_id: world
   shape: circle
   radius: 0.5
   position:
