@@ -83,7 +83,7 @@ class GetObjectPose():
         # connect to server
         # host = socket.gethostname()
         # connect to acer nitro 5
-        host = "192.168.8.2"
+        host = "192.168.8.6"
         port = 10001
         self.c = CustomSocket(host, port)
         self.c.clientConnect()
