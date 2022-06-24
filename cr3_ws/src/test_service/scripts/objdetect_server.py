@@ -37,7 +37,7 @@ class GetObjectPose():
         # connect to server
         # host = socket.gethostname()
         # connect to acer nitro 5
-        host = "192.168.8.6"
+        host = "192.168.8.2"
         port = 10001
         self.c = CustomSocket(host, port)
         self.c.clientConnect()
@@ -258,11 +258,11 @@ class obj_server:
         
         raw_input("press enter")
 
-        # rospy.loginfo("cv")
-        # obj = GetObjectPose("Waterbottle")
-        # obj.run_once()
-        # self.BBX = obj.BBX
-        # obj.reset()
+        rospy.loginfo("cv")
+        obj = GetObjectPose("Waterbottle")
+        obj.run_once()
+        self.BBX = obj.BBX
+        obj.reset()
 
 
         print("Sending Service")
@@ -273,17 +273,17 @@ class obj_server:
         self.test.publish(new_pcl)
 
 
-        # xmin = self.BBX[0]
-        # ymin = self.BBX[1]
-        # xmax = self.BBX[2]
-        # ymax = self.BBX[3]
+        xmin = self.BBX[0]
+        ymin = self.BBX[1]
+        xmax = self.BBX[2]
+        ymax = self.BBX[3]
 
 
 
-        xmin = 480
-        ymin = 300
-        xmax = 580
-        ymax = 368
+        # xmin = 480
+        # ymin = 300
+        # xmax = 580
+        # ymax = 368
 
         a = BoundingBox(0.9,xmin,ymin,xmax,ymax,39,'bottle')
         res = self.srv(point_cloud= new_pcl,bounding_box= a)
