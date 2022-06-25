@@ -12,6 +12,7 @@ class obj_server:
         self.msg = rospy.Subscriber('/camera/depth_registered/points',PointCloud2,self.pointCB)
         self.test = rospy.Publisher("/anytest",PointCloud2,queue_size= 1)
         self.maker = rospy.Publisher("/markeranytest",Marker,queue_size= 1)
+
     def pointCB(self,pcl):
         new_pcl = sensor_msgs.msg.PointCloud2()
 

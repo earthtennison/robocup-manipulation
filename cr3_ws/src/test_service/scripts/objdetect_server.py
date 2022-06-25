@@ -82,6 +82,13 @@ class GetObjectPose():
         self.corner22_pose = Pose()
 
         self.tf_stamp = None
+        self.tf_stamp11 = None
+        self.tf_stamp12 = None
+        self.tf_stamp21 = None
+        self.tf_stamp22 = None
+
+        self.BBXX = None
+
         self.is_trigger = False
 
         self.time_now = rospy.Time.now()
@@ -172,6 +179,7 @@ class GetObjectPose():
                 if self.tf_stamp is not None:
                     # rospy.loginfo("publishing tf")
                     self.tf_stamp.header.stamp = rospy.Time.now()
+
                     self.tf_stamp11.header.stamp = rospy.Time.now()
                     self.tf_stamp12.header.stamp = rospy.Time.now()
                     self.tf_stamp21.header.stamp = rospy.Time.now()
@@ -188,6 +196,7 @@ class GetObjectPose():
                     self.pub_tf.publish(
                         tf2_msgs.msg.TFMessage([self.tf_stamp22]))
                 return
+
             elif not ((self.x_pixel is None) or (self.y_pixel is None)):
                 depth_image = self.bridge.imgmsg_to_cv2(frame, frame.encoding)
                 depth_image = self.check_image_size(depth_image)
@@ -206,6 +215,7 @@ class GetObjectPose():
                     # depth_corne22 = depth_image[corne22[1], corne22[0]]
 
                     result = [0, 0, 0]
+
                     result_corner11 = [0, 0, 0]
                     result_corner12 = [0, 0, 0]
                     result_corner21 = [0, 0, 0]
@@ -213,6 +223,7 @@ class GetObjectPose():
 
                     result = rs2.rs2_deproject_pixel_to_point(
                         self.intrinsics, [pix[0], pix[1]], depth)
+
                     result_corner11 = rs2.rs2_deproject_pixel_to_point(
                         self.intrinsics, [corne11[0], corne11[1]], depth)
                     result_corner12 = rs2.rs2_deproject_pixel_to_point(
@@ -271,7 +282,7 @@ class GetObjectPose():
                         self.tf_stamp11 = TransformStamped()
                         self.tf_stamp11.header.frame_id = "/camera_link"
                         self.tf_stamp11.header.stamp = rospy.Time.now()
-                        self.tf_stamp11.child_frame_id = "/object_frame"
+                        self.tf_stamp11.child_frame_id = "/corner11_frame"
                         self.tf_stamp11.transform.translation.x = z_corne11
                         self.tf_stamp11.transform.translation.y = -x_corne11
                         self.tf_stamp11.transform.translation.z = -y_corne11
@@ -295,7 +306,7 @@ class GetObjectPose():
                         self.tf_stamp12 = TransformStamped()
                         self.tf_stamp12.header.frame_id = "/camera_link"
                         self.tf_stamp12.header.stamp = rospy.Time.now()
-                        self.tf_stamp12.child_frame_id = "/object_frame"
+                        self.tf_stamp12.child_frame_id = "/corner12_frame"
                         self.tf_stamp12.transform.translation.x = z_corne12
                         self.tf_stamp12.transform.translation.y = -x_corne12
                         self.tf_stamp12.transform.translation.z = -y_corne12
@@ -319,7 +330,7 @@ class GetObjectPose():
                         self.tf_stamp21 = TransformStamped()
                         self.tf_stamp21.header.frame_id = "/camera_link"
                         self.tf_stamp21.header.stamp = rospy.Time.now()
-                        self.tf_stamp21.child_frame_id = "/object_frame"
+                        self.tf_stamp21.child_frame_id = "/corner21_frame"
                         self.tf_stamp21.transform.translation.x = z_corne21
                         self.tf_stamp21.transform.translation.y = -x_corne21
                         self.tf_stamp21.transform.translation.z = -y_corne21
@@ -343,7 +354,7 @@ class GetObjectPose():
                         self.tf_stamp22 = TransformStamped()
                         self.tf_stamp22.header.frame_id = "/camera_link"
                         self.tf_stamp22.header.stamp = rospy.Time.now()
-                        self.tf_stamp22.child_frame_id = "/object_frame"
+                        self.tf_stamp22.child_frame_id = "/corner22_frame"
                         self.tf_stamp22.transform.translation.x = z_corne22
                         self.tf_stamp22.transform.translation.y = -x_corne22
                         self.tf_stamp22.transform.translation.z = -y_corne22
@@ -414,10 +425,11 @@ class GetObjectPose():
                         self.frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
                     
                     bbox[0] = max(min(bbox[0], 719), 0)
-                    bbox[1] = max(min(bbox[0], 1279), 0)
-                    bbox[2] = max(min(bbox[0], 719), 0)
-                    bbox[3] = max(min(bbox[0], 1279), 0)
+                    bbox[1] = max(min(bbox[1], 1279), 0)
+                    bbox[2] = max(min(bbox[2], 719), 0)
+                    bbox[3] = max(min(bbox[3], 1279), 0)
                     self.BBXX = (bbox[0], bbox[1], bbox[2], bbox[3])
+                    print(self.BBXX)
 
             # self.frame, x, y, w, h = simple_detect_bbox(self.frame, "blue")
             # self.x_pixel = x
