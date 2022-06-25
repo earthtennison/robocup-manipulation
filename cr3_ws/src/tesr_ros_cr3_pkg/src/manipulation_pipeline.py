@@ -108,16 +108,11 @@ class GetObjectPose():
         #https://stackoverflow.com/questions/26415699/ros-subscriber-not-up-to-date
 
         rospy.loginfo('Initialize state GetObjectPose')
-        depth_info_sub = rospy.Subscriber(
-            "/camera/aligned_depth_to_color/camera_info", CameraInfo, self.info_callback)
-        self.image_pub = rospy.Publisher(
-            "/blob/image_blob", Image, queue_size=1)
-        self.pub_tf = rospy.Publisher(
-            "/tf", tf2_msgs.msg.TFMessage, queue_size=1)
-        self.image_sub = rospy.Subscriber(
-            "/camera/color/image_raw", Image, self.yolo_callback, queue_size=1, buff_size=52428800)
-        self.depth_sub = rospy.Subscriber(
-            "/camera/aligned_depth_to_color/image_raw", Image, self.depth_callback, queue_size=1, buff_size=52428800)
+        depth_info_sub = rospy.Subscriber("/camera/aligned_depth_to_color/camera_info", CameraInfo, self.info_callback)
+        self.image_pub = rospy.Publisher("/blob/image_blob", Image, queue_size=1)
+        self.pub_tf = rospy.Publisher("/tf", tf2_msgs.msg.TFMessage, queue_size=1)
+        self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.yolo_callback, queue_size=1, buff_size=52428800)
+        self.depth_sub = rospy.Subscriber("/camera/aligned_depth_to_color/image_raw", Image, self.depth_callback, queue_size=1, buff_size=52428800)
 
     def run_once(self):
         while self.intrinsics is None:

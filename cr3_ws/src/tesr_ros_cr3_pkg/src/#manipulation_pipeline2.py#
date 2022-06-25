@@ -344,6 +344,8 @@ def main():
                                               'planning_failed':'ABORTED'},
                                remapping = {'pick_input':'objectpose_transition',
                                             'pick_output':'pick_transition'})
-    outcome = sm.execute()    
+    outcome = sm.execute()
+    
+    
 if __name__ == "__main__":
     main()
