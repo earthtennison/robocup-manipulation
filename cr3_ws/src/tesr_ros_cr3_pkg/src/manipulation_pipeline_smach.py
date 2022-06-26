@@ -98,7 +98,8 @@ class GetObjectPose(smach.State):
             result = self.c.req(self.frame)
             self.frame = check_image_size_for_ros(self.frame)
             rospy.loginfo("result {}".format(result))
-
+            if result['n'] == 0:
+                return None 
             # object detection bounding box 2d
             for bbox in result['bbox_list']:
                 if bbox[4] != self.object_name:
