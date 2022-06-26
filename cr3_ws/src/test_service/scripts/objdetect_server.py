@@ -7,17 +7,13 @@ import time
 from geometry_msgs.msg import Pose
 
 #realsense
-from sensor_msgs.msg import PointCloud2,Image, CameraInfo
+from sensor_msgs.msg import Image, CameraInfo
 import pyrealsense2 as rs2
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
 
 #rviz msg
 from visualization_msgs.msg import Marker
-
-#darknet msg
-from darknet_ros_msgs.msg import BoundingBox
-from gb_visual_detection_3d_msgs.srv import *
 
 # computer vision
 import socket
@@ -53,6 +49,48 @@ def transform_pose(input_pose, from_frame, to_frame):
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             raise
 
+def maarker(marker_publisher,pose_bbx,size):
+        marker = Marker()
+        marker.header.frame_id = "camera_link"
+        marker.header.stamp = rospy.Time.now()
+        marker.id = 1
+        marker.type = marker.CUBE
+        marker.action = marker.ADD
+        marker.pose.position.x = pose_bbx.position.x
+        marker.pose.position.y = pose_bbx.position.y
+        marker.pose.position.z = pose_bbx.position.z
+        marker.pose.orientation.x = pose_bbx.orientation.x
+        marker.pose.orientation.y = pose_bbx.orientation.y
+        marker.pose.orientation.z = pose_bbx.orientation.z
+        marker.pose.orientation.w = pose_bbx.orientation.w
+        marker.scale.x = 0.001
+        marker.scale.y = size[0]
+        marker.scale.z = size[1]
+        marker.color.a = 0.4
+        marker.color.r = 0.0
+        marker.color.g = 255.0
+        marker.color.b = 0.0
+        marker.lifetime = rospy.Duration(60.0)
+        marker_publisher.publish(marker)
+
+
+def corner2bbx(corner11, corner12, corner21, corner22):
+
+    # corner11-------------corner21                                   Z
+    # |                           |                                   |
+    # |                           |                                   |
+    # |                           |                               X   |
+    # |                           |                                \  |
+    # |                           |                                 \ |
+    # |                           |                                  \|
+    # corner12-------------corner22                 Y------------corner
+    #y:=length z:=hight x:=depth
+
+    length = abs(corner21.position.y - corner11.position.y)
+    hight = abs(corner11.position.z - corner12.position.z)
+    depth = abs(corner22.position.x)
+
+    return (length,hight,depth)
 
 class GetObjectPose():
     def __init__(self, object_name):
@@ -88,6 +126,7 @@ class GetObjectPose():
         self.tf_stamp22 = None
 
         self.BBXX = None
+        self.pickside = None
 
         self.is_trigger = False
 
@@ -108,6 +147,9 @@ class GetObjectPose():
             "/camera/color/image_raw", Image, self.yolo_callback, queue_size=1, buff_size=52428800)
         self.depth_sub = rospy.Subscriber(
             "/camera/aligned_depth_to_color/image_raw", Image, self.depth_callback, queue_size=1, buff_size=52428800)
+
+        # Visualize in rviz
+        self.marker_publisher = rospy.Publisher("z/markerplane",Marker,queue_size=1)
 
     def run_once(self):
         while self.intrinsics is None:
@@ -245,6 +287,9 @@ class GetObjectPose():
 
                     x_coord, y_coord, z_coord = result[0] / \
                         1000, result[1]/1000, result[2]/1000
+
+
+                    
                     # line += '  Coordinate: %8.2f %8.2f %8.2f.' % (result[0], result[1], result[2])
                     if z_coord >= 0.5:
 
@@ -373,6 +418,20 @@ class GetObjectPose():
                         self.corner22_pose.orientation.z = 0
                         self.corner22_pose.orientation.w = 1
 
+                        #make BBX
+                        self.BBX_size = corner2bbx(self.corner11_pose,self.corner12_pose,self.corner21_pose,self.corner22_pose)
+                        maarker(self.marker_publisher,self.object_pose,self.BBX_size)
+
+                        factor = self.BBX_size[0]/self.BBX_size[1]
+                        print(factor)
+                        print(self.BBX_size[0])
+                        print(self.BBX_size[1])
+                        if factor >= 0.6:
+                            self.pickside = "parallel"
+                            print(self.pickside)
+                        else:
+                            self.pickside = "perpendicular"
+                            print(self.pickside)
 
 
                         self.is_done = True
@@ -424,11 +483,13 @@ class GetObjectPose():
                     self.frame = cv2.rectangle(
                         self.frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
                     
-                    bbox[0] = max(min(bbox[0], 719), 0)
-                    bbox[1] = max(min(bbox[1], 1279), 0)
-                    bbox[2] = max(min(bbox[2], 719), 0)
-                    bbox[3] = max(min(bbox[3], 1279), 0)
+                    bbox[0] = max(min(bbox[0], 1279), 0)
+                    bbox[1] = max(min(bbox[1], 719), 0)
+                    bbox[2] = max(min(bbox[2], 1279), 0)
+                    bbox[3] = max(min(bbox[3], 719), 0)
                     self.BBXX = (bbox[0], bbox[1], bbox[2], bbox[3])
+
+
                     print(self.BBXX)
 
             # self.frame, x, y, w, h = simple_detect_bbox(self.frame, "blue")
@@ -439,7 +500,7 @@ class GetObjectPose():
 if __name__ == "__main__":
     rospy.init_node('objdetect')
 
-    detector = GetObjectPose("Waterbottle")
+    detector = GetObjectPose("Cereal")
     detector.run_once()
     while not rospy.is_shutdown():
         command = raw_input("Press Enter: ")
@@ -454,10 +515,10 @@ if __name__ == "__main__":
         # transform
         # print(object_pose)
         rospy.loginfo(object_pose)
-        rospy.loginfo(corner11_pose)
-        rospy.loginfo(corner12_pose)
-        rospy.loginfo(corner21_pose)
-        rospy.loginfo(corner22_pose)
+        # rospy.loginfo(corner11_pose)
+        # rospy.loginfo(corner12_pose)
+        # rospy.loginfo(corner21_pose)
+        # rospy.loginfo(corner22_pose)
 
         # print("before {}".format(object_pose))
         # object_pose = transform_pose(object_pose, "camera_link", "base_link")

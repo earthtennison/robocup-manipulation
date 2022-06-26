@@ -171,6 +171,7 @@ catkin_install_python(PROGRAMS
   scripts/objdetect_server.py
   # scripts/fakesmach_pyver.py
   # scripts/objreq_server.py
+  scripts/superdetect.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
