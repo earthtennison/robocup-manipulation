@@ -42,8 +42,7 @@ import tf2_ros
 import tf2_geometry_msgs
 
 
-def to_rad(deg):
-    return deg * math.pi / 180.0
+
 
 
 def pick_service(goal_pose, side="front"):
@@ -83,7 +82,7 @@ class GetObjectPose():
         # connect to server
         # host = socket.gethostname()
         # connect to acer nitro 5
-        host = "192.168.8.2"
+        host = "192.168.8.99"
         port = 10001
         self.c = CustomSocket(host, port)
         self.c.clientConnect()
@@ -117,8 +116,8 @@ class GetObjectPose():
     def run_once(self):
         while self.intrinsics is None:
             time.sleep(0.1)
-        self.c.req(np.random.randint(255, size=(
-            self.intrinsics.height, self.intrinsics.width, 3), dtype=np.uint8))
+        rospy.loginfo("realsense image width, height = ({}, {})".format(self.intrinsics.width, self.intrinsics.height))
+        self.c.req(np.random.randint(255, size=(720, 1280, 3), dtype=np.uint8))
 
     def reset(self):
         self.x_pixel = None
@@ -141,12 +140,24 @@ class GetObjectPose():
         self.is_done = False
         return self.object_pose
 
-    def check_image_size(self, frame):
+    def check_image_size_for_cv(self, frame):
         # using realsense default
+        if frame.shape[0] != 720 and frame.shape[1] != 1280:
+            frame = cv2.resize(
+                frame, (1280, 720))
+        return frame
+    def check_image_size_for_ros(self, frame):
         if frame.shape[0] != self.intrinsics.height and frame.shape[1] != self.intrinsics.width:
             frame = cv2.resize(
                 frame, (self.intrinsics.width, self.intrinsics.height))
         return frame
+
+    def rescale_pixel(self, x, y):
+        rospy.loginfo("before {} {}".format(x, y))
+        x = int(x*self.intrinsics.width/1280)
+        y = int(y*self.intrinsics.height/720)
+        rospy.loginfo("after {} {}".format(x, y))
+        return (x, y)
 
     def info_callback(self, cameraInfo):
         try:
@@ -189,17 +200,15 @@ class GetObjectPose():
                 return
             elif not ((self.x_pixel is None) or (self.y_pixel is None)):
                 depth_image = self.bridge.imgmsg_to_cv2(frame, frame.encoding)
-                depth_image = self.check_image_size(depth_image)
-                # pick one pixel among all the pixels with the closest range:
+                # rescale pixel incase pixel donot match
+                depth_image = self.check_image_size_for_ros(depth_image)
                 pix = (self.x_pixel, self.y_pixel)
                 # line = '\rDepth at pixel(%3d, %3d): %7.1f(mm).' % (pix[0], pix[1], cv_image[pix[1], pix[0]])
                 if self.intrinsics:
                     depth = depth_image[pix[1], pix[0]]
                     result = [0, 0, 0]
-                    result = rs2.rs2_deproject_pixel_to_point(
-                        self.intrinsics, [pix[0], pix[1]], depth)
-                    x_coord, y_coord, z_coord = result[0] / \
-                        1000, result[1]/1000, result[2]/1000
+                    result = rs2.rs2_deproject_pixel_to_point(self.intrinsics, [pix[0], pix[1]], depth)
+                    x_coord, y_coord, z_coord = result[0]/1000, result[1]/1000, result[2]/1000
                     # line += '  Coordinate: %8.2f %8.2f %8.2f.' % (result[0], result[1], result[2])
                     if z_coord >= 0.5:
 
@@ -253,10 +262,13 @@ class GetObjectPose():
         elif (self.x_pixel is None) and (self.y_pixel is None):
             # change subscribed data to numpy.array and save it as "frame"
             self.frame = self.bridge.imgmsg_to_cv2(data, 'bgr8')
-            self.frame = self.check_image_size(self.frame)
+            # scale image incase image size donot match cv server
+            self.frame = self.check_image_size_for_cv(self.frame)
             # 2d object detection
             # send frame to server and recieve the result
             result = self.c.req(self.frame)
+
+            self.frame = self.check_image_size_for_ros(self.frame)
             # rospy.loginfo("result {}".format(result))
             for bbox in result['bbox_list']:
                 if bbox[4] != self.object_name:
@@ -266,10 +278,11 @@ class GetObjectPose():
                     self.x_pixel = int(bbox[0] + (bbox[2]-bbox[0])/2)
                     self.y_pixel = int(bbox[1] + (bbox[3]-bbox[1])/2)
                     # visualize purpose
+                    (self.x_pixel, self.y_pixel) = self.rescale_pixel(self.x_pixel, self.y_pixel)
                     self.frame = cv2.circle(
                         self.frame, (self.x_pixel, self.y_pixel), 5, (0, 255, 0), 2)
                     self.frame = cv2.rectangle(
-                        self.frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
+                        self.frame, self.rescale_pixel(bbox[0], bbox[1]), self.rescale_pixel(bbox[2], bbox[3]), (0, 255, 0), 2)
 
             # self.frame, x, y, w, h = simple_detect_bbox(self.frame, "blue")
             # self.x_pixel = x

@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+"""
+roslaunch cr3_moveit_control manipulation_pipeline_real.launch
+"""
+
 import roslib
 import rospy
 import smach
@@ -10,7 +14,7 @@ import math
 import time
 
 # pick service
-#from cr3_moveit_control.srv import PickWithSide
+from cr3_moveit_control.srv import PickWithSide
 
 # realsense
 import pyrealsense2 as rs2
@@ -36,45 +40,11 @@ import tf2_ros
 import tf2_geometry_msgs
 
 
-# def to_rad(deg):
-#     return deg * math.pi / 180.0
-
-
-# def pick_service(goal_pose, side="front"):
-#     rospy.wait_for_service('pick_service_select_side')
-#     try:
-#         pick = rospy.ServiceProxy('pick_service_select_side', PickWithSide)
-#         res = pick(goal_pose, side)
-#         return res.success_grasp
-#     except rospy.ServiceException as e:
-#         print("Service call failed: %s" % e)
-        
-# def transform_pose(input_pose, from_frame, to_frame):
-
-#         # **Assuming /tf2 topic is being broadcasted
-#         tf_buffer = tf2_ros.Buffer()
-#         listener = tf2_ros.TransformListener(tf_buffer)
-
-#         pose_stamped = tf2_geometry_msgs.PoseStamped()
-#         pose_stamped.pose = input_pose
-#         pose_stamped.header.frame_id = from_frame
-#         pose_stamped.header.stamp = rospy.Time.now()
-
-#         try:
-#             # ** It is important to wait for the listener to start listening. Hence the rospy.Duration(1)
-#             output_pose_stamped = tf_buffer.transform(
-#                 pose_stamped, to_frame, rospy.Duration(1))
-#             return output_pose_stamped.pose
-
-#         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-#             raise
-
-
 class GetObjectName(smach.State):
     def __init__(self):
         rospy.loginfo('Initiating state GetObjectName')
-        smach.State.__init__(self, outcomes=['continue_GetObjectPose']
-                                 , output_keys = ['objectname_output'])
+        smach.State.__init__(self, outcomes=['continue_GetObjectPose'], output_keys=[
+                             'objectname_output'])
 
     def execute(self, userdata):
         rospy.loginfo('Executing state GetObjectName')
@@ -86,21 +56,17 @@ class GetObjectName(smach.State):
 class GetObjectPose(smach.State):
     def __init__(self):
         rospy.loginfo('Initiating state GetObjectPose')
-        smach.State.__init__(self, outcomes=['continue_Pick','continue_ABORTED']
-                                 , input_keys = ['objectname_input','objectpose_output'] #dont use ['objectname_input']
-                                 , output_keys = ['objectpose_output'])
-
+        smach.State.__init__(self, outcomes=['continue_Pick', 'continue_ABORTED'], input_keys=[
+                             'objectname_input', 'objectpose_output'], output_keys=['objectpose_output'])
         # initiate variables
         self.object_name = ""
         self.x_pixel = None
         self.y_pixel = None
         self.intrinsics = None
-
         self.bridge = CvBridge()
         self.frame = None
         self.is_done = False
         self.object_pose = Pose()
-
         self.tf_stamp = None
         self.is_trigger = False
 
@@ -110,7 +76,6 @@ class GetObjectPose(smach.State):
         self.c = CustomSocket(host, port)
         self.c.clientConnect()
         rospy.loginfo("connected object detection server")
-        
 
     def execute(self, userdata):
         rospy.loginfo('Executing state GetObjectPose')
@@ -118,9 +83,11 @@ class GetObjectPose(smach.State):
         def run_once():
             while self.intrinsics is None:
                 time.sleep(0.1)
-            self.c.req(np.random.randint(255, size=(
-                self.intrinsics.height, self.intrinsics.width, 3), dtype=np.uint8))
-        
+            rospy.loginfo("realsense image width, height = ({}, {})".format(
+                self.intrinsics.width, self.intrinsics.height))
+            self.c.req(np.random.randint(
+                255, size=(720, 1280, 3), dtype=np.uint8))
+
         def reset():
             rospy.loginfo("Reseting the value")
             self.x_pixel = None
@@ -128,9 +95,11 @@ class GetObjectPose(smach.State):
             self.frame = None
             self.is_done = False
             rospy.sleep(0.1)
-            rospy.loginfo("Finished")
-            #self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, yolo_callback, queue_size=1, buff_size=52428800)
-            #self.depth_sub = rospy.Subscriber("/camera/aligned_depth_to_color/image_raw", Image, depth_callback, queue_size=1, buff_size=52428800)
+            rospy.loginfo("Finished reseting")
+            self.image_sub = rospy.Subscriber(
+                "/camera/color/image_raw", Image, yolo_callback, queue_size=1, buff_size=52428800)
+            self.depth_sub = rospy.Subscriber(
+                "/camera/aligned_depth_to_color/image_raw", Image, depth_callback, queue_size=1, buff_size=52428800)
 
         def detect():
             rospy.loginfo("Start detecting")
@@ -141,15 +110,26 @@ class GetObjectPose(smach.State):
             self.depth_sub.unregister()
             self.is_trigger = False
             self.is_done = False
-            rospy.loginfo("Finished")
+            rospy.loginfo("Object found!")
             return self.object_pose
 
-        # function in YOLO_CALLBACK
-        def check_image_size(frame):
+        # function used in callback functions
+        def check_image_size_for_cv(frame):
+            if frame.shape[0] != 720 and frame.shape[1] != 1280:
+                frame = cv2.resize(
+                    frame, (1280, 720))
+            return frame
+
+        def check_image_size_for_ros(frame):
             if frame.shape[0] != self.intrinsics.height and frame.shape[1] != self.intrinsics.width:
                 frame = cv2.resize(
                     frame, (self.intrinsics.width, self.intrinsics.height))
             return frame
+
+        def rescale_pixel(x, y):
+            x = int(x*self.intrinsics.width/1280)
+            y = int(y*self.intrinsics.height/720)
+            return (x, y)
 
         # all call_back functions
         def info_callback(cameraInfo):
@@ -184,10 +164,12 @@ class GetObjectPose(smach.State):
             elif (self.x_pixel is None) and (self.y_pixel is None):
                 # change subscribed data to numpy.array and save it as "frame"
                 self.frame = self.bridge.imgmsg_to_cv2(data, 'bgr8')
-                self.frame = check_image_size(self.frame)
+                # scale image incase image size donot match cv server
+                self.frame = check_image_size_for_cv(self.frame)
                 # 2d object detection
                 # send frame to server and recieve the result
                 result = self.c.req(self.frame)
+                self.frame = check_image_size_for_ros(self.frame)
                 # rospy.loginfo("result {}".format(result))
                 for bbox in result['bbox_list']:
                     if bbox[4] != self.object_name:
@@ -196,27 +178,15 @@ class GetObjectPose(smach.State):
                         # TODO change to xywh, now receive xyxy
                         self.x_pixel = int(bbox[0] + (bbox[2]-bbox[0])/2)
                         self.y_pixel = int(bbox[1] + (bbox[3]-bbox[1])/2)
+                        (self.x_pixel, self.y_pixel) = rescale_pixel(
+                            self.x_pixel, self.y_pixel)
                         # visualize purpose
                         self.frame = cv2.circle(
                             self.frame, (self.x_pixel, self.y_pixel), 5, (0, 255, 0), 2)
                         self.frame = cv2.rectangle(
-                            self.frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
-
-                # self.frame, x, y, w, h = simple_detect_bbox(self.frame, "blue")
-                # self.x_pixel = x
-                # self.y_pixel = y
+                            self.frame, rescale_pixel(bbox[0], bbox[1]), rescale_pixel(bbox[2], bbox[3]), (0, 255, 0), 2)
 
         def depth_callback(frame):
-            """
-            +Z           
-            |         +y   realsense frame
-            |         | +z   o object
-            |         |/
-            |  +X     o---> +x
-            | / 
-            0/-----------------> -Y camera_link frame tf
-
-            """
             try:
                 if not self.is_trigger:
                     if self.tf_stamp is not None:
@@ -226,8 +196,10 @@ class GetObjectPose(smach.State):
                             tf2_msgs.msg.TFMessage([self.tf_stamp]))
                     return
                 elif not ((self.x_pixel is None) or (self.y_pixel is None)):
-                    depth_image = self.bridge.imgmsg_to_cv2(frame, frame.encoding)
-                    depth_image = check_image_size(depth_image)
+                    depth_image = self.bridge.imgmsg_to_cv2(
+                        frame, frame.encoding)
+                    # rescale pixel incase pixel donot match
+                    depth_image = check_image_size_for_ros(depth_image)
                     # pick one pixel among all the pixels with the closest range:
                     pix = (self.x_pixel, self.y_pixel)
                     # line = '\rDepth at pixel(%3d, %3d): %7.1f(mm).' % (pix[0], pix[1], cv_image[pix[1], pix[0]])
@@ -238,11 +210,8 @@ class GetObjectPose(smach.State):
                             self.intrinsics, [pix[0], pix[1]], depth)
                         x_coord, y_coord, z_coord = result[0] / \
                             1000, result[1]/1000, result[2]/1000
-                        # line += '  Coordinate: %8.2f %8.2f %8.2f.' % (result[0], result[1], result[2])
-                        if z_coord >= 0.5:
 
-                            # line += '\r'
-                            # print(line)
+                        if z_coord >= 0.5:
                             rospy.sleep(0.1)
 
                             self.tf_stamp = TransformStamped()
@@ -271,7 +240,6 @@ class GetObjectPose(smach.State):
                             self.object_pose.orientation.w = 1
 
                             self.is_done = True
-
             except CvBridgeError as e:
                 print(e)
                 return
@@ -279,11 +247,18 @@ class GetObjectPose(smach.State):
                 return
             pass
 
-        #----------------------------------------------start-----------------------------------------------------
+        # ----------------------------------------------start-----------------------------------------------------
         # subscribe topics
-        rospy.Subscriber("/camera/aligned_depth_to_color/camera_info", CameraInfo, info_callback)
-        self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, yolo_callback, queue_size=1, buff_size=52428800)
-        self.depth_sub = rospy.Subscriber("/camera/aligned_depth_to_color/image_raw", Image, depth_callback, queue_size=1, buff_size=52428800)
+        rospy.Subscriber(
+            "/camera/aligned_depth_to_color/camera_info", CameraInfo, info_callback)
+        self.image_sub = rospy.Subscriber(
+            "/camera/color/image_raw", Image, yolo_callback, queue_size=1, buff_size=52428800)
+        self.depth_sub = rospy.Subscriber(
+            "/camera/aligned_depth_to_color/image_raw", Image, depth_callback, queue_size=1, buff_size=52428800)
+        self.image_pub = rospy.Publisher(
+            "/blob/image_blob", Image, queue_size=1)
+        self.pub_tf = rospy.Publisher(
+            "/tf", tf2_msgs.msg.TFMessage, queue_size=1)
 
         # recieving object name from GetObjectName state
         self.object_name = userdata.objectname_input
@@ -295,44 +270,73 @@ class GetObjectPose(smach.State):
             command = raw_input("Press Enter :")
             if command == 'q':
                 break
-
             rospy.loginfo("------ Running 3D detection ------")
             reset()
             self.object_pose = detect()
-            rospy.loginfo(self.object_pose.position.x)
-            rospy.loginfo(self.object_pose.position.y)
-            rospy.loginfo(self.object_pose.position.z)
-            rospy.loginfo(self.object_pose.orientation.x)
-            rospy.loginfo(self.object_pose.orientation.y)
-            rospy.loginfo(self.object_pose.orientation.z)
-            rospy.loginfo(self.object_pose.orientation.w)
             userdata.objectpose_output = self.object_pose
             return 'continue_Pick'
-
         return 'continue_ABORTED'
 
-    
 
 class Pick(smach.State):
     def __init__(self):
         rospy.loginfo('Initiating state Pick')
-        smach.State.__init__(self, outcomes = ['continue_SUCCEEDED', 'continue_ABORTED']
-                                 , input_keys = ['objectpose_input'])
-        self.success = True
+        smach.State.__init__(self, outcomes=['continue_SUCCEEDED', 'continue_ABORTED'], 
+                                   input_keys=['objectpose_input'])
+        self.success = False
 
     def execute(self, userdata):
         rospy.loginfo('Executing state Pick')
         # recieving Pose() from GetObjectPose state
+        recieved_pose = userdata.objectpose_input
         rospy.loginfo('------ Position ------')
-        rospy.loginfo('x = %s',userdata.objectpose_input.position.x)
-        rospy.loginfo('x = %s',userdata.objectpose_input.position.x)
-        rospy.loginfo('y = %s',userdata.objectpose_input.position.y)
-        rospy.loginfo('z = %s',userdata.objectpose_input.position.z)
+        rospy.loginfo('x = %s', recieved_pose.position.x)
+        rospy.loginfo('x = %s', recieved_pose.position.x)
+        rospy.loginfo('y = %s', recieved_pose.position.y)
+        rospy.loginfo('z = %s', recieved_pose.position.z)
         rospy.loginfo('------ Orientation ------')
-        rospy.loginfo('x = %s',userdata.objectpose_input.orientation.x)
-        rospy.loginfo('y = %s',userdata.objectpose_input.orientation.y)
-        rospy.loginfo('z = %s',userdata.objectpose_input.orientation.z)
-        rospy.loginfo('w = %s',userdata.objectpose_input.orientation.w)
+        rospy.loginfo('x = %s', recieved_pose.orientation.x)
+        rospy.loginfo('y = %s', recieved_pose.orientation.y)
+        rospy.loginfo('z = %s', recieved_pose.orientation.z)
+        rospy.loginfo('w = %s', recieved_pose.orientation.w)
+
+        def transform_pose(input_pose, from_frame, to_frame):
+            # **Assuming /tf2 topic is being broadcasted
+            tf_buffer = tf2_ros.Buffer()
+            listener = tf2_ros.TransformListener(tf_buffer)
+            pose_stamped = tf2_geometry_msgs.PoseStamped()
+            pose_stamped.pose = input_pose
+            pose_stamped.header.frame_id = from_frame
+            pose_stamped.header.stamp = rospy.Time.now()
+            try:
+                # ** It is important to wait for the listener to start listening. Hence the rospy.Duration(1)
+                output_pose_stamped = tf_buffer.transform(
+                    pose_stamped, to_frame, rospy.Duration(1))
+                return output_pose_stamped.pose
+            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+                raise
+
+        def pick_service(goal_pose, side="front"):
+            rospy.wait_for_service('pick_service_select_side')
+            try:
+                pick = rospy.ServiceProxy(
+                    'pick_service_select_side', PickWithSide)
+                res = pick(goal_pose, side)
+                return res.success_grasp
+            except rospy.ServiceException as e:
+                print("Service call failed: %s" % e)
+                return 'continue_ABORTED'
+
+        transformed_pose = transform_pose(
+            recieved_pose, "camera_link", "base_link")
+        rospy.loginfo(transformed_pose.position.x)
+        transformed_pose.orientation.x = 0
+        transformed_pose.orientation.y = 0
+        transformed_pose.orientation.z = 0
+        transformed_pose.orientation.w = 1
+
+        self.success = pick_service(transformed_pose, 'front')
+
         if self.success == True:
             return 'continue_SUCCEEDED'
         else:
@@ -346,12 +350,14 @@ def main():
     sm.userdata.object_pose = Pose()
     with sm:
         smach.StateMachine.add('GetObjectName', GetObjectName(),
-                               transitions={'continue_GetObjectPose': 'GetObjectPose'},
-                               remapping = {'objectname_output': 'string_name'})
+                               transitions={
+                                   'continue_GetObjectPose': 'GetObjectPose'},
+                               remapping={'objectname_output': 'string_name'})
         smach.StateMachine.add('GetObjectPose', GetObjectPose(),
-                               transitions={'continue_Pick': 'Pick','continue_ABORTED':'ABORTED'},
+                               transitions={'continue_Pick': 'Pick',
+                                            'continue_ABORTED': 'ABORTED'},
                                remapping={'objectname_input': 'string_name',
-                                          'objectpose_output' : 'object_pose',
+                                          'objectpose_output': 'object_pose',
                                           'objectpose_output': 'object_pose'})
         smach.StateMachine.add('Pick', Pick(),
                                transitions={'continue_SUCCEEDED': 'SUCCEEDED',
@@ -359,6 +365,6 @@ def main():
                                remapping={'objectpose_input': 'object_pose'})
     outcome = sm.execute()
 
-    
+
 if __name__ == "__main__":
     main()
