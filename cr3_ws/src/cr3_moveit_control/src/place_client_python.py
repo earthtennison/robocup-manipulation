@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, Pose
 from cr3_moveit_control.srv import *
 import random
 
@@ -18,11 +18,11 @@ import math
 #
 ########################################
 
-def place_service(corner11, corner12, corner21, corner22, high):
+def place_service(corner11, corner12, corner21, corner22, high, current_collision_object_pos):
     rospy.wait_for_service('cr3_place')
     try:
         place = rospy.ServiceProxy('cr3_place', cr3_place)
-        res = place(corner11, corner12, corner21, corner22, high)
+        res = place(corner11, corner12, corner21, corner22, high, current_collision_object_pos)
         return res.success_place
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
@@ -56,21 +56,6 @@ def to_rad(deg):
 if __name__ == "__main__":
     while not rospy.is_shutdown():
         raw_input("Press enter")
-        # x = input("X ")
-        # y = input("y ")
-        # z = input("z ")
-        # -M_PI / 2, -M_PI / 4, +M_PI / 2
-        # row = -1*math.pi/2
-        # pitch = -1*math.pi/4
-        # yaw = math.pi/2
-
-        # geometry_msgs/Point corner11
-        # geometry_msgs/Point corner12
-        # geometry_msgs/Point corner21
-        # geometry_msgs/Point corner22
-        # geometry_msgs/Point high
-        # ---
-        # bool success_place
 
         point_goal11 = Point()
         point_goal12 = Point()
@@ -79,8 +64,6 @@ if __name__ == "__main__":
 
         point_goal11.x = -0.99
         point_goal12.x = -0.99
-        # point_goal21.x = -0.61
-        # point_goal22.x = -0.61
         point_goal21.x = -0.35
         point_goal22.x = -0.35
 
@@ -92,6 +75,22 @@ if __name__ == "__main__":
         # high = abs(table - base_link)
         high = Point()
         high.z = 0.15
+
+
+        c1 = Pose()
+        c2 = Pose()
+        c3 = Pose()
+
+        c1.position.x = -0.45
+        c1.position.y = -0.30
+
+        c2.position.x = -0.45
+        c2.position.y = -0.15
+
+        c3.position.x = -0.45
+        c3.position.y = 0.00
+        
+        collision_object_pos = [c1, c2, c3]
 
         ########################################
         #
@@ -120,6 +119,6 @@ if __name__ == "__main__":
         #
         ########################################
 
-        rospy.loginfo(point_goal11, point_goal12, point_goal21, point_goal22, high)
-        success = place_service(point_goal11, point_goal12, point_goal21, point_goal22, high)
+        rospy.loginfo(point_goal11, point_goal12, point_goal21, point_goal22, high, collision_object_pos)
+        success = place_service(point_goal11, point_goal12, point_goal21, point_goal22, high, collision_object_pos)
         print(success)
