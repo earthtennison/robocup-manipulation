@@ -6,7 +6,7 @@ from custom_socket import CustomSocket
 import json
 image = cv2.imread("zidane.jpg")
 print(image.shape)
-host = "192.168.8.2"
+host = "192.168.8.99"
 port = 10001
 c = CustomSocket(host,port)
 c.clientConnect()

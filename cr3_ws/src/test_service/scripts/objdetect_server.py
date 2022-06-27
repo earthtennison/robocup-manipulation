@@ -7,17 +7,13 @@ import time
 from geometry_msgs.msg import Pose
 
 #realsense
-from sensor_msgs.msg import PointCloud2,Image, CameraInfo
+from sensor_msgs.msg import Image, CameraInfo
 import pyrealsense2 as rs2
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
 
 #rviz msg
 from visualization_msgs.msg import Marker
-
-#darknet msg
-from darknet_ros_msgs.msg import BoundingBox
-from gb_visual_detection_3d_msgs.srv import *
 
 # computer vision
 import socket
@@ -29,6 +25,72 @@ import tf2_msgs
 import tf
 from geometry_msgs.msg import TransformStamped
 
+# transform to from cameralink to base link
+import tf2_ros
+import tf2_geometry_msgs
+
+def transform_pose(input_pose, from_frame, to_frame):
+
+        # **Assuming /tf2 topic is being broadcasted
+        tf_buffer = tf2_ros.Buffer()
+        listener = tf2_ros.TransformListener(tf_buffer)
+
+        pose_stamped = tf2_geometry_msgs.PoseStamped()
+        pose_stamped.pose = input_pose
+        pose_stamped.header.frame_id = from_frame
+        # pose_stamped.header.stamp = rospy.Time.now()
+
+        try:
+            # ** It is important to wait for the listener to start listening. Hence the rospy.Duration(1)
+            output_pose_stamped = tf_buffer.transform(
+                pose_stamped, to_frame, rospy.Duration(1))
+            return output_pose_stamped.pose
+
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+            raise
+
+def maarker(marker_publisher,pose_bbx,size):
+        marker = Marker()
+        marker.header.frame_id = "camera_link"
+        marker.header.stamp = rospy.Time.now()
+        marker.id = 1
+        marker.type = marker.CUBE
+        marker.action = marker.ADD
+        marker.pose.position.x = pose_bbx.position.x
+        marker.pose.position.y = pose_bbx.position.y
+        marker.pose.position.z = pose_bbx.position.z
+        marker.pose.orientation.x = pose_bbx.orientation.x
+        marker.pose.orientation.y = pose_bbx.orientation.y
+        marker.pose.orientation.z = pose_bbx.orientation.z
+        marker.pose.orientation.w = pose_bbx.orientation.w
+        marker.scale.x = 0.001
+        marker.scale.y = size[0]
+        marker.scale.z = size[1]
+        marker.color.a = 0.4
+        marker.color.r = 0.0
+        marker.color.g = 255.0
+        marker.color.b = 0.0
+        marker.lifetime = rospy.Duration(60.0)
+        marker_publisher.publish(marker)
+
+
+def corner2bbx(corner11, corner12, corner21, corner22):
+
+    # corner11-------------corner21                                   Z
+    # |                           |                                   |
+    # |                           |                                   |
+    # |                           |                               X   |
+    # |                           |                                \  |
+    # |                           |                                 \ |
+    # |                           |                                  \|
+    # corner12-------------corner22                 Y------------corner
+    #y:=length z:=hight x:=depth
+
+    length = abs(corner21.position.y - corner11.position.y)
+    hight = abs(corner11.position.z - corner12.position.z)
+    depth = abs(corner22.position.x)
+
+    return (length,hight,depth)
 
 class GetObjectPose():
     def __init__(self, object_name):
@@ -37,7 +99,7 @@ class GetObjectPose():
         # connect to server
         # host = socket.gethostname()
         # connect to acer nitro 5
-        host = "192.168.8.2"
+        host = "192.168.8.99"
         port = 10001
         self.c = CustomSocket(host, port)
         self.c.clientConnect()
@@ -52,8 +114,20 @@ class GetObjectPose():
         self.frame = None
         self.is_done = False
         self.object_pose = Pose()
+        self.corner11_pose = Pose()
+        self.corner12_pose = Pose()
+        self.corner21_pose = Pose()
+        self.corner22_pose = Pose()
 
         self.tf_stamp = None
+        self.tf_stamp11 = None
+        self.tf_stamp12 = None
+        self.tf_stamp21 = None
+        self.tf_stamp22 = None
+
+        self.BBXX = None
+        self.pickside = None
+
         self.is_trigger = False
 
         self.time_now = rospy.Time.now()
@@ -68,10 +142,14 @@ class GetObjectPose():
             "/blob/image_blob", Image, queue_size=1)
         self.pub_tf = rospy.Publisher(
             "/tf", tf2_msgs.msg.TFMessage, queue_size=1)
+
         self.image_sub = rospy.Subscriber(
             "/camera/color/image_raw", Image, self.yolo_callback, queue_size=1, buff_size=52428800)
         self.depth_sub = rospy.Subscriber(
             "/camera/aligned_depth_to_color/image_raw", Image, self.depth_callback, queue_size=1, buff_size=52428800)
+
+        # Visualize in rviz
+        self.marker_publisher = rospy.Publisher("z/markerplane",Marker,queue_size=1)
 
     def run_once(self):
         while self.intrinsics is None:
@@ -98,7 +176,7 @@ class GetObjectPose():
         self.depth_sub.unregister()
         self.is_trigger = False
         self.is_done = False
-        return self.object_pose
+        return (self.object_pose, self.corner11_pose, self.corner12_pose, self.corner21_pose, self.corner22_pose)
 
     def check_image_size(self, frame):
         # using realsense default
@@ -143,28 +221,84 @@ class GetObjectPose():
                 if self.tf_stamp is not None:
                     # rospy.loginfo("publishing tf")
                     self.tf_stamp.header.stamp = rospy.Time.now()
+
+                    self.tf_stamp11.header.stamp = rospy.Time.now()
+                    self.tf_stamp12.header.stamp = rospy.Time.now()
+                    self.tf_stamp21.header.stamp = rospy.Time.now()
+                    self.tf_stamp22.header.stamp = rospy.Time.now()
+                    
                     self.pub_tf.publish(
                         tf2_msgs.msg.TFMessage([self.tf_stamp]))
+                    self.pub_tf.publish(
+                        tf2_msgs.msg.TFMessage([self.tf_stamp11]))
+                    self.pub_tf.publish(
+                        tf2_msgs.msg.TFMessage([self.tf_stamp12]))
+                    self.pub_tf.publish(
+                        tf2_msgs.msg.TFMessage([self.tf_stamp21]))
+                    self.pub_tf.publish(
+                        tf2_msgs.msg.TFMessage([self.tf_stamp22]))
                 return
+
             elif not ((self.x_pixel is None) or (self.y_pixel is None)):
                 depth_image = self.bridge.imgmsg_to_cv2(frame, frame.encoding)
                 depth_image = self.check_image_size(depth_image)
                 # pick one pixel among all the pixels with the closest range:
                 pix = (self.x_pixel, self.y_pixel)
+                corne11 = (self.BBXX[0],self.BBXX[1])
+                corne12 = (self.BBXX[0],self.BBXX[3])
+                corne21 = (self.BBXX[2],self.BBXX[1])
+                corne22 = (self.BBXX[2],self.BBXX[3])
                 # line = '\rDepth at pixel(%3d, %3d): %7.1f(mm).' % (pix[0], pix[1], cv_image[pix[1], pix[0]])
                 if self.intrinsics:
                     depth = depth_image[pix[1], pix[0]]
+                    # depth_corne11 = depth_image[corne11[1], corne11[0]]
+                    # depth_corne12 = depth_image[corne12[1], corne12[0]]
+                    # depth_corne21 = depth_image[corne21[1], corne21[0]]
+                    # depth_corne22 = depth_image[corne22[1], corne22[0]]
+
                     result = [0, 0, 0]
+
+                    result_corner11 = [0, 0, 0]
+                    result_corner12 = [0, 0, 0]
+                    result_corner21 = [0, 0, 0]
+                    result_corner22 = [0, 0, 0]
+
                     result = rs2.rs2_deproject_pixel_to_point(
                         self.intrinsics, [pix[0], pix[1]], depth)
+
+                    result_corner11 = rs2.rs2_deproject_pixel_to_point(
+                        self.intrinsics, [corne11[0], corne11[1]], depth)
+                    result_corner12 = rs2.rs2_deproject_pixel_to_point(
+                        self.intrinsics, [corne12[0], corne12[1]], depth)
+                    result_corner21 = rs2.rs2_deproject_pixel_to_point(
+                        self.intrinsics, [corne21[0], corne21[1]], depth)
+                    result_corner22 = rs2.rs2_deproject_pixel_to_point(
+                        self.intrinsics, [corne22[0], corne22[1]], depth)
+
+
+                    x_corne11, y_corne11, z_corne11 = result_corner11[0] /1000, result_corner11[1]/1000, result_corner11[2]/1000
+
+                    x_corne12, y_corne12, z_corne12 = result_corner12[0] /1000, result_corner12[1]/1000, result_corner12[2]/1000
+
+                    x_corne21, y_corne21, z_corne21 = result_corner21[0] /1000, result_corner21[1]/1000, result_corner21[2]/1000
+
+                    x_corne22, y_corne22, z_corne22 = result_corner22[0] /1000, result_corner22[1]/1000, result_corner22[2]/1000
+
+
                     x_coord, y_coord, z_coord = result[0] / \
                         1000, result[1]/1000, result[2]/1000
+
+
+                    
                     # line += '  Coordinate: %8.2f %8.2f %8.2f.' % (result[0], result[1], result[2])
                     if z_coord >= 0.5:
 
                         # line += '\r'
                         # print(line)
                         rospy.sleep(0.1)
+
+                        quat = tf.transformations.quaternion_from_euler(
+                            float(0), float(0), float(0))
 
                         self.tf_stamp = TransformStamped()
                         self.tf_stamp.header.frame_id = "/camera_link"
@@ -173,9 +307,6 @@ class GetObjectPose():
                         self.tf_stamp.transform.translation.x = z_coord
                         self.tf_stamp.transform.translation.y = -x_coord
                         self.tf_stamp.transform.translation.z = -y_coord
-
-                        quat = tf.transformations.quaternion_from_euler(
-                            float(0), float(0), float(0))
 
                         self.tf_stamp.transform.rotation.x = quat[0]
                         self.tf_stamp.transform.rotation.y = quat[1]
@@ -191,6 +322,118 @@ class GetObjectPose():
                         self.object_pose.orientation.z = 0
                         self.object_pose.orientation.w = 1
 
+                        #////////////////corner11///////////////////
+
+                        self.tf_stamp11 = TransformStamped()
+                        self.tf_stamp11.header.frame_id = "/camera_link"
+                        self.tf_stamp11.header.stamp = rospy.Time.now()
+                        self.tf_stamp11.child_frame_id = "/corner11_frame"
+                        self.tf_stamp11.transform.translation.x = z_corne11
+                        self.tf_stamp11.transform.translation.y = -x_corne11
+                        self.tf_stamp11.transform.translation.z = -y_corne11
+
+                        self.tf_stamp11.transform.rotation.x = quat[0]
+                        self.tf_stamp11.transform.rotation.y = quat[1]
+                        self.tf_stamp11.transform.rotation.z = quat[2]
+                        self.tf_stamp11.transform.rotation.w = quat[3]
+
+                        # set object pose
+                        self.corner11_pose.position.x = z_corne11
+                        self.corner11_pose.position.y = -x_corne11
+                        self.corner11_pose.position.z = -y_corne11
+                        self.corner11_pose.orientation.x = 0
+                        self.corner11_pose.orientation.y = 0
+                        self.corner11_pose.orientation.z = 0
+                        self.corner11_pose.orientation.w = 1
+
+                        #////////////////corner12///////////////////
+
+                        self.tf_stamp12 = TransformStamped()
+                        self.tf_stamp12.header.frame_id = "/camera_link"
+                        self.tf_stamp12.header.stamp = rospy.Time.now()
+                        self.tf_stamp12.child_frame_id = "/corner12_frame"
+                        self.tf_stamp12.transform.translation.x = z_corne12
+                        self.tf_stamp12.transform.translation.y = -x_corne12
+                        self.tf_stamp12.transform.translation.z = -y_corne12
+
+                        self.tf_stamp12.transform.rotation.x = quat[0]
+                        self.tf_stamp12.transform.rotation.y = quat[1]
+                        self.tf_stamp12.transform.rotation.z = quat[2]
+                        self.tf_stamp12.transform.rotation.w = quat[3]
+
+                        # set object pose
+                        self.corner12_pose.position.x = z_corne12
+                        self.corner12_pose.position.y = -x_corne12
+                        self.corner12_pose.position.z = -y_corne12
+                        self.corner12_pose.orientation.x = 0
+                        self.corner12_pose.orientation.y = 0
+                        self.corner12_pose.orientation.z = 0
+                        self.corner12_pose.orientation.w = 1
+
+                        #////////////////corner21///////////////////
+
+                        self.tf_stamp21 = TransformStamped()
+                        self.tf_stamp21.header.frame_id = "/camera_link"
+                        self.tf_stamp21.header.stamp = rospy.Time.now()
+                        self.tf_stamp21.child_frame_id = "/corner21_frame"
+                        self.tf_stamp21.transform.translation.x = z_corne21
+                        self.tf_stamp21.transform.translation.y = -x_corne21
+                        self.tf_stamp21.transform.translation.z = -y_corne21
+
+                        self.tf_stamp21.transform.rotation.x = quat[0]
+                        self.tf_stamp21.transform.rotation.y = quat[1]
+                        self.tf_stamp21.transform.rotation.z = quat[2]
+                        self.tf_stamp21.transform.rotation.w = quat[3]
+
+                        # set object pose
+                        self.corner21_pose.position.x = z_corne21
+                        self.corner21_pose.position.y = -x_corne21
+                        self.corner21_pose.position.z = -y_corne21
+                        self.corner21_pose.orientation.x = 0
+                        self.corner21_pose.orientation.y = 0
+                        self.corner21_pose.orientation.z = 0
+                        self.corner21_pose.orientation.w = 1
+
+                        #////////////////corner22///////////////////
+
+                        self.tf_stamp22 = TransformStamped()
+                        self.tf_stamp22.header.frame_id = "/camera_link"
+                        self.tf_stamp22.header.stamp = rospy.Time.now()
+                        self.tf_stamp22.child_frame_id = "/corner22_frame"
+                        self.tf_stamp22.transform.translation.x = z_corne22
+                        self.tf_stamp22.transform.translation.y = -x_corne22
+                        self.tf_stamp22.transform.translation.z = -y_corne22
+
+                        self.tf_stamp22.transform.rotation.x = quat[0]
+                        self.tf_stamp22.transform.rotation.y = quat[1]
+                        self.tf_stamp22.transform.rotation.z = quat[2]
+                        self.tf_stamp22.transform.rotation.w = quat[3]
+
+                        # set object pose
+                        self.corner22_pose.position.x = z_corne22
+                        self.corner22_pose.position.y = -x_corne22
+                        self.corner22_pose.position.z = -y_corne22
+                        self.corner22_pose.orientation.x = 0
+                        self.corner22_pose.orientation.y = 0
+                        self.corner22_pose.orientation.z = 0
+                        self.corner22_pose.orientation.w = 1
+
+                        #make BBX
+                        self.BBX_size = corner2bbx(self.corner11_pose,self.corner12_pose,self.corner21_pose,self.corner22_pose)
+                        maarker(self.marker_publisher,self.object_pose,self.BBX_size)
+
+                        factor = self.BBX_size[0]/self.BBX_size[1]
+                        print(factor)
+                        print(self.BBX_size[0])
+                        print(self.BBX_size[1])
+                        if factor >= 0.6:
+                            self.pickside = "parallel"
+                            print(self.pickside)
+                        else:
+                            self.pickside = "perpendicular"
+                            print(self.pickside)
+
+
                         self.is_done = True
 
         except CvBridgeError as e:
@@ -199,6 +442,7 @@ class GetObjectPose():
         except ValueError as e:
             return
         pass
+
 
     def yolo_callback(self, data):
         if not self.is_trigger:
@@ -238,132 +482,43 @@ class GetObjectPose():
 
                     self.frame = cv2.rectangle(
                         self.frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
-                    self.BBX = (bbox[0], bbox[1],bbox[2], bbox[3])
+                    
+                    bbox[0] = max(min(bbox[0], 1279), 0)
+                    bbox[1] = max(min(bbox[1], 719), 0)
+                    bbox[2] = max(min(bbox[2], 1279), 0)
+                    bbox[3] = max(min(bbox[3], 719), 0)
+                    self.BBXX = (bbox[0], bbox[1], bbox[2], bbox[3])
+
+
+                    print(self.BBXX)
 
             # self.frame, x, y, w, h = simple_detect_bbox(self.frame, "blue")
             # self.x_pixel = x
-            # self.y_pixel = y
-
-class obj_server:
-    def __init__(self):
-        self.srv = rospy.ServiceProxy('/GGEZ/dn3d_service',Detect3d)
-        self.msg = rospy.Subscriber('/camera/depth_registered/points',PointCloud2,self.pointCB)
-        self.test = rospy.Publisher("/anytest",PointCloud2,queue_size= 1)
-        self.maker = rospy.Publisher("/markeranytest",Marker,queue_size= 1)
-        
-        
-
-    def pointCB(self,pcl):
-        new_pcl = sensor_msgs.msg.PointCloud2()
-        
-        raw_input("press enter")
-
-        rospy.loginfo("cv")
-        obj = GetObjectPose("Waterbottle")
-        obj.run_once()
-        self.BBX = obj.BBX
-        obj.reset()
-
-
-        print("Sending Service")
-        new_pcl = pcl
-        new_pcl.header.stamp = pcl.header.stamp
-        new_pcl.header.frame_id = "/object_frame"
-
-        self.test.publish(new_pcl)
-
-
-        xmin = self.BBX[0]
-        ymin = self.BBX[1]
-        xmax = self.BBX[2]
-        ymax = self.BBX[3]
-
-
-
-        # xmin = 480
-        # ymin = 300
-        # xmax = 580
-        # ymax = 368
-
-        a = BoundingBox(0.9,xmin,ymin,xmax,ymax,39,'bottle')
-        res = self.srv(point_cloud= new_pcl,bounding_box= a)
-        # while(True):
-        #     a = BoundingBox(0.9,xmin,ymin,xmax,ymax,39,'laptop')
-        #     res = self.srv(point_cloud= new_pcl,bounding_box= a)
-        #     if res.success == False:
-        #         xmax +=1 
-        #     else:
-        #         break
-
-        
-        BBX = self.obj2pose(res.bounding_box_3d)
-        print(BBX[0])
-        print(BBX[1])
-        self.maarker(BBX[0],BBX[1])
-            
-
-    def obj2pose(self,bbx):
-        pose_bbx = Pose()
-        xmax = bbx.xmax
-        xmin = bbx.xmin
-        ymax = bbx.ymax
-        ymin = bbx.ymin
-        zmax = bbx.zmax
-        zmin = bbx.zmin
-
-        x = (xmax + xmin)/2
-        y = (ymax + ymin)/2
-        z = (zmax + zmin)/2
-        l = xmax - xmin
-        h = ymax - ymin
-        d = zmax - zmin
-
-        pose_bbx.position.x = x
-        pose_bbx.position.y = y
-        pose_bbx.position.z = z
-        pose_bbx.orientation.x = 0.0
-        pose_bbx.orientation.y = 0.0
-        pose_bbx.orientation.z = 0.0
-        pose_bbx.orientation.w = 1.0
-
-        size = (l,h,d)
-
-        return(pose_bbx,size)
-    
-    def maarker(self,pose_bbx,size):
-
-        marker = Marker()
-        marker.header.frame_id = "object_frame"
-        marker.header.stamp = rospy.Time.now()
-        marker.ns = "obj_server"
-        marker.id = 1
-        marker.type = marker.CUBE
-        marker.action = marker.ADD
-
-        marker.pose.position.x = pose_bbx.position.x
-        marker.pose.position.y = pose_bbx.position.y
-        marker.pose.position.z = pose_bbx.position.z
-        marker.pose.orientation.x = pose_bbx.orientation.x
-        marker.pose.orientation.y = pose_bbx.orientation.y
-        marker.pose.orientation.z = pose_bbx.orientation.z
-        marker.pose.orientation.w = pose_bbx.orientation.w
-
-        marker.scale.x = size[0]
-        marker.scale.y = size[1]
-        marker.scale.z = size[2]
-
-        marker.color.a = 0.4
-        marker.color.r = 0.0
-        marker.color.g = 255.0
-        marker.color.b = 0.0
-
-        marker.lifetime = rospy.Duration(60.0)
-        self.maker.publish(marker)
-        
+            # self.y_pixel = y      
         
 
 if __name__ == "__main__":
     rospy.init_node('objdetect')
-    o = obj_server()
-    print("Start object detection")
-    rospy.spin()
+
+    detector = GetObjectPose("Cereal")
+    detector.run_once()
+    while not rospy.is_shutdown():
+        command = raw_input("Press Enter: ")
+        if command == "q":
+            break
+
+        print("running 3d detection")
+        detector.reset()
+        (object_pose, corner11_pose, corner12_pose, corner21_pose, corner22_pose) = detector.detect()
+
+        ##################
+        # transform
+        # print(object_pose)
+        rospy.loginfo(object_pose)
+        # rospy.loginfo(corner11_pose)
+        # rospy.loginfo(corner12_pose)
+        # rospy.loginfo(corner21_pose)
+        # rospy.loginfo(corner22_pose)
+
+        # print("before {}".format(object_pose))
+        # object_pose = transform_pose(object_pose, "camera_link", "base_link")
