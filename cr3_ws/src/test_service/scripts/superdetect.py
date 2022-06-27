@@ -29,5 +29,11 @@ from geometry_msgs.msg import TransformStamped
 import tf2_ros
 import tf2_geometry_msgs
 
+class Visualizing_tools():
+    pass
+
 class GetObjectProperties():
+    pass
+
+class GetObjectPose():
     pass
