@@ -116,7 +116,6 @@ def main():
     outcome = sm_top.execute()
 
     # Wait for ctrl-c to stop the application
-    outcome = sm_top.execute()
     rospy.spin()
     sis.stop()
 
