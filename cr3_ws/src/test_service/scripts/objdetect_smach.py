@@ -8,7 +8,7 @@ import roslib
 import rospy
 import smach
 import smach_ros
-from geometry_msgs.msg import Pose,Point
+from geometry_msgs.msg import Pose, Point, Vector3
 from tf.transformations import quaternion_from_euler
 import math
 import time
@@ -237,36 +237,126 @@ class GetObjectProperties():
         
         # initiate variables
         self.bbx_pixel_list = [] # [(xm1, ym1, xM1, yM1, class), (xm2, ym2, xM2, yM2, class), ...] in pixels
+
+        self.bbxc_point_list = []
         self.intrinsics = None
         self.depth_image = None
-
     
     def execute(self, userdata):
         rospy.loginfo('Executing state GetObjectProperties')
 
-        def GetPose():
-            pass
+        def GetPose(bbxc_point_list):
+            # bbxc_point_list = [((center00, corner11, corner12, corner21, corner22), objname),...] as tuple of point, str
+            
+            objpose_list = []
+            for bbxc in bbxc_point_list:
+                center00 = bbxc[0][0]
 
-        def GetSize():
-            pass
+                center_pose = Pose()
+                center_pose.position.x = center00.x
+                center_pose.position.y = center00.y
+                center_pose.position.z = center00.z
 
+                center_pose.orientation.w = 1
+                center_pose.orientation.x = 0
+                center_pose.orientation.y = 0
+                center_pose.orientation.z = 0
+
+                objpose_list.append(center_pose)
+
+            return objpose_list
+
+        def GetSize(bbxc_point_list):
+            # bbxc_point_list = [((center00, corner11, corner12, corner21, corner22), objname),...] as tuple of point, str
+            # corner11-------corner21      y:= length z:= hight x:= depth
+            # |                     |
+            # |                     |                Save in size as Vector3:         
+            # |                     |       z           size.x = depth     
+            # |                     |       |           size.y = length
+            # corner12-------corner22   y--*x(in)       size.z = hight
+
+            objsize_list = []
+            for bbxc in bbxc_point_list:
+                corner11 = bbxc[0][1]
+                corner12 = bbxc[0][2]
+                corner21 = bbxc[0][3]
+                corner22 = bbxc[0][4]
+
+                bbx_size = Vector3()
+                bbx_size.x = corner22.x
+                bbx_size.y = abs(corner21.y - corner11.y)
+                bbx_size.z = abs(corner11.z - corner12.z)
+
+                objsize_list.append(bbx_size)
+
+            return objsize_list
+
+            
         def GetStance():
             pass
 
         
         for bbx in self.bbx_pixel_list:
+            # init each pixel of bouding box
+            # (xmin,ymin)----------.        corner11-------corner21
+            # |                    |        |                     |
+            # |                    |        |                     |
+            # |                    |        |                     |
+            # |                    |        |                     |
+            # '----------(xmax,ymax)        corner12-------corner22
             objname = bbx[4]
-            x_pixel = int(bbx[0] + (bbx[2]-bbx[0])/2)
-            y_pixel = int(bbx[1] + (bbx[3]-bbx[1])/2)
-            center_pixel = (x_pixel,y_pixel)
-            rospy.loginfo("found {}".format(center_pixel))
-            depth = self.depth_image[center_pixel[1], center_pixel[0]] # [y, x] for numpy array
-            result = rs2.rs2_deproject_pixel_to_point(self.intrinsics, [center_pixel[0], center_pixel[1]], depth) # [x, y] for realsense lib
-            center = Point()
-            center.x = result[0]/1000
-            center.y = result[1]/1000
-            center.z = result[2]/1000
+            xmin_pixel = int(bbx[0])
+            ymin_pixel = int(bbx[1])
+            xmax_pixel = int(bbx[2])
+            ymax_pixel = int(bbx[3])
+            xcen_pixel = int(bbx[0] + (bbx[2]-bbx[0])/2)
+            ycen_pixel = int(bbx[1] + (bbx[3]-bbx[1])/2)
 
+            rospy.loginfo("found {}".format(xcen_pixel,ycen_pixel))
+            depth = self.depth_image[ycen_pixel,  xcen_pixel] # [y, x] for numpy array
+
+            # [x, y] for realsense lib
+            center00_result = rs2.rs2_deproject_pixel_to_point(self.intrinsics, [xcen_pixel, ycen_pixel], depth)
+            corner11_result = rs2.rs2_deproject_pixel_to_point(self.intrinsics, [xmin_pixel, ymin_pixel], depth)
+            corner12_result = rs2.rs2_deproject_pixel_to_point(self.intrinsics, [xmin_pixel, ymax_pixel], depth)
+            corner21_result = rs2.rs2_deproject_pixel_to_point(self.intrinsics, [xmax_pixel, ymin_pixel], depth)
+            corner22_result = rs2.rs2_deproject_pixel_to_point(self.intrinsics, [xmax_pixel, ymax_pixel], depth)
+
+            all_result = (center00_result, corner11_result, corner12_result, corner21_result, corner22_result)
+
+            # depth of camera to plane
+            z = center00_result[2]/1000
+
+            # set list of point
+            checkpoint = []
+
+            # set pose that related with coordinate as: 
+            #  x =  z_coord
+            #  y = -x_coord
+            #  z = -y_coord
+            # 
+            # +Z           
+            # |         +y   realsense frame
+            # |         | +z   o object
+            # |         |/
+            # |  +X     o---> +x
+            # | / 
+            # 0/-----------------> -Y camera_link frame tf
+
+            for result in all_result:
+                x = result[0]/1000
+                y = result[1]/1000
+
+                point = Point()
+                point.x =  z
+                point.y = -x
+                point.z = -y
+
+                checkpoint.append(point)
+            tuple(checkpoint)
+
+            self.bbxc_point_list.append((checkpoint,objname))
+        
 def main():
     rospy.init_node('smach_pick_state_machine')
     sm = smach.StateMachine(outcomes=['SUCCEEDED', 'ABORTED'])

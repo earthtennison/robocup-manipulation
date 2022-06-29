@@ -57,7 +57,7 @@ class GetObjectPose(smach.State):
     def __init__(self):
         rospy.loginfo('Initiating state GetObjectPose')
         smach.State.__init__(self, outcomes=['continue_Pick', 'continue_ABORTED'], input_keys=[
-                             'objectname_input', 'objectpose_output'], output_keys=['objectpose_output'])
+                             'objectname_input'], output_keys=['objectpose_output'])
         # initiate variables
         # self.object_name = ""
         self.center_pixel_list = [] # [(x1, y1, id), (x2, y2, id), ...] in pixels
