@@ -4,6 +4,12 @@ import rospy
 import smach
 import smach_ros
 
+# for furniture marker
+import yaml
+from visualization_msgs.msg import Marker , MarkerArray
+from geometry_msgs.msg import Point
+
+
 class Stand_by(smach.State):
     def __init__(self):
         rospy.loginfo('initiating stand by state')

@@ -6,9 +6,12 @@ from visualization_msgs.msg import Marker , MarkerArray
 from geometry_msgs.msg import Point
 
 yaml_data = None 
-with open("/home/tanas/robocup-manipulation/cr3_ws/src/cr3_moveit_control/config/fur_data.yaml", "r") as f:
+with open("/home/kann121nemesis/robocup-manipulation/cr3_ws/src/cr3_moveit_control/config/fur_data.yaml", "r") as f:
     try:
         yaml_data = yaml.safe_load(f)
+        print(yaml_data[0]['robo_pose']['position']['x'])
+        print(yaml_data[0]['robo_pose']['position']['y'])
+        print(yaml_data[0]['robo_pose']['position']['z'])
     except yaml.YAMLError as exc:
         print(exc)
 
