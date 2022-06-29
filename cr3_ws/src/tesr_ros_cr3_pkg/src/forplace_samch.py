@@ -59,7 +59,7 @@ class GetObjectPose(smach.State):
         smach.State.__init__(self, outcomes=['continue_Pick', 'continue_ABORTED'], input_keys=[
                              'objectname_input', 'objectpose_output'], output_keys=['objectpose_output'])
         # initiate variables
-        self.object_name = ""
+        # self.object_name = ""
         self.center_pixel_list = [] # [(x1, y1, id), (x2, y2, id), ...] in pixels
         self.object_pose_list = [] # [(x1, y1, z1, id), (x1, y1, z1, id), ...] im meters
         self.intrinsics = None
@@ -264,8 +264,8 @@ class GetObjectPose(smach.State):
             "/tf", tf2_msgs.msg.TFMessage, queue_size=1)
 
         # recieving object name from GetObjectName state
-        self.object_name = userdata.objectname_input
-        rospy.loginfo(self.object_name)
+        # self.object_name = userdata.objectname_input
+        # rospy.loginfo(self.object_name)
 
         # run_once function
         run_once()
