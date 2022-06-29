@@ -89,7 +89,7 @@ void move(geometry_msgs::Pose &POSITION, std::vector<geometry_msgs::Pose> curren
     {
       printf("%f\n\n\n", distance);
       move_group_interface.setPoseTarget(target_pose1);
-      success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+      success= (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
     }
   }
 
