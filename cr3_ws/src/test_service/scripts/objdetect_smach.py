@@ -233,21 +233,32 @@ class GetObjectProperties():
         rospy.loginfo('Initiating state GetObjectProperties')
         smach.State.__init__(self, outcomes=['continue_Place', 'continue_ABORTED'], input_keys=[
                              'ListBBX_input'], output_keys=['ObjectProperties_output'])
-        # subscribe topic
-        
-        # initiate variables
-        self.bbx_pixel_list = [] # [(xm1, ym1, xM1, yM1, class), (xm2, ym2, xM2, yM2, class), ...] in pixels
 
-        self.bbxc_point_list = []
+        # initiate variables from GetObjectBBX()
+        self.bbx_pixel_list = [] # [(xm1, ym1, xM1, yM1, class), (xm2, ym2, xM2, yM2, class), ...] in pixels
         self.intrinsics = None
         self.depth_image = None
+
+        # init all object properties
+        self.bbxc_point_list = []
+
+        self.ObjPoseList = []
+        self.ObjSizeList = []
+        self.ObjStanList = []
     
     def execute(self, userdata):
         rospy.loginfo('Executing state GetObjectProperties')
 
         def GetPose(bbxc_point_list):
             # bbxc_point_list = [((center00, corner11, corner12, corner21, corner22), objname),...] as tuple of point, str
-            
+            # get pose from center of bounding box and using direction as diagram below:
+            #              Z
+            #         X    |
+            #          \   |
+            #           \  |
+            #            \ |
+            #  Y-----------o
+
             objpose_list = []
             for bbxc in bbxc_point_list:
                 center00 = bbxc[0][0]
@@ -271,9 +282,9 @@ class GetObjectProperties():
             # corner11-------corner21      y:= length z:= hight x:= depth
             # |                     |
             # |                     |                Save in size as Vector3:         
-            # |                     |       z           size.x = depth     
-            # |                     |       |           size.y = length
-            # corner12-------corner22   y--*x(in)       size.z = hight
+            # |                     |       z           size.x = depth (from camara to center of object surface)    
+            # |                     |       |           size.y = length(of bounding box )
+            # corner12-------corner22   y--*x(in)       size.z = hight (of bounding box )
 
             objsize_list = []
             for bbxc in bbxc_point_list:
@@ -292,10 +303,32 @@ class GetObjectProperties():
             return objsize_list
 
             
-        def GetStance():
-            pass
+        def GetStan(objsize_list):
+            # objsize_list = [size1, size2, ...]
+            # using Rfactor to compare posture of object using length/hight
+            # if l/h >= Rfactor the object will have more probability to be parallel to camera
+            # else the object will have more probability to be perpendicular to camera
+            #
+            #       parallel                perpendicular 
+            #     ------------ obj        ||||||||||||||||| obj 
+            #     ============ cam        ================= cam
+            #
+            # this Rfactor = 0.6 is using for cerial box only, get from experimental
 
-        
+            Rfactor = 0.6
+
+            posture = ("parallel","perpendicular")
+
+            objstance_list = []
+            for objsize in objsize_list:
+                if objsize.y/objsize.z >= Rfactor:
+                    objstance_list.append(posture[0])
+                else:
+                    objstance_list.append(posture[1])
+            
+            return objstance_list
+                
+        # ----------------------------------------------start-----------------------------------------------------
         for bbx in self.bbx_pixel_list:
             # init each pixel of bouding box
             # (xmin,ymin)----------.        corner11-------corner21
@@ -356,6 +389,10 @@ class GetObjectProperties():
             tuple(checkpoint)
 
             self.bbxc_point_list.append((checkpoint,objname))
+        
+        self.ObjPoseList = GetPose(self.bbxc_point_list)
+        self.ObjSizeList = GetSize(self.bbxc_point_list)
+        self.ObjStanList = GetStan(self.ObjSizeList)
         
 def main():
     rospy.init_node('smach_pick_state_machine')
