@@ -17,6 +17,37 @@ from tf.transformations import quaternion_from_euler
 import math
 #
 ########################################
+class Place :
+
+    def __init__(self, corner_table11, corner_table12, corner_table21, corner_table22, high, current_collision_object_pos) :
+        self.corner_table11 = corner_table11
+        self.corner_table12 = corner_table12
+        self.corner_table21 = corner_table21
+        self.corner_table22 = corner_table22
+        self.high = high
+        self.current_collision_object_pos = current_collision_object_pos
+        rospy.loginfo(corner_table11)
+        rospy.loginfo(corner_table12)
+        rospy.loginfo(corner_table21)
+        rospy.loginfo(corner_table22)
+        rospy.loginfo(self.high)
+        rospy.loginfo(current_collision_object_pos)
+
+    def execute(self) :
+
+        def place_service() :
+            rospy.wait_for_service('cr3_place')
+            try:
+                place = rospy.ServiceProxy('cr3_place', cr3_place)
+                res = place(self.corner_table11, self.corner_table12, self.corner_table21, self.corner_table22, self.high, self.current_collision_object_pos)
+                return res.success_place
+            except rospy.ServiceException as e:
+                print("Service call failed: %s"%e)
+
+        rospy.loginfo(self.corner_table11, self.corner_table12, self.corner_table21, self.corner_table22, self.high, self.current_collision_object_pos)
+        success = place_service()
+        print(success)
+
 
 def place_service(corner11, corner12, corner21, corner22, high, current_collision_object_pos):
     rospy.wait_for_service('cr3_place')
@@ -119,6 +150,8 @@ if __name__ == "__main__":
         #
         ########################################
 
-        rospy.loginfo(point_goal11, point_goal12, point_goal21, point_goal22, high, collision_object_pos)
-        success = place_service(point_goal11, point_goal12, point_goal21, point_goal22, high, collision_object_pos)
-        print(success)
+        # rospy.loginfo(point_goal11, point_goal12, point_goal21, point_goal22, high, collision_object_pos)
+        # success = place_service(point_goal11, point_goal12, point_goal21, point_goal22, high, collision_object_pos)
+        # print(success)
+        test_smach_place = Place(point_goal11, point_goal12, point_goal21, point_goal22, high, collision_object_pos)
+        test_smach_place.execute()

@@ -39,6 +39,45 @@ class Place(smach.State):
         else:
             return 'continue_succeeded'
 
+
+
+# class Place :
+
+#     def __init__(self, corner_table11, corner_table12, corner_table21, corner_table22, high, current_collision_object_pos) :
+#         self.corner_table11 = corner_table11
+#         self.corner_table12 = corner_table12
+#         self.corner_table21 = corner_table21
+#         self.corner_table22 = corner_table22
+#         self.high = high
+#         self.current_collision_object_pos = current_collision_object_pos
+
+#         rospy.loginfo('initiating place state')
+#         smach.State.__init__(self, outcomes =['continue_aborted','continue_succeeded'])
+
+#     def execute(self) :
+
+#         def place_service() :
+#             rospy.wait_for_service('cr3_place')
+#             try:
+#                 place = rospy.ServiceProxy('cr3_place', cr3_place)
+#                 res = place(self.corner_table11, self.corner_table12, self.corner_table21, self.corner_table22, self.high, self.current_collision_object_pos)
+#                 return res.success_place
+#             except rospy.ServiceException as e:
+#                 print("Service call failed: %s"%e)
+
+#         rospy.loginfo(self.corner_table11, self.corner_table12, self.corner_table21, self.corner_table22, self.high, self.current_collision_object_pos)
+#         success = place_service()
+#         print(success)
+
+#         if success :
+#             return "continue_aborted"
+#         else :
+#             return "continue_succeeded"
+
+
+
+
+
 def main():
     rospy.init_node('smach_sm_place_state_machine')
 
