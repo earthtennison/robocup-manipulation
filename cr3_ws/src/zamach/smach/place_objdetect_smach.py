@@ -4,11 +4,15 @@
 roslaunch cr3_moveit_control manipulation_pipeline_real.launch
 """
 
-import roslib
 import rospy
 import smach
 import smach_ros
+
+# msg for transfer information 
 from geometry_msgs.msg import Pose, Point, Vector3
+
+
+
 from tf.transformations import quaternion_from_euler
 import time
 
@@ -28,33 +32,16 @@ from geometry_msgs.msg import TransformStamped
 from custom_socket import CustomSocket
 import numpy as np
 
-# # output
-from geometry_msgs.msg import Pose
-
 # transform to from cameralink to base link
 import tf2_ros
 import tf2_geometry_msgs
 
-
-class GetObjectName(smach.State):
-    def __init__(self):
-        rospy.loginfo('Initiating state GetObjectName')
-        smach.State.__init__(self, outcomes=['continue_GetObjectPose'], output_keys=[
-                             'objectname_output'])
-
-    def execute(self, userdata):
-        rospy.loginfo('Executing state GetObjectName')
-        # sending object name to GetobjectName state (change string right here)
-        userdata.objectname_output = "Waterbottle"
-        return 'continue_GetObjectPose'
-
 class GetObjectBBX(smach.State):
     def __init__(self):
         rospy.loginfo('Initiating state GetObjectPose')
-        smach.State.__init__(self, outcomes=['continue_GetProperties', 'continue_ABORTED'], input_keys=[
-                             'objectname_input', 'ListBBX_output'], output_keys=['ListBBX_output'])
+        smach.State.__init__(self, outcomes=['continue_GetProperties', 'continue_ABORTED'], 
+                                output_keys=['ListBBX_output', 'CameraIntrinsics_output', 'DepthImage_output'])
         # initiate variables
-        self.object_name = ""
         self.bbx_pixel_list = [] # [(xm1, ym1, xM1, yM1, class), (xm2, ym2, xM2, yM2, class), ...] in pixels
         self.intrinsics = None
         self.bridge = CvBridge()
@@ -94,37 +81,33 @@ class GetObjectBBX(smach.State):
                 return None 
             # object detection bounding box 2d
             for bbox in result['bbox_list']:
-                if bbox[4] != self.object_name:
-                    continue
-                else:
-                    # receive xyxy                
-                    # (xmin,ymin)----------*
-                    # |                    |
-                    # |                    |
-                    # |                    |
-                    # |                    |
-                    # *----------(xmax,ymax)
-                    # Get List of Bounding Box in Pixel
+                # receive xyxy                
+                # (xmin,ymin)----------*
+                # |                    |
+                # |                    |
+                # |                    |
+                # |                    |
+                # *----------(xmax,ymax)
+                # Get List of Bounding Box in Pixel
 
-                    (xmin_pixel,ymin_pixel) = rescale_pixel(bbox[0], bbox[1])
-                    (xmax_pixel,ymax_pixel) = rescale_pixel(bbox[2], bbox[3])
-                    object_id = 1 # TODO change to object tracker
+                (xmin_pixel,ymin_pixel) = rescale_pixel(bbox[0], bbox[1])
+                (xmax_pixel,ymax_pixel) = rescale_pixel(bbox[2], bbox[3])
+                object_id = 1 # TODO change to object tracker
 
-                    self.bbx_pixel_list.append(xmin_pixel,ymin_pixel,xmax_pixel,ymax_pixel, object_id)
+                self.bbx_pixel_list.append(xmin_pixel,ymin_pixel,xmax_pixel,ymax_pixel, object_id)
 
-                    # visualize purpose
-                    x_pixel = int(bbox[0] + (bbox[2]-bbox[0])/2)
-                    y_pixel = int(bbox[1] + (bbox[3]-bbox[1])/2)
-                    (x_pixel, y_pixel) = rescale_pixel(x_pixel, y_pixel)
-                    
-                    self.frame = cv2.circle(self.frame, (x_pixel, y_pixel), 5, (0, 255, 0), 2)
-                    self.frame = cv2.rectangle(self.frame, (xmin_pixel,ymin_pixel), (xmax_pixel,ymax_pixel), (0, 0, 255), 2)
+                # visualize purpose
+                x_pixel = int(bbox[0] + (bbox[2]-bbox[0])/2)
+                y_pixel = int(bbox[1] + (bbox[3]-bbox[1])/2)
+                (x_pixel, y_pixel) = rescale_pixel(x_pixel, y_pixel)
+                
+                self.frame = cv2.circle(self.frame, (x_pixel, y_pixel), 5, (0, 255, 0), 2)
+                self.frame = cv2.rectangle(self.frame, (xmin_pixel,ymin_pixel), (xmax_pixel,ymax_pixel), (0, 0, 255), 2)
                                     
             self.image_pub.publish(self.bridge.cv2_to_imgmsg(self.frame, "bgr8"))
 
             if not self.intrinsics:
                 rospy.logerr("no camera intrinsics")
-                userdata.intrinsics = self.intrinsics
                 return None
 
             self.image_sub.unregister()
@@ -204,11 +187,6 @@ class GetObjectBBX(smach.State):
             "/camera/aligned_depth_to_color/image_raw", Image, depth_callback, queue_size=1, buff_size=52428800)
         self.image_pub = rospy.Publisher(
             "/blob/image_blob", Image, queue_size=1)
-        
-
-        # recieving object name from GetObjectName state
-        self.object_name = userdata.objectname_input
-        rospy.loginfo(self.object_name)
 
         # run_once function
         run_once()
@@ -220,14 +198,17 @@ class GetObjectBBX(smach.State):
             reset()
             detect()
             userdata.ListBBX_output = self.bbx_pixel_list
+            userdata.intrinsics = self.intrinsics
+            userdata.depth_image = self.depth_image
             return 'continue_GetProperties'
         return 'continue_ABORTED'
 
 class GetObjectProperties(smach.State):
     def __init__(self):
         rospy.loginfo('Initiating state GetObjectProperties')
-        smach.State.__init__(self, outcomes=['continue_Place', 'continue_ABORTED'], input_keys=[
-                             'ListBBX_input'], output_keys=['ObjectProperties_output'])
+        smach.State.__init__(self, outcomes=['continue_Place'], 
+                             input_keys=['ListBBX_input', 'CameraIntrinsics_input', 'DepthImage_input'], 
+                             output_keys=['ObjectPoseList_output', 'ObjectSizeList_output', 'ObjectStanList_output'])
 
         # initiate variables from GetObjectBBX()
         self.bbx_pixel_list = [] # [(xm1, ym1, xM1, yM1, class), (xm2, ym2, xM2, yM2, class), ...] in pixels
@@ -296,8 +277,7 @@ class GetObjectProperties(smach.State):
                 objsize_list.append(bbx_size)
 
             return objsize_list
-
-            
+           
         def GetStan(objsize_list):
             # objsize_list = [size1, size2, ...]
             # using Rfactor to compare posture of object using length/hight
@@ -324,6 +304,12 @@ class GetObjectProperties(smach.State):
             return objstance_list
                 
         # ----------------------------------------------start-----------------------------------------------------
+        # init data from input
+        self.bbx_pixel_list = userdata.intrinsics
+        self.intrinsics = userdata.depth_image
+        self.depth_image = userdata.bbx_list
+
+        # start runing bounding box in list
         for bbx in self.bbx_pixel_list:
             # init each pixel of bouding box
             # (xmin,ymin)----------.        corner11-------corner21
@@ -389,30 +375,63 @@ class GetObjectProperties(smach.State):
         self.ObjPoseList = GetPose(self.bbxc_point_list)
         self.ObjSizeList = GetSize(self.bbxc_point_list)
         self.ObjStanList = GetStan(self.ObjSizeList)
-        
+
+        return 'continue_Place'
+
+class Place(smach.State):
+    def __init__(self):
+        rospy.loginfo('Initiating state GetObjectProperties')
+        smach.State.__init__(self, input_keys=['ObjectPoseList_input', 'ObjectSizeList_input', 'ObjectStanList_input']) 
+    
+    def execute(self, userdata):
+        rospy.loginfo(userdata.object_pose_list)
+        rospy.loginfo(userdata.object_size_list)
+        rospy.loginfo(userdata.object_stan_list)
+
 def main():
     rospy.init_node('smach_pick_state_machine')
     sm = smach.StateMachine(outcomes=['SUCCEEDED', 'ABORTED'])
-    sm.userdata.string_name = ""
+
+    # userdata from GetObjectBBX
     sm.userdata.intrinsics = None
-    sm.userdata.object_pose = Pose()
+    sm.userdata.depth_image = None
     sm.userdata.bbx_list = []
+
+    # userdata from GetObjectProperties
+    sm.userdata.object_pose_list = []
+    sm.userdata.object_size_list = []
+    sm.userdata.object_stan_list = []
+
     with sm:
-        smach.StateMachine.add('GetObjectName', GetObjectName(),
-                               transitions={
-                                   'continue_GetObjectPose': 'GetObjectPose'},
-                               remapping={'objectname_output': 'string_name'})
         smach.StateMachine.add('GetObjectBBX', GetObjectBBX(),
-                               transitions={'continue_GetProperties': 'GetObjectProperties',
-                                            'continue_ABORTED': 'ABORTED'},
-                               remapping={'objectname_input': 'string_name',
-                                          'ListBBX_output': 'bbx_list'})
+                                transitions= {'continue_GetProperties'  : 'GetObjectProperties',
+                                              'continue_ABORTED'        : 'ABORTED'},
+                                remapping=   {'ListBBX_output'          : 'bbx_list',
+                                              'CameraIntrinsics_output' : 'intrinsics',
+                                              'DepthImage_output'       : 'depth_image'})
+
         smach.StateMachine.add('GetObjectProperties', GetObjectProperties(),
-                                transitions={'continue_GetProperties': 'GetObjectProperties',
-                                            'continue_ABORTED': 'ABORTED'},
-                                remapping={'objectname_input': 'string_name',
-                                          'ListBBX_output': 'bbx_list'})
+                                transitions= {'continue_Place'          : 'Place'},
+                                remapping=   {'ListBBX_input'           : 'bbx_list',
+                                              'CameraIntrinsics_input'  : 'intrinsics',
+                                              'DepthImage_input'        : 'depth_image',
+                                              'ObjectPoseList_output'   : 'object_pose_list',
+                                              'ObjectSizeList_output'   : 'object_size_list',
+                                              'ObjectStanList_output'   : 'bject_stan_list'})
+        
+        smach.StateMachine.add('Place', Place(),remapping={'ObjectPoseList_input'   : 'object_pose_list','ObjectSizeList_input'   : 'object_size_list','ObjectStanList_input'   : 'bject_stan_list'})
     outcome = sm.execute()
+
+    # Create and start the introspection server
+    sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
+    sis.start()
+
+    # Execute the state machine
+    outcome = sm.execute()
+
+    # Wait for ctrl-c to stop the application
+    rospy.spin()
+    sis.stop()
 
 
 if __name__ == "__main__":
