@@ -238,6 +238,7 @@ class GetObjectProperties():
         # initiate variables
         self.bbx_pixel_list = [] # [(xm1, ym1, xM1, yM1, class), (xm2, ym2, xM2, yM2, class), ...] in pixels
         self.intrinsics = None
+        self.depth_image = None
 
     
     def execute(self, userdata):
