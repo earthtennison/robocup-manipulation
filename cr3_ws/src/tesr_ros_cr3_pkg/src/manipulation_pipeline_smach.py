@@ -94,6 +94,8 @@ class GetObjectPose(smach.State):
 
         def detect():
             rospy.loginfo("Start detecting")
+            # scale image incase image size donot match cv server
+            self.frame = check_image_size_for_cv(self.frame)
             # send frame to server and recieve the result
             result = self.c.req(self.frame)
             self.frame = check_image_size_for_ros(self.frame)
@@ -219,8 +221,6 @@ class GetObjectPose(smach.State):
             try:
                 # change subscribed data to numpy.array and save it as "frame"
                 self.frame = self.bridge.imgmsg_to_cv2(data, 'bgr8')
-                # scale image incase image size donot match cv server
-                self.frame = check_image_size_for_cv(self.frame)
             except CvBridgeError as e:
                 print(e)
 
