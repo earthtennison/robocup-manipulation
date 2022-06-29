@@ -8,7 +8,7 @@ import roslib
 import rospy
 import smach
 import smach_ros
-from geometry_msgs.msg import Pose,Point
+from geometry_msgs.msg import Pose
 from tf.transformations import quaternion_from_euler
 import math
 import time
@@ -53,17 +53,20 @@ class GetObjectName(smach.State):
         return 'continue_GetObjectPose'
 
 
-class GetObjectBBX(smach.State):
+class GetObjectPose(smach.State):
     def __init__(self):
         rospy.loginfo('Initiating state GetObjectPose')
-        smach.State.__init__(self, outcomes=['continue_GetProperties', 'continue_ABORTED'], input_keys=[
-                             'objectname_input', 'ListBBX_output'], output_keys=['ListBBX_output'])
+        smach.State.__init__(self, outcomes=['continue_Pick', 'continue_ABORTED'], input_keys=[
+                             'objectname_input', 'objectpose_output'], output_keys=['objectpose_output'])
         # initiate variables
         self.object_name = ""
-        self.bbx_pixel_list = [] # [(xm1, ym1, xM1, yM1, class), (xm2, ym2, xM2, yM2, class), ...] in pixels
+        self.center_pixel_list = [] # [(x1, y1, id), (x2, y2, id), ...] in pixels
+        self.object_pose_list = [] # [(x1, y1, z1, id), (x1, y1, z1, id), ...] im meters
         self.intrinsics = None
         self.bridge = CvBridge()
         self.frame = None
+        self.object_pose = Pose()
+        self.tf_stamp = None
 
         # connect to CV server
         host = "192.168.8.99"
@@ -99,41 +102,54 @@ class GetObjectBBX(smach.State):
                 return None 
             # object detection bounding box 2d
             for bbox in result['bbox_list']:
-                if bbox[4] != self.object_name:
-                    continue
-                else:
-                    # receive xyxy                
-                    # (xmin,ymin)----------*
-                    # |                    |
-                    # |                    |
-                    # |                    |
-                    # |                    |
-                    # *----------(xmax,ymax)
-                    # Get List of Bounding Box in Pixel
-
-                    (xmin_pixel,ymin_pixel) = rescale_pixel(bbox[0], bbox[1])
-                    (xmax_pixel,ymax_pixel) = rescale_pixel(bbox[2], bbox[3])
-                    object_id = 1 # TODO change to object tracker
-
-                    self.bbx_pixel_list.append(xmin_pixel,ymin_pixel,xmax_pixel,ymax_pixel, object_id)
-
-                    # visualize purpose
-                    x_pixel = int(bbox[0] + (bbox[2]-bbox[0])/2)
-                    y_pixel = int(bbox[1] + (bbox[3]-bbox[1])/2)
-                    (x_pixel, y_pixel) = rescale_pixel(x_pixel, y_pixel)
-                    
-                    self.frame = cv2.circle(self.frame, (x_pixel, y_pixel), 5, (0, 255, 0), 2)
-                    self.frame = cv2.rectangle(self.frame, (xmin_pixel,ymin_pixel), (xmax_pixel,ymax_pixel), (0, 0, 255), 2)
-                                    
+                
+                # receive xyxy
+                x_pixel = int(bbox[0] + (bbox[2]-bbox[0])/2)
+                y_pixel = int(bbox[1] + (bbox[3]-bbox[1])/2)
+                (x_pixel, y_pixel) = rescale_pixel(x_pixel, y_pixel)
+                object_id = 1 # TODO change to object tracker
+                self.center_pixel_list.append((x_pixel, y_pixel, object_id))
+                # visualize purpose
+                self.frame = cv2.circle(self.frame, (x_pixel, y_pixel), 5, (0, 255, 0), 2)
+                self.frame = cv2.rectangle(self.frame, rescale_pixel(bbox[0], bbox[1]), rescale_pixel(bbox[2], bbox[3]), (0, 255, 0), 2)
+            
             self.image_pub.publish(self.bridge.cv2_to_imgmsg(self.frame, "bgr8"))
 
+            # 3d pose
             if not self.intrinsics:
                 rospy.logerr("no camera intrinsics")
-                userdata.intrinsics = self.intrinsics
                 return None
+            for center_pixel in self.center_pixel_list:
+                rospy.loginfo("found {}".format(center_pixel))
+                depth = self.depth_image[center_pixel[1], center_pixel[0]] # [y, x] for numpy array
+                result = rs2.rs2_deproject_pixel_to_point(self.intrinsics, [center_pixel[0], center_pixel[1]], depth) # [x, y] for realsense lib
+                x_coord, y_coord, z_coord = result[0]/1000, result[1]/1000, result[2]/1000
+
+                # filter only object with more than 50 cm
+                if z_coord >= 0.5:
+                    rospy.sleep(0.1)
+                    self.object_pose_list.append((x_coord, y_coord, z_coord, center_pixel[2]))
+
+                    self.tf_stamp = TransformStamped()
+                    self.tf_stamp.header.frame_id = "/camera_link"
+                    self.tf_stamp.header.stamp = rospy.Time.now()
+                    self.tf_stamp.child_frame_id = "/object_frame_{}".format(center_pixel[2]) # object_id
+                    self.tf_stamp.transform.translation.x = z_coord
+                    self.tf_stamp.transform.translation.y = -x_coord
+                    self.tf_stamp.transform.translation.z = -y_coord
+
+                    quat = tf.transformations.quaternion_from_euler(
+                        float(0), float(0), float(0))
+
+                    self.tf_stamp.transform.rotation.x = quat[0]
+                    self.tf_stamp.transform.rotation.y = quat[1]
+                    self.tf_stamp.transform.rotation.z = quat[2]
+                    self.tf_stamp.transform.rotation.w = quat[3]
 
             self.image_sub.unregister()
             self.depth_sub.unregister()
+            rospy.loginfo("Object found!")
+            # self.object_pose = find_closest_object()
 
         # function used in callback functions
         def check_image_size_for_cv(frame):
@@ -150,6 +166,31 @@ class GetObjectBBX(smach.State):
             x = int(x*self.intrinsics.width/1280)
             y = int(y*self.intrinsics.height/720)
             return (x, y)
+
+        def find_closest_object():
+            object_pose_z_min = None
+            z_min = 10000000000
+            for object_pose in self.object_pose_list:
+                if object_pose[2] < z_min:
+                    object_pose_z_min = object_pose
+                    z_min = object_pose[2]
+                    
+            return xyz_to_pose(object_pose_z_min[0], object_pose_z_min[1], object_pose_z_min[2])
+
+        def xyz_to_pose(x, y, z):
+            """
+            transform xyz in realsense coord to camera_link coord
+            """
+            # set object pose
+            object_pose = Pose()
+            object_pose.position.x = z
+            object_pose.position.y = -x
+            object_pose.position.z = -y
+            object_pose.orientation.x = 0
+            object_pose.orientation.y = 0
+            object_pose.orientation.z = 0
+            object_pose.orientation.w = 1
+            return object_pose
 
         # all call_back functions
         def info_callback(cameraInfo):
@@ -182,6 +223,16 @@ class GetObjectBBX(smach.State):
                 print(e)
 
         def depth_callback(frame):
+            """
+                                +Z           
+            -y   realsense frame|                
+            | +z                |    
+            |/                  |      
+            o---> +x            |  +X    
+                                | / 
+            +Y -----------------o camera_link frame tf/
+
+            """
             try:
                 if self.tf_stamp is not None:
                     # rospy.loginfo("publishing tf")
@@ -209,7 +260,8 @@ class GetObjectBBX(smach.State):
             "/camera/aligned_depth_to_color/image_raw", Image, depth_callback, queue_size=1, buff_size=52428800)
         self.image_pub = rospy.Publisher(
             "/blob/image_blob", Image, queue_size=1)
-        
+        self.pub_tf = rospy.Publisher(
+            "/tf", tf2_msgs.msg.TFMessage, queue_size=1)
 
         # recieving object name from GetObjectName state
         self.object_name = userdata.objectname_input
@@ -224,66 +276,94 @@ class GetObjectBBX(smach.State):
             rospy.loginfo("------ Running 3D detection ------")
             reset()
             detect()
-            userdata.ListBBX_output = self.bbx_pixel_list
-            return 'continue_GetProperties'
+            userdata.objectlist_output = self.object_pose_list
+            # userdata.objectpose_output = self.object_pose
+            return 'continue_Pick'
         return 'continue_ABORTED'
 
-class GetObjectProperties():
+"""
+class Pick(smach.State):
     def __init__(self):
-        rospy.loginfo('Initiating state GetObjectProperties')
-        smach.State.__init__(self, outcomes=['continue_Place', 'continue_ABORTED'], input_keys=[
-                             'ListBBX_input'], output_keys=['ObjectProperties_output'])
-        # subscribe topic
-        
-        # initiate variables
-        self.bbx_pixel_list = [] # [(xm1, ym1, xM1, yM1, class), (xm2, ym2, xM2, yM2, class), ...] in pixels
-        self.intrinsics = None
+        rospy.loginfo('Initiating state Pick')
+        smach.State.__init__(self, outcomes=['continue_SUCCEEDED', 'continue_ABORTED'], 
+                                   input_keys=['objectpose_input'])
+        self.success = False
 
-    
     def execute(self, userdata):
-        rospy.loginfo('Executing state GetObjectProperties')
+        rospy.loginfo('Executing state Pick')
+        # recieving Pose() from GetObjectPose state
+        recieved_pose = userdata.objectpose_input
+        rospy.loginfo('------ Position ------')
+        rospy.loginfo('x = %s', recieved_pose.position.x)
+        rospy.loginfo('x = %s', recieved_pose.position.x)
+        rospy.loginfo('y = %s', recieved_pose.position.y)
+        rospy.loginfo('z = %s', recieved_pose.position.z)
+        rospy.loginfo('------ Orientation ------')
+        rospy.loginfo('x = %s', recieved_pose.orientation.x)
+        rospy.loginfo('y = %s', recieved_pose.orientation.y)
+        rospy.loginfo('z = %s', recieved_pose.orientation.z)
+        rospy.loginfo('w = %s', recieved_pose.orientation.w)
 
-        def GetPose():
-            pass
+        def transform_pose(input_pose, from_frame, to_frame):
+            # **Assuming /tf2 topic is being broadcasted
+            tf_buffer = tf2_ros.Buffer()
+            listener = tf2_ros.TransformListener(tf_buffer)
+            pose_stamped = tf2_geometry_msgs.PoseStamped()
+            pose_stamped.pose = input_pose
+            pose_stamped.header.frame_id = from_frame
+            pose_stamped.header.stamp = rospy.Time.now()
+            try:
+                # ** It is important to wait for the listener to start listening. Hence the rospy.Duration(1)
+                output_pose_stamped = tf_buffer.transform(
+                    pose_stamped, to_frame, rospy.Duration(1))
+                return output_pose_stamped.pose
+            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+                raise
 
-        def GetSize():
-            pass
+        def pick_service(goal_pose, side="front"):
+            rospy.wait_for_service('pick_service_select_side')
+            try:
+                pick = rospy.ServiceProxy(
+                    'pick_service_select_side', PickWithSide)
+                res = pick(goal_pose, side)
+                return res.success_grasp
+            except rospy.ServiceException as e:
+                print("Service call failed: %s" % e)
+                return 'continue_ABORTED'
 
-        def GetStance():
-            pass
+        transformed_pose = transform_pose(
+            recieved_pose, "camera_link", "base_link")
+        rospy.loginfo(transformed_pose.position.x)
+        transformed_pose.orientation.x = 0
+        transformed_pose.orientation.y = 0
+        transformed_pose.orientation.z = 0
+        transformed_pose.orientation.w = 1
 
-        
-        for bbx in self.bbx_pixel_list:
-            objname = bbx[4]
-            x_pixel = int(bbx[0] + (bbx[2]-bbx[0])/2)
-            y_pixel = int(bbx[1] + (bbx[3]-bbx[1])/2)
-            center_pixel = (x_pixel,y_pixel)
-            rospy.loginfo("found {}".format(center_pixel))
-            depth = self.depth_image[center_pixel[1], center_pixel[0]] # [y, x] for numpy array
-            result = rs2.rs2_deproject_pixel_to_point(self.intrinsics, [center_pixel[0], center_pixel[1]], depth) # [x, y] for realsense lib
-            center = Point()
-            center.x = result[0]/1000
-            center.y = result[1]/1000
-            center.z = result[2]/1000
+        self.success = pick_service(transformed_pose, 'front')
+
+        if self.success == True:
+            return 'continue_SUCCEEDED'
+        else:
+            return 'continue_ABORTED'
+"""
 
 def main():
     rospy.init_node('smach_pick_state_machine')
     sm = smach.StateMachine(outcomes=['SUCCEEDED', 'ABORTED'])
     sm.userdata.string_name = ""
-    sm.userdata.intrinsics = None
     sm.userdata.object_pose = Pose()
-    sm.userdata.bbx_list = []
+    sm.userdata.object_pose_list = []
     with sm:
         smach.StateMachine.add('GetObjectName', GetObjectName(),
                                transitions={
                                    'continue_GetObjectPose': 'GetObjectPose'},
                                remapping={'objectname_output': 'string_name'})
-        smach.StateMachine.add('GetObjectPose', GetObjectBBX(),
-                               transitions={'continue_GetProperties': 'GetObjectProperties',
+        smach.StateMachine.add('GetObjectPose', GetObjectPose(),
+                               transitions={'continue_Pick': 'Pick',
                                             'continue_ABORTED': 'ABORTED'},
                                remapping={'objectname_input': 'string_name',
-                                          'ListBBX_output': 'bbx_list',
-                                          'ListBBX_output': 'bbx_list'})
+                                          'objectlist_output': 'object_pose_list',
+                                          'objectlist_output': 'object_pose_list'})
         # smach.StateMachine.add('Pick', Pick(),
         #                        transitions={'continue_SUCCEEDED': 'SUCCEEDED',
         #                                     'continue_ABORTED': 'ABORTED'},
