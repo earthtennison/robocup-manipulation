@@ -38,7 +38,7 @@ import tf2_geometry_msgs
 
 class GetObjectBBX(smach.State):
     def __init__(self):
-        rospy.loginfo('Initiating state GetObjectPose')
+        rospy.loginfo('Initiating state GetObjectBBX')
         smach.State.__init__(self, outcomes=['continue_GetProperties', 'continue_ABORTED'], 
                                 output_keys=['ListBBX_output', 'CameraIntrinsics_output', 'DepthImage_output'])
         # initiate variables
@@ -161,10 +161,10 @@ class GetObjectBBX(smach.State):
 
         def depth_callback(frame):
             try:
-                if self.tf_stamp is not None:
-                    # rospy.loginfo("publishing tf")
-                    self.tf_stamp.header.stamp = rospy.Time.now()
-                    self.pub_tf.publish(tf2_msgs.msg.TFMessage([self.tf_stamp]))
+                # if self.tf_stamp is not None:
+                #     # rospy.loginfo("publishing tf")
+                #     self.tf_stamp.header.stamp = rospy.Time.now()
+                #     self.pub_tf.publish(tf2_msgs.msg.TFMessage([self.tf_stamp]))
 
                 self.depth_image = self.bridge.imgmsg_to_cv2(frame, frame.encoding)
                 # rescale pixel incase pixel donot match
@@ -190,6 +190,7 @@ class GetObjectBBX(smach.State):
 
         # run_once function
         run_once()
+        print("dajwiwjidjij")
         while not rospy.is_shutdown():
             command = raw_input("Press Enter :")
             if command == 'q':
@@ -206,10 +207,10 @@ class GetObjectBBX(smach.State):
 class GetObjectProperties(smach.State):
     def __init__(self):
         rospy.loginfo('Initiating state GetObjectProperties')
-        smach.State.__init__(self, outcomes=['continue_Place'], 
+        smach.State.__init__(self, 
                              input_keys=['ListBBX_input', 'CameraIntrinsics_input', 'DepthImage_input'], 
                              output_keys=['ObjectPoseList_output', 'ObjectSizeList_output', 'ObjectStanList_output'])
-
+        #outcomes=['continue_Place'], 
         # initiate variables from GetObjectBBX()
         self.bbx_pixel_list = [] # [(xm1, ym1, xM1, yM1, class), (xm2, ym2, xM2, yM2, class), ...] in pixels
         self.intrinsics = None
@@ -411,19 +412,18 @@ def main():
                                               'DepthImage_output'       : 'depth_image'})
 
         smach.StateMachine.add('GetObjectProperties', GetObjectProperties(),
-                                transitions= {'continue_Place'          : 'Place'},
                                 remapping=   {'ListBBX_input'           : 'bbx_list',
                                               'CameraIntrinsics_input'  : 'intrinsics',
                                               'DepthImage_input'        : 'depth_image',
                                               'ObjectPoseList_output'   : 'object_pose_list',
                                               'ObjectSizeList_output'   : 'object_size_list',
                                               'ObjectStanList_output'   : 'bject_stan_list'})
-        
-        smach.StateMachine.add('Place', Place(),remapping={'ObjectPoseList_input'   : 'object_pose_list','ObjectSizeList_input'   : 'object_size_list','ObjectStanList_input'   : 'bject_stan_list'})
+        #transitions= {'continue_Place'          : 'Place'}
+        # smach.StateMachine.add('Place', Place(),remapping={'ObjectPoseList_input'   : 'object_pose_list','ObjectSizeList_input'   : 'object_size_list','ObjectStanList_input'   : 'bject_stan_list'})
     outcome = sm.execute()
 
     # Create and start the introspection server
-    sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
+    sis = smach_ros.IntrospectionServer('server_name', sm, '/GetObjectProperties')
     sis.start()
 
     # Execute the state machine
