@@ -94,7 +94,7 @@ class GetObjectBBX(smach.State):
                 (xmax_pixel,ymax_pixel) = rescale_pixel(bbox[2], bbox[3])
                 object_id = 1 # TODO change to object tracker
 
-                self.bbx_pixel_list.append(xmin_pixel,ymin_pixel,xmax_pixel,ymax_pixel, object_id)
+                self.bbx_pixel_list.append((xmin_pixel,ymin_pixel,xmax_pixel,ymax_pixel, object_id))
 
                 # visualize purpose
                 x_pixel = int(bbox[0] + (bbox[2]-bbox[0])/2)
@@ -190,7 +190,6 @@ class GetObjectBBX(smach.State):
 
         # run_once function
         run_once()
-        print("dajwiwjidjij")
         while not rospy.is_shutdown():
             command = raw_input("Press Enter :")
             if command == 'q':
@@ -199,8 +198,8 @@ class GetObjectBBX(smach.State):
             reset()
             detect()
             userdata.ListBBX_output = self.bbx_pixel_list
-            userdata.intrinsics = self.intrinsics
-            userdata.depth_image = self.depth_image
+            userdata.CameraIntrinsics_output = self.intrinsics
+            userdata.DepthImage_output = self.depth_image
             return 'continue_GetProperties'
         return 'continue_ABORTED'
 
@@ -306,9 +305,9 @@ class GetObjectProperties(smach.State):
                 
         # ----------------------------------------------start-----------------------------------------------------
         # init data from input
-        self.bbx_pixel_list = userdata.intrinsics
-        self.intrinsics = userdata.depth_image
-        self.depth_image = userdata.bbx_list
+        self.bbx_pixel_list = userdata.ListBBX_input
+        self.intrinsics     = userdata.CameraIntrinsics_input
+        self.depth_image    = userdata.DepthImage_input
 
         # start runing bounding box in list
         for bbx in self.bbx_pixel_list:
@@ -376,6 +375,12 @@ class GetObjectProperties(smach.State):
         self.ObjPoseList = GetPose(self.bbxc_point_list)
         self.ObjSizeList = GetSize(self.bbxc_point_list)
         self.ObjStanList = GetStan(self.ObjSizeList)
+
+        rospy.loginfo("Get all Object Properties, sending to Place")
+        userdata.ObjectPoseList_output = self.ObjPoseList
+        userdata.ObjectSizeList_output = self.ObjSizeList
+        userdata.ObjectStanList_output = self.ObjStanList
+
 
         return 'continue_Place'
 
