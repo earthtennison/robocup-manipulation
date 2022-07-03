@@ -206,10 +206,10 @@ class GetObjectBBX(smach.State):
 class GetObjectProperties(smach.State):
     def __init__(self):
         rospy.loginfo('Initiating state GetObjectProperties')
-        smach.State.__init__(self, 
+        smach.State.__init__(self, outcomes=['continue_Place'], 
                              input_keys=['ListBBX_input', 'CameraIntrinsics_input', 'DepthImage_input'], 
                              output_keys=['ObjectPoseList_output', 'ObjectSizeList_output', 'ObjectStanList_output'])
-        #outcomes=['continue_Place'], 
+        
         # initiate variables from GetObjectBBX()
         self.bbx_pixel_list = [] # [(xm1, ym1, xM1, yM1, class), (xm2, ym2, xM2, yM2, class), ...] in pixels
         self.intrinsics = None
@@ -293,6 +293,8 @@ class GetObjectProperties(smach.State):
             Rfactor = 0.6
 
             posture = ("parallel","perpendicular")
+            print(objsize.y)
+            print(objsize.z)
 
             objstance_list = []
             for objsize in objsize_list:
@@ -387,12 +389,14 @@ class GetObjectProperties(smach.State):
 class Place(smach.State):
     def __init__(self):
         rospy.loginfo('Initiating state GetObjectProperties')
-        smach.State.__init__(self, input_keys=['ObjectPoseList_input', 'ObjectSizeList_input', 'ObjectStanList_input']) 
+        smach.State.__init__(self, outcomes=['continue_SUCCEEDED'],
+                             input_keys=['ObjectPoseList_input', 'ObjectSizeList_input', 'ObjectStanList_input']) 
     
     def execute(self, userdata):
-        rospy.loginfo(userdata.object_pose_list)
-        rospy.loginfo(userdata.object_size_list)
-        rospy.loginfo(userdata.object_stan_list)
+        rospy.loginfo(userdata.ObjectPoseList_input)
+        rospy.loginfo(userdata.ObjectSizeList_input)
+        rospy.loginfo(userdata.ObjectStanList_input)
+        return 'continue_SUCCEEDED'
 
 def main():
     rospy.init_node('smach_pick_state_machine')
@@ -417,18 +421,23 @@ def main():
                                               'DepthImage_output'       : 'depth_image'})
 
         smach.StateMachine.add('GetObjectProperties', GetObjectProperties(),
+                                transitions= {'continue_Place'          : 'Place'},
                                 remapping=   {'ListBBX_input'           : 'bbx_list',
                                               'CameraIntrinsics_input'  : 'intrinsics',
                                               'DepthImage_input'        : 'depth_image',
                                               'ObjectPoseList_output'   : 'object_pose_list',
                                               'ObjectSizeList_output'   : 'object_size_list',
-                                              'ObjectStanList_output'   : 'bject_stan_list'})
-        #transitions= {'continue_Place'          : 'Place'}
-        # smach.StateMachine.add('Place', Place(),remapping={'ObjectPoseList_input'   : 'object_pose_list','ObjectSizeList_input'   : 'object_size_list','ObjectStanList_input'   : 'bject_stan_list'})
-    outcome = sm.execute()
+                                              'ObjectStanList_output'   : 'object_stan_list'})
+        
+        smach.StateMachine.add('Place', Place(),
+                                transitions= {'continue_SUCCEEDED'      : 'SUCCEEDED'},
+                                remapping=   {'ObjectPoseList_input'    : 'object_pose_list',
+                                              'ObjectSizeList_input'    : 'object_size_list',
+                                              'ObjectStanList_input'    : 'object_stan_list'})
+    # outcome = sm.execute()
 
     # Create and start the introspection server
-    sis = smach_ros.IntrospectionServer('server_name', sm, '/GetObjectProperties')
+    sis = smach_ros.IntrospectionServer('server_name', sm, '/Place')
     sis.start()
 
     # Execute the state machine
